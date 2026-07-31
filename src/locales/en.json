@@ -1,0 +1,82 @@
+{
+  "nav": {
+    "home": "Home",
+    "menu": "Menu",
+    "buffet": "Buffet Info",
+    "about": "About Us",
+    "news": "News",
+    "contact": "Contact & Hours",
+    "impressum": "Imprint",
+    "datenschutz": "Privacy Policy"
+  },
+  "home": {
+    "hero": {
+      "title1": "Welcome to",
+      "title2": "Tong Tong",
+      "subtitle": "Chinese Restaurant in Braunfels",
+      "ctaMenu": "View Menu",
+      "ctaContact": "Contact Us"
+    },
+    "latestNews": {
+      "title": "Latest News",
+      "readMore": "Read More"
+    },
+    "buffet": {
+      "title": "Our Buffet",
+      "subtitle": "Enjoy our diverse buffet selection of fresh dishes, prepared daily for you.",
+      "cta": "Learn More"
+    },
+    "hours": {
+      "title": "Opening Hours",
+      "open": "Open",
+      "closed": "Closed",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    }
+  },
+  "about": {
+    "title": "About Us",
+    "heading1": "Our Story",
+    "heading2": "What Makes Us Special",
+    "placeholder": "[This is where the story of China Restaurant Tong Tong will be]"
+  },
+  "menu": {
+    "title": "Menu",
+    "subtitle": "Discover our diverse dishes",
+    "pdfTitle": "Menu (PDF)",
+    "download": "Download"
+  },
+  "contact": {
+    "title": "Contact & Opening Hours",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "map": "Google Maps",
+    "hours": "Opening Hours",
+    "clickToCall": "Call Now"
+  },
+  "impressum": {
+    "title": "Imprint",
+    "heading": "According to § 5 TMG",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "website": "Website"
+  },
+  "datenschutz": {
+    "title": "Privacy Policy",
+    "heading": "Privacy Policy",
+    "placeholder": "[This is where the privacy policy text according to GDPR will be]"
+  },
+  "common": {
+    "languageToggle": "DE",
+    "footer": "© 2026 China Restaurant Tong Tong. All rights reserved.",
+    "readMore": "Read More",
+    "backToHome": "Back to Home"
+  }
+}

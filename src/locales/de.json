@@ -1,0 +1,82 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "menu": "Speisekarte",
+    "buffet": "Buffet-Info",
+    "about": "Über uns",
+    "news": "Aktuelles",
+    "contact": "Kontakt & Öffnungszeiten",
+    "impressum": "Impressum",
+    "datenschutz": "Datenschutz"
+  },
+  "home": {
+    "hero": {
+      "title1": "Willkommen bei",
+      "title2": "Tong Tong",
+      "subtitle": "Chinesisches Restaurant in Braunfels",
+      "ctaMenu": "Speisekarte ansehen",
+      "ctaContact": "Kontakt aufnehmen"
+    },
+    "latestNews": {
+      "title": "Aktuelles",
+      "readMore": "Mehr lesen"
+    },
+    "buffet": {
+      "title": "Unser Buffet",
+      "subtitle": "Genießen Sie unsere vielfältige buffetartige Auswahl frischer Gerichte, täglich für Sie zubereitet.",
+      "cta": "Mehr erfahren"
+    },
+    "hours": {
+      "title": "Öffnungszeiten",
+      "open": "Geöffnet",
+      "closed": "Geschlossen",
+      "monday": "Montag",
+      "tuesday": "Dienstag",
+      "wednesday": "Mittwoch",
+      "thursday": "Donnerstag",
+      "friday": "Freitag",
+      "saturday": "Samstag",
+      "sunday": "Sonntag"
+    }
+  },
+  "about": {
+    "title": "Über uns",
+    "heading1": "Unsere Geschichte",
+    "heading2": "Was uns besonders macht",
+    "placeholder": "[Hier steht Text über die Geschichte von China Restaurant Tong Tong]"
+  },
+  "menu": {
+    "title": "Speisekarte",
+    "subtitle": "Entdecken Sie unsere vielfältigen Gerichte",
+    "pdfTitle": "Speisekarte (PDF)",
+    "download": "Herunterladen"
+  },
+  "contact": {
+    "title": "Kontakt & Öffnungszeiten",
+    "address": "Adresse",
+    "phone": "Telefon",
+    "email": "E-Mail",
+    "map": "Google Maps Karte",
+    "hours": "Öffnungszeiten",
+    "clickToCall": "Jetzt anrufen"
+  },
+  "impressum": {
+    "title": "Impressum",
+    "heading": "Angemäß § 5 TMG",
+    "address": "Adresse",
+    "phone": "Telefon",
+    "email": "E-Mail",
+    "website": "Website"
+  },
+  "datenschutz": {
+    "title": "Datenschutzerklärung",
+    "heading": "Datenschutzerklärung",
+    "placeholder": "[Hier steht der Datenschutztext gemäß DSGVO]"
+  },
+  "common": {
+    "languageToggle": "EN",
+    "footer": "© 2026 China Restaurant Tong Tong. Alle Rechte vorbehalten.",
+    "readMore": "Mehr lesen",
+    "backToHome": "Zurück zur Startseite"
+  }
+}

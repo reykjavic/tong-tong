@@ -15,6 +15,7 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 5. **German legal requirements** - This is a German business website. Impressum and Datenschutz (privacy) are legally required.
 
 ## File Structure Conventions
+> **Note:** User has requested a flat src/ directory structure for all subsequent development.
 ```
 /
 ├── SPEC.md                    # Project requirements
@@ -26,10 +27,19 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 │   ├── main.tsx               # App entry point
 │   ├── App.tsx                # Wouter routes + MUI ThemeProvider
 │   ├── theme.ts               # MUI theme configuration
-│   ├── pages/                 # Route components (Home.tsx, About.tsx, etc.)
-│   ├── components/            # Reusable MUI components
+│   ├── i18n.tsx               # Language detection + context
 │   ├── locales/               # Translation JSON files (de.json, en.json)
-│   └── i18n.ts                # Language detection + context
+│   ├── pages/                 # Route components (HomePage.tsx, About.tsx, etc.)
+│   │   ├── HomePage.tsx       # Home page component
+│   │   ├── Buffet.tsx         # Buffet page
+│   │   ├── Contact.tsx        # Contact page
+│   │   ├── Datenschutz.tsx    # Privacy policy page
+│   │   ├── Impressum.tsx      # Impression page (legally required in Germany)
+│   │   ├── Menu.tsx           # Menu page
+│   │   └── Posts.tsx          # Blog posts page
+│   └── components/            # Reusable MUI components
+│       ├── Navbar.tsx         # Navigation bar
+│       └── Footer.tsx         # Footer component
 ├── public/
 │   └── admin/                 # Decap CMS admin files
 └── content/
