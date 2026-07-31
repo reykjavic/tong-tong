@@ -1,0 +1,43 @@
+name: Deploy to S3
+
+# Runs whenever code is pushed/merged into main,
+# or manually via the "Run workflow" button in the Actions tab.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
+          # Change if your bucket is in a different region
+          aws-region: eu-central-1
+
+      - name: Deploy to S3
+        # --delete removes any file in the bucket that is not in dist/,
+        # so the bucket always exactly mirrors the latest build.
+        run: aws s3 sync dist/ s3://${{ vars.S3_BUCKET }} --delete
