@@ -41,3 +41,8 @@ jobs:
         # --delete removes any file in the bucket that is not in dist/,
         # so the bucket always exactly mirrors the latest build.
         run: aws s3 sync dist/ s3://${{ vars.S3_BUCKET }} --delete
+
+      - name: Invalidate CloudFront cache
+        # Edge caches the old files after s3 sync, so invalidate everything
+        # to make the new build visible immediately.
+        run: aws cloudfront create-invalidation --distribution-id ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
