@@ -47,21 +47,51 @@ export default function Navbar() {
   return (
     <AppBar position="static" sx={{ bgcolor: 'primary.main' }}>
       <Toolbar>
-        <Typography
-          variant="h6"
+        <Box
           component={Link}
           href="/"
+          aria-label="Tong Tong – Startseite"
           sx={{
-            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
             textDecoration: 'none',
-            color: 'inherit',
-            fontFamily: '"Georgia", serif',
-            fontSize: '1.4rem',
-            '&:hover': { color: 'white' },
+            borderRadius: 0.4,
+            bgcolor: '#39FF14',
+            px: 2.5,
+            py: 1.3,
+            gap: 1,
+            transition: 'transform 0.2s ease',
+            '&:hover': { transform: 'scale(1.05)' },
           }}
         >
-          Tong Tong
-        </Typography>
+          <Typography
+            sx={{
+              color: 'red',
+              fontWeight: 900,
+              fontSize: '1.3rem',
+              letterSpacing: '0.05em',
+              fontFamily: '"Open Sans", sans-serif',
+              lineHeight: 1,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Tong Tong
+          </Typography>
+          <Typography
+            sx={{
+              color: 'red',
+              fontWeight: 700,
+              fontSize: '0.9rem',
+              fontFamily: '"PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif',
+              lineHeight: 1.2,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            冬冬饭店
+          </Typography>
+        </Box>
+        <Box sx={{ flexGrow: 1 }} />
         <Box sx={{ display: 'flex', gap: 2 }}>
           {links.map((link) => (
             <Button
