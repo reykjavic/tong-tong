@@ -25,6 +25,25 @@ When a real domain is chosen (later):
 - [ ] **DNS** record at the registrar pointing at the CloudFront distribution.
 - [ ] **Cleanup**: bucket policy → CloudFront-only, enable Block All Public Access, disable S3 static website hosting.
 
-## 💡 Ideas / optional
+## � Staging vs Production (planned — NOT started yet)
+Goal: separate a protected **staging** env from public **production**, and later move `tong-tong.eu` from Strato to AWS.
+
+### Architecture
+- **Production** = current bucket `tong-tong-homepage` + CloudFront `E1LHD3TBHOG3VX` → later `tong-tong.eu`. Deploy only on merge to `main`.
+- **Staging** = new private bucket (e.g. `tong-tong-staging`) + new CloudFront distribution. Deploy on **every push to any branch**. Protected so the AWS URL isn't public.
+
+### Staging protection (so the staging URL isn't public)
+- [ ] Staging bucket: **Block Public Access ON**
+- [ ] CloudFront **OAC** so only CloudFront can read the staging bucket
+- [ ] **CloudFront Function (viewer request)** → HTTP Basic Auth (username/password) on the staging URL
+- [ ] No public S3 website URL for staging
+
+### Workflow & GitHub Environments
+- [ ] One workflow, two jobs: `staging` (if `ref != main`) + `production` (if `ref == main`)
+- [ ] GitHub **Environments** `staging` + `production`, each with own variables (`S3_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID`, staging auth credentials)
+- [ ] Optional: **required approval** gate on `production` before anything goes live
+- [ ] Eventually: move `tong-tong.eu` from Strato → AWS (ACM cert + DNS record once production is ready)
+
+## �💡 Ideas / optional
 - [ ] Preview deploy for feature branches (separate preview bucket) before merging to `main`
 - [ ] Update `SPEC.md` / `README.md` / `AGENTS.md` primary color docs (they still reference old `#00A896`; current theme uses `#00695C` deep teal + `#7B1F2B` burgundy)

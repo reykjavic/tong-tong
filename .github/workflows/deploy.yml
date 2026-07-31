@@ -2,9 +2,13 @@ name: Deploy to S3
 
 # Runs whenever code is pushed/merged into main,
 # or manually via the "Run workflow" button in the Actions tab.
+# Doc-only and CI changes are skipped (no deploy needed).
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "*.md"
+      - ".github/**"
   workflow_dispatch:
 
 permissions:
