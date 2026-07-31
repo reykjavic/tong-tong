@@ -36,7 +36,7 @@ function HeroSection() {
         modules={[Autoplay, Pagination, SwiperNavigation]}
         spaceBetween={0}
         slidesPerView={1}
-        autoplay={{ delay: 5000, disableOnInteraction: false }}
+        autoplay={{ delay: 10000, disableOnInteraction: false }}
         pagination={{ clickable: true }}
         navigation
         loop
@@ -46,39 +46,29 @@ function HeroSection() {
           <SwiperSlide key={i}>
             <Box sx={{
               height: '100%',
+              boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: slide.image ? 'flex-end' : 'center',
               textAlign: 'center',
               background: slide.image
-                ? `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url(${slide.image}) center/cover no-repeat`
+                ? `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${slide.image}) center/cover no-repeat`
                 : slide.bg,
               px: 2,
               py: { xs: 4, sm: 6 },
             }}>
-              <Box sx={{
-                width: isMobile ? 100 : 140,
-                height: isMobile ? 100 : 140,
-                borderRadius: '50%',
-                bgcolor: 'rgba(255,255,255,0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: isMobile ? 2 : 3,
-                backdropFilter: 'blur(10px)',
-              }}>
-                <Typography variant={isMobile ? 'h2' : 'h1'} sx={{ color: 'white', fontWeight: 800, letterSpacing: 2 }}>
-                  TT
-                </Typography>
-              </Box>
-              <Typography variant={isMobile ? 'h4' : 'h2'} sx={{ color: 'white', fontWeight: 700, mb: 1, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-                {slide.title}
-              </Typography>
-              {slide.subtitle && (
-                <Typography variant={isMobile ? 'h6' : 'h4'} sx={{ color: 'rgba(255,255,255,0.9)', fontWeight: 400, mb: isMobile ? 2 : 3 }}>
-                  {slide.subtitle}
-                </Typography>
+              {!slide.image && (
+                <>
+                  <Typography variant={isMobile ? 'h4' : 'h2'} sx={{ color: 'white', fontWeight: 700, mb: 1, textShadow: '0 2px 8px rgba(0,0,0,0.35)' }}>
+                    {slide.title}
+                  </Typography>
+                  {slide.subtitle && (
+                    <Typography variant={isMobile ? 'h6' : 'h4'} sx={{ color: 'rgba(255,255,255,0.9)', fontWeight: 400, mb: isMobile ? 2 : 3 }}>
+                      {slide.subtitle}
+                    </Typography>
+                  )}
+                </>
               )}
               <Stack direction="row" spacing={2} sx={{ mt: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
                 {(slide.ctaMenu || i === 0) && (
