@@ -138,7 +138,7 @@ export default function Navbar() {
               width: 26,
               height: 18,
               borderRadius: '4px',
-              backgroundImage: `url(${currentLang.flag})`,
+              backgroundImage: `url("${currentLang.flag}")`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -178,7 +178,7 @@ export default function Navbar() {
                       width: 26,
                       height: 18,
                       borderRadius: '3px',
-                      backgroundImage: `url(${lang.flag})`,
+                      backgroundImage: `url("${lang.flag}")`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                     }}
