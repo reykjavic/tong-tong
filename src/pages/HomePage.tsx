@@ -15,9 +15,9 @@ function HeroSection() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   const slides = [
-    { bg: 'linear-gradient(135deg, #00A896 0%, #008080 100%)', title: t('home.hero.title1'), subtitle: t('home.hero.title2'), ctaMenu: true },
+    { bg: 'linear-gradient(135deg, #00695C 0%, #004D40 100%)', title: t('home.hero.title1'), subtitle: t('home.hero.title2'), ctaMenu: true },
     { bg: 'linear-gradient(135deg, #2B2D42 0%, #1a1b2e 100%)', title: t('buffet.title'), subtitle: t('home.buffet.subtitle'), ctaMenu: false },
-    { bg: 'linear-gradient(135deg, #00A896 0%, #2B2D42 100%)', title: t('contact.title'), subtitle: '', ctaContact: true },
+    { bg: 'linear-gradient(135deg, #7B1F2B 0%, #4A1018 100%)', title: t('contact.title'), subtitle: '', ctaContact: true },
   ]
 
   return (
@@ -71,7 +71,7 @@ function HeroSection() {
               <Stack direction="row" spacing={2} sx={{ mt: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
                 {(slide.ctaMenu || i === 0) && (
                   <Button variant="contained" component={Link} to="/menu" sx={{
-                    bgcolor: '#fff', color: '#00A896', fontWeight: 700, px: 4, py: 1.2, fontSize: '1.1rem',
+                    bgcolor: '#fff', color: theme.palette.primary.main, fontWeight: 700, px: 4, py: 1.2, fontSize: '1.1rem',
                     '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
                   }}>
                     {t('home.hero.ctaMenu')}
@@ -138,7 +138,7 @@ function LatestNewsSection() {
           <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3, lineHeight: 1.7 }}>
             {t('home.buffet.subtitle')}
           </Typography>
-          <Button variant="contained" sx={{ bgcolor: theme.palette.primary.main, fontWeight: 600, '&:hover': { bgcolor: '#009686' } }}>
+          <Button variant="contained" sx={{ bgcolor: theme.palette.primary.main, fontWeight: 600, '&:hover': { bgcolor: theme.palette.primary.dark } }}>
             {t('home.latestNews.readMore')}
           </Button>
         </Box>
@@ -199,7 +199,7 @@ function BuffetTeaserSection() {
         <Box sx={{ textAlign: 'center', mt: 4 }}>
           <Button variant="contained" component={Link} to="/buffet" sx={{
             bgcolor: theme.palette.primary.main, fontWeight: 600, px: 5, py: 1.2, fontSize: '1.05rem',
-            '&:hover': { bgcolor: '#009686' },
+            '&:hover': { bgcolor: theme.palette.primary.dark },
           }}>
             {t('home.buffet.cta')}
           </Button>
