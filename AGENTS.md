@@ -10,7 +10,7 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 ## General Instructions
 1. **Read the SPEC first** - Always reference `SPEC.md` for project requirements before making decisions.
 2. **MUI is mandatory** - All UI components must use Material UI (MUI v5/v6). Do not suggest custom CSS solutions when MUI equivalents exist.
-3. **Turquoise theme** - The primary color is `#00A896`. Use it consistently across all components.
+3. **Deep teal + burgundy theme** - The primary color is `#00695C` (deep teal), secondary `#7B1F2B` (burgundy). Use them consistently across all components. See `src/theme.ts` for the canonical palette.
 4. **Mobile-first approach** - All designs must be responsive. Default to mobile views.
 5. **German legal requirements** - This is a German business website. Impressum and Datenschutz (privacy) are legally required.
 

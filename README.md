@@ -46,8 +46,9 @@ npm run preview
 
 ## Color Palette
 
-- **Primary:** `#00A896` (Turquoise)
-- **Accent:** [TBD]
+- **Primary:** `#00695C` (Deep teal)
+- **Secondary:** `#7B1F2B` (Burgundy)
+- **Background:** `#FAFAFA`
 
 ## Translations
 

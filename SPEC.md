@@ -4,7 +4,7 @@
 - **Name:** China Restaurant Tong Tong (Braunfels)
 - **Goal:** Replace the legacy TYPO3 site with a lightweight, modern, mobile-responsive website integrated with Decap CMS for easy news/posts management.
 - **Vibe & Design Tone:** Clean & minimalist with a subtle, modern East Asian aesthetic (e.g., generous white space, refined typography, subtle accents).
-- **Primary Color:** **Turquoise** (`#00A896` / `#008080`), inspired by the restaurant's interior seating, implemented as the main theme primary color in MUI.
+- **Primary Color:** **Deep teal** (`#00695C`), implemented as the main theme primary color in MUI, with a burgundy secondary accent (`#7B1F2B`).
 
 ---
 
@@ -37,13 +37,13 @@
   - **IP-based detection:** If IP is from Germany → default to German; otherwise → default to English
   - **Browser detection:** Fall back to `navigator.language` or `navigator.languages` if IP detection unavailable
   - **Manual override:** User can always switch between DE and EN via the toggle, with preference saved in localStorage
-- **Mobile Navigation:** Responsive MUI `IconButton` with `MenuIcon` opening a slide-out `Drawer` featuring turquoise accents.
+- **Mobile Navigation:** Responsive MUI `IconButton` with `MenuIcon` opening a slide-out `Drawer` featuring primary-color accents.
 
 ### B. Home / Landing Page
 1. **Hero Section (Carousel):**
    - Modern image carousel displaying key restaurant highlights.
-   - Smooth auto-play with manual slide controls using MUI `IconButton` with custom turquoise palette.
-   - CTA buttons (e.g., MUI `Button` variant="contained" in turquoise) for *"Speisekarte Ansehen"* or *"Kontakt"*.
+   - Smooth auto-play with manual slide controls using MUI `IconButton` with custom primary palette.
+   - CTA buttons (e.g., MUI `Button` variant="contained" in primary) for *"Speisekarte Ansehen"* or *"Kontakt"*.
 2. **Latest News / Post Section:**
    - Display section directly below the carousel showing the **single most recent post** managed via Decap CMS.
    - Card container with title, publish date, short snippet, optional featured image, and a "Read More" button.
@@ -85,11 +85,14 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#00A896', // Primary Turquoise matching interior
+      main: '#00695C', // Deep teal
+      dark: '#004D40',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#2B2D42', // Dark slate for high contrast
+      main: '#7B1F2B', // Burgundy accent
+      dark: '#4A1018',
+      contrastText: '#ffffff',
     },
     background: {
       default: '#FAFAFA',
@@ -109,7 +112,7 @@ export default theme;
 ## 6. Guidelines for AI Coding Assistants (Copilot / Cursor / Claude)
 > **Instructions for the AI when reading this repository:**
 > 1. Use **Material UI (MUI)** for all UI components, layout (`Grid`, `Stack`, `Box`, `Container`), and styling (`sx` prop or `styled` utility).
-> 2. Wrap the application root in MUI's `ThemeProvider` using the turquoise custom theme setup in `/src/theme.js`.
+> 2. Wrap the application root in MUI's `ThemeProvider` using the custom theme setup in `/src/theme.ts`.
 > 3. Use **Wouter** for routing — not Next.js App Router. Routes defined with `<Route>` components (e.g., `<Route path="/" component={Home} />`).
 > 4. Create the Decap CMS `config.yml` in `/public/admin/` to manage post fields (title, date, featured_image, body).
 > 5. Fetch and parse Markdown files from `/content/posts/` to dynamically load the latest post on the Homepage hero sub-section and on the `/posts` page.
