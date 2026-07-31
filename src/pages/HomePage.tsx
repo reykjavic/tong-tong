@@ -8,14 +8,24 @@ import 'swiper/css/navigation'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Autoplay, Pagination, Navigation as SwiperNavigation } from 'swiper/modules'
 import { Link } from 'wouter'
+import heroImage from '../assets/images/legacy-background-image.jpg'
+
+interface HeroSlide {
+  bg?: string
+  image?: string
+  title: string
+  subtitle: string
+  ctaMenu?: boolean
+  ctaContact?: boolean
+}
 
 function HeroSection() {
   const { t } = useI18n()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
-  const slides = [
-    { bg: 'linear-gradient(135deg, #00695C 0%, #004D40 100%)', title: t('home.hero.title1'), subtitle: t('home.hero.title2'), ctaMenu: true },
+  const slides: HeroSlide[] = [
+    { image: heroImage, title: t('home.hero.title1'), subtitle: t('home.hero.title2'), ctaMenu: true },
     { bg: 'linear-gradient(135deg, #2B2D42 0%, #1a1b2e 100%)', title: t('buffet.title'), subtitle: t('home.buffet.subtitle'), ctaMenu: false },
     { bg: 'linear-gradient(135deg, #7B1F2B 0%, #4A1018 100%)', title: t('contact.title'), subtitle: '', ctaContact: true },
   ]
@@ -41,7 +51,9 @@ function HeroSection() {
               alignItems: 'center',
               justifyContent: 'center',
               textAlign: 'center',
-              background: slide.bg,
+              background: slide.image
+                ? `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url(${slide.image}) center/cover no-repeat`
+                : slide.bg,
               px: 2,
               py: { xs: 4, sm: 6 },
             }}>
