@@ -19,6 +19,8 @@
     },
     "latestNews": {
       "title": "Latest News",
+      "subtitle": "News and updates from our restaurant",
+      "badge": "New",
       "readMore": "Read More"
     },
     "buffet": {
@@ -38,6 +40,10 @@
       "saturday": "Saturday",
       "sunday": "Sunday"
     }
+  },
+  "posts": {
+    "title": "News",
+    "noPosts": "No news yet."
   },
   "about": {
     "title": "About Us",

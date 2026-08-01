@@ -1,0 +1,31 @@
+backend:
+  name: github
+  repo: reykjavic/tong-tong
+  branch: main
+  # TODO: fill in the deployed API Gateway invoke URL after setting up the
+  # GitHub OAuth provider (see docs/decap-oauth.md). Example:
+  #   base_url: https://abcdef1234.execute-api.eu-central-1.amazonaws.com
+  base_url: https://<API-GATEWAY-ID>.execute-api.eu-central-1.amazonaws.com
+  auth_endpoint: /auth
+  # site_domain is intentionally omitted: Decap falls back to the current
+  # hostname, so the admin works on the CloudFront site and in local dev.
+
+media_folder: public/images
+public_folder: /images
+show_preview_links: false # no post detail pages exist yet
+
+collections:
+  - name: posts
+    label: "News / Beiträge"
+    folder: content/posts
+    create: true
+    delete: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: "Titel", name: title, widget: string }
+      - { label: "Datum", name: date, widget: datetime }
+      - { label: "Titelbild", name: featured_image, widget: image, required: false }
+      - { label: "Kurzbeschreibung", name: excerpt, widget: text, required: false }
+      - { label: "Inhalt", name: body, widget: markdown } # must be the last field

@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n'
-import { Box, Container, Paper, Typography, Button, Chip, Grid, Card, CardContent, useTheme, useMediaQuery, Stack } from '@mui/material'
+import { Box, Container, Paper, Typography, Button, Chip, Grid, Card, CardContent, Skeleton, useTheme, useMediaQuery, Stack } from '@mui/material'
+import { usePosts, formatPostDate } from '../posts'
 import { AccessTime } from '@mui/icons-material'
 import { useState, useEffect } from 'react'
 import 'swiper/css'
@@ -97,9 +98,11 @@ function HeroSection() {
 }
 
 function LatestNewsSection() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const { status, posts } = usePosts()
+  const post = posts[0]
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 6 } }}>
@@ -107,44 +110,69 @@ function LatestNewsSection() {
         {t('home.latestNews.title')}
       </Typography>
       <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4 }}>
-        {t('home.buffet.subtitle')}
+        {t('home.latestNews.subtitle')}
       </Typography>
-      <Paper elevation={3} sx={{
-        borderRadius: 3,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: isMobile ? 'column' : 'row',
-        bgcolor: theme.palette.background.paper,
-      }}>
-        <Box sx={{
-          width: isMobile ? '100%' : 280,
-          height: isMobile ? 200 : 'auto',
-          bgcolor: `linear-gradient(135deg, ${theme.palette.primary.main}40, ${theme.palette.secondary.main}60)`,
-          background: `linear-gradient(135deg, ${theme.palette.primary.main}40, ${theme.palette.secondary.main}60)`,
+      {status === 'loading' && (
+        <Paper elevation={3} sx={{ borderRadius: 3, overflow: 'hidden', display: 'flex', flexDirection: isMobile ? 'column' : 'row' }}>
+          <Skeleton variant="rectangular" sx={{ width: isMobile ? '100%' : 280, height: isMobile ? 200 : 'auto', borderRadius: 0 }} />
+          <Box sx={{ p: { xs: 3, sm: 4 }, flex: 1 }}>
+            <Skeleton variant="text" width="30%" sx={{ mb: 2 }} />
+            <Skeleton variant="text" width="60%" sx={{ mb: 1 }} />
+            <Skeleton variant="text" width="40%" sx={{ mb: 2 }} />
+            <Skeleton variant="text" />
+            <Skeleton variant="text" width="90%" />
+            <Skeleton variant="text" width="70%" sx={{ mb: 3 }} />
+            <Skeleton variant="rectangular" width={140} height={40} sx={{ borderRadius: 2 }} />
+          </Box>
+        </Paper>
+      )}
+      {(status === 'error' || (status === 'ready' && !post)) && (
+        <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+          {t('posts.noPosts')}
+        </Typography>
+      )}
+      {status === 'ready' && post && (
+        <Paper elevation={3} sx={{
+          borderRadius: 3,
+          overflow: 'hidden',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          bgcolor: theme.palette.background.paper,
         }}>
-          <Typography variant={isMobile ? 'h5' : 'h2'} sx={{ color: 'rgba(255,255,255,0.4)', fontWeight: 800 }}>
-            TT
-          </Typography>
-        </Box>
-        <Box sx={{ p: { xs: 3, sm: 4 }, flex: 1 }}>
-          <Chip label="Neu" size="small" sx={{ bgcolor: theme.palette.primary.main, color: 'white', fontWeight: 600, mb: 2 }} />
-          <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: 700, mb: 1 }}>
-            {t('buffet.title')}
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 2 }}>
-            {new Date().toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' })}
-          </Typography>
-          <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3, lineHeight: 1.7 }}>
-            {t('home.buffet.subtitle')}
-          </Typography>
-          <Button variant="contained" sx={{ bgcolor: theme.palette.primary.main, fontWeight: 600, '&:hover': { bgcolor: theme.palette.primary.dark } }}>
-            {t('home.latestNews.readMore')}
-          </Button>
-        </Box>
-      </Paper>
+          {post.featuredImage ? (
+            <Box component="img" src={post.featuredImage} alt={post.title} sx={{ width: isMobile ? '100%' : 280, height: isMobile ? 200 : 'auto', objectFit: 'cover' }} />
+          ) : (
+            <Box sx={{
+              width: isMobile ? '100%' : 280,
+              height: isMobile ? 200 : 'auto',
+              bgcolor: `linear-gradient(135deg, ${theme.palette.primary.main}40, ${theme.palette.secondary.main}60)`,
+              background: `linear-gradient(135deg, ${theme.palette.primary.main}40, ${theme.palette.secondary.main}60)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Typography variant={isMobile ? 'h5' : 'h2'} sx={{ color: 'rgba(255,255,255,0.4)', fontWeight: 800 }}>
+                TT
+              </Typography>
+            </Box>
+          )}
+          <Box sx={{ p: { xs: 3, sm: 4 }, flex: 1 }}>
+            <Chip label={t('home.latestNews.badge')} size="small" sx={{ bgcolor: theme.palette.primary.main, color: 'white', fontWeight: 600, mb: 2 }} />
+            <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: 700, mb: 1 }}>
+              {post.title}
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 2 }}>
+              {formatPostDate(post.date, language)}
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3, lineHeight: 1.7 }}>
+              {post.excerpt}
+            </Typography>
+            <Button variant="contained" component={Link} to="/posts" sx={{ bgcolor: theme.palette.primary.main, fontWeight: 600, '&:hover': { bgcolor: theme.palette.primary.dark } }}>
+              {t('home.latestNews.readMore')}
+            </Button>
+          </Box>
+        </Paper>
+      )}
     </Container>
   )
 }

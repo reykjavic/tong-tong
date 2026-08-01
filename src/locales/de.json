@@ -19,6 +19,8 @@
     },
     "latestNews": {
       "title": "Aktuelles",
+      "subtitle": "Neuigkeiten und Updates aus unserem Haus",
+      "badge": "Neu",
       "readMore": "Mehr lesen"
     },
     "buffet": {
@@ -38,6 +40,10 @@
       "saturday": "Samstag",
       "sunday": "Sonntag"
     }
+  },
+  "posts": {
+    "title": "Aktuelles",
+    "noPosts": "Noch keine Neuigkeiten vorhanden."
   },
   "about": {
     "title": "Über uns",
