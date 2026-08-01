@@ -57,6 +57,7 @@ function stripMarkdown(md: string): string {
 async function fetchPosts(): Promise<Post[]> {
   const listRes = await fetch(
     `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${POSTS_DIR}?ref=${GITHUB_BRANCH}`,
+    { cache: 'no-store' },
   )
   if (listRes.status === 404) return [] // no posts directory on GitHub yet
   if (!listRes.ok) {
@@ -65,21 +66,30 @@ async function fetchPosts(): Promise<Post[]> {
   const entries = (await listRes.json()) as { name: string }[]
   const files = entries.filter((entry) => entry.name.endsWith('.md'))
 
-  const posts = await Promise.all(
-    files.map(async (file) => {
-      const raw = await (await fetch(rawUrl(`${POSTS_DIR}/${file.name}`))).text()
-      const { data, content } = matter(raw)
-      const slug = file.name.replace(/\.md$/, '')
-      return {
-        slug,
-        title: String(data.title ?? slug),
-        date: new Date(data.date ? String(data.date) : 0).toISOString(),
-        featuredImage: data.featured_image ? resolveMedia(String(data.featured_image)) : null,
-        excerpt: data.excerpt ? String(data.excerpt) : stripMarkdown(content),
-        content,
+  const results = await Promise.all(
+    files.map(async (file): Promise<Post | null> => {
+      try {
+        // 'no-store' guarantees a fresh 200 with a body (avoids 304 responses
+        // whose body fetch() can fail to materialize).
+        const raw = await (await fetch(rawUrl(`${POSTS_DIR}/${file.name}`), { cache: 'no-store' })).text()
+        const { data, content } = matter(raw)
+        const slug = file.name.replace(/\.md$/, '')
+        return {
+          slug,
+          title: String(data.title ?? slug),
+          date: new Date(data.date ? String(data.date) : 0).toISOString(),
+          featuredImage: data.featured_image ? resolveMedia(String(data.featured_image)) : null,
+          excerpt: data.excerpt ? String(data.excerpt) : stripMarkdown(content),
+          content,
+        }
+      } catch (err) {
+        // A single unparseable post shouldn't blank the whole list.
+        console.error(`Failed to load post ${file.name}:`, err)
+        return null
       }
     }),
   )
+  const posts = results.filter((post): post is Post => post !== null)
   return posts.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
 }
 
@@ -87,7 +97,12 @@ async function fetchPosts(): Promise<Post[]> {
 // StrictMode's double effect reuses the same promise instead of fetching twice.
 let cache: Promise<Post[]> | null = null
 export function getPosts(): Promise<Post[]> {
-  cache ??= fetchPosts()
+  cache ??= fetchPosts().catch((err) => {
+    // A failed fetch must not poison the cache forever — clear it so the next
+    // call retries instead of reusing a rejected promise.
+    cache = null
+    throw err
+  })
   return cache
 }
 
@@ -103,7 +118,8 @@ export function usePosts() {
         setPosts(result)
         setStatus('ready')
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load posts:', err)
         if (alive) setStatus('error')
       })
     return () => {
