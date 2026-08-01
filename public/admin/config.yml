@@ -2,10 +2,7 @@ backend:
   name: github
   repo: reykjavic/tong-tong
   branch: main
-  # TODO: fill in the deployed API Gateway invoke URL after setting up the
-  # GitHub OAuth provider (see docs/decap-oauth.md). Example:
-  #   base_url: https://abcdef1234.execute-api.eu-central-1.amazonaws.com
-  base_url: https://<API-GATEWAY-ID>.execute-api.eu-central-1.amazonaws.com
+  base_url: https://yrfw3pneu6.execute-api.eu-central-1.amazonaws.com
   auth_endpoint: /auth
   # site_domain is intentionally omitted: Decap falls back to the current
   # hostname, so the admin works on the CloudFront site and in local dev.
