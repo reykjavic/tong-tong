@@ -11,6 +11,20 @@ endpoint (this Lambda) that performs the OAuth handshake and hands the token
 back via `postMessage`. GitHub requires the callback URL to be HTTPS, which
 the API Gateway invoke URL provides.
 
+**The handshake protocol matters.** Decap's `NetlifyAuthenticator`
+(`decap-cms-lib-auth/src/netlify-auth.js`) expects a two-phase exchange, not a
+one-shot `postMessage`:
+
+1. The `/callback` page posts `authorizing:github` to the opener (admin window).
+2. Decap echoes `authorizing:github` back.
+3. The `/callback` page then posts
+   `authorization:github:success:{"token":...,"provider":"github"}` and closes.
+
+If the popup closes without the admin logging in, the provider is almost
+certainly sending the token in the wrong shape (e.g. a bare object) or skipping
+the handshake — Decap's listener only accepts the `authorization:github:...`
+string format. The handler in `decap-oauth/index.mjs` implements this exactly.
+
 **The site's runtime post fetching does NOT depend on this.** It reads public
 content from the GitHub API / raw.githubusercontent.com with no auth. The
 admin (writing back) is the only part that needs the OAuth provider.
@@ -95,10 +109,14 @@ prefix in the GitHub OAuth app callback and configure the routes accordingly).
 - **"Incorrect redirect_uri"** → the callback URL registered in the GitHub
   OAuth app must equal `https://<gateway-domain>/callback` exactly (including
   the stage prefix if you didn't use `$default`).
-- **Popup closes but login doesn't complete** → check the browser console for
-  a `postMessage` origin mismatch. `site_domain` defaults to the current
-  hostname; the Lambda posts to `https://<site_domain>`. Both the admin page
-  and this value must be HTTPS for production.
+- **Popup closes but login doesn't complete** → this is usually the handshake
+  protocol mismatch, not an origin issue. The `/callback` page must send the
+  `authorization:github:success:<json>` string (see "The handshake protocol"
+  above) after the `authorizing:github` echo. A bare `{ token }` object or a
+  one-shot postMessage is silently ignored by Decap. Check the Lambda
+  CloudWatch logs to confirm the token exchange succeeded, and that the
+  handler's `site_id`/origin matches the admin's host (both HTTPS for
+  production).
 - **Admin shows "Failed to load entries"** → verify `GITHUB_CLIENT_ID` /
   `GITHUB_CLIENT_SECRET` env vars and that the token exchange (`/callback`)
   returns 200.
