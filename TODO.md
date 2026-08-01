@@ -16,8 +16,8 @@ CI/CD: GitHub Actions workflow `.github/workflows/deploy.yml` (auto-deploys on p
 ### HTTPS via CloudFront — in progress (testing on default `*.cloudfront.net` URL, no custom domain yet)
 - [x] **CloudFront distribution** in front of the bucket: OAC origin, redirect HTTP→HTTPS, **custom error responses `403/404 → /index.html`** (this fixes SPA deep links like `/posts` — **done**), default root `index.html`.
 - [x] **CloudFront invalidation step in workflow** — `.github/workflows/deploy.yml` now runs `aws cloudfront create-invalidation ... --paths "/*"` after `s3 sync`.
-- [ ] **AWS-side for invalidation**: add `cloudfront:CreateInvalidation` to the `emon` IAM policy + set GitHub **variable** `CLOUDFRONT_DISTRIBUTION_ID` to the new distribution ID.
-- [ ] **Verify** homepage + `/menu` deep link on `https://<distribution-id>.cloudfront.net` (old `http://` S3 URL stays working meanwhile as fallback).
+- [x] **AWS-side for invalidation**: `cloudfront:CreateInvalidation` added to the `emon` IAM policy + GitHub variable `CLOUDFRONT_DISTRIBUTION_ID` set.
+- [x] **Verify** homepage + `/menu` deep link on `https://<distribution-id>.cloudfront.net` (old `http://` S3 URL stays working meanwhile as fallback).
 
 When a real domain is chosen (later):
 - [ ] **ACM certificate** (us-east-1) for the domain + DNS validation.
@@ -46,7 +46,7 @@ Goal: separate a protected **staging** env from public **production**, and later
 
 ## �💡 Ideas / optional
 - [ ] Preview deploy for feature branches (separate preview bucket) before merging to `main`
-- [ ] Update `SPEC.md` / `README.md` / `AGENTS.md` primary color docs (they still reference old `#00A896`; current theme uses `#00695C` deep teal + `#7B1F2B` burgundy)
+- [x] Updated `SPEC.md` / `README.md` / `AGENTS.md` to reference `#00695C` deep teal + `#7B1F2B` burgundy (old `#00A896` turquoise is gone)
 
 ## ✅ Posts / Decap CMS — implemented & live
 - [x] Decap CMS admin at `/admin/` (CDN script, `public/admin/config.yml`) with GitHub backend
@@ -58,4 +58,4 @@ Goal: separate a protected **staging** env from public **production**, and later
 ## 🔜 Posts — next time
 - [ ] **Post detail view** (`/posts/:slug`): render a single post on its own page
 - [ ] After detail views exist, point the homepage "Read More" at the post detail (currently → `/posts`) or remove it per product decision
-- [ ] Consider: remove unused `gray-matter` dependency from `package.json` (was replaced by inline parser)
+- [x] Removed unused `gray-matter` dependency from `package.json` (was replaced by inline parser)
