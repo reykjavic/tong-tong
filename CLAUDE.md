@@ -24,7 +24,7 @@ There is no test suite and no lint script configured. Use `npx tsc --noEmit` for
 - **Theme (`src/theme.ts`):** MUI `createTheme`. **Color palette:** primary deep teal `#00695C` (dark `#004D40`), secondary burgundy `#7B1F2B` (dark `#4A1018`), background `#FAFAFA`. `theme.ts` is the canonical source (older docs once claimed turquoise `#00A896`; that's been corrected). The navbar brand box is intentionally neon green `#39FF14` with red text. `HomePage.tsx` also uses hardcoded gradients of these colors.
 - **Layout conventions:** MUI components + `sx` prop (or `styled`); `Container maxWidth="lg"` + responsive `{ xs, sm }` values; pages follow a `Box > Container > Paper` pattern. Mobile-first via `useMediaQuery(theme.breakpoints.down('sm'))`.
 - **Path alias:** `@/` → `src/` (configured in both `vite.config.ts` and `tsconfig.json`).
-- **Home page (`src/pages/HomePage.tsx`):** Swiper carousel hero, latest-news card, buffet teaser cards, and an opening-hours section with a live open/closed chip (client-side time check; the check logic only handles weekday lunch/dinner and does not exactly match the displayed Sunday/Monday hours).
+- **Home page (`src/pages/HomePage.tsx`):** Swiper carousel hero, latest-news card, buffet teaser cards, and an opening-hours section (weekday columns × time rows for Öffnungszeiten / Mittagstisch / buffet) with a live open/closed chip (client-side check: closed Mondays, lunch 11:30–14:30, dinner 17:30–22:30) and a reservation note.
 
 ## Conventions & constraints
 

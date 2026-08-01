@@ -38,7 +38,17 @@
       "thursday": "Thursday",
       "friday": "Friday",
       "saturday": "Saturday",
-      "sunday": "Sunday"
+      "sunday": "Sunday",
+      "mondayShort": "Mon",
+      "tuesdayShort": "Tue",
+      "wednesdayShort": "Wed",
+      "thursdayShort": "Thu",
+      "fridayShort": "Fri",
+      "saturdayShort": "Sat",
+      "sundayShort": "Sun",
+      "lunchTitle": "Lunch Special",
+      "buffetTitle": "All-You-Can-Eat Buffet",
+      "reservation": "Reservations of 15+ guests (e.g. birthdays or similar events) can be arranged on any day – just give us a call."
     }
   },
   "posts": {
@@ -81,7 +91,6 @@
   },
   "common": {
     "languageToggle": "DE",
-    "footer": "© 2026 China Restaurant Tong Tong. All rights reserved.",
     "readMore": "Read More",
     "backToHome": "Back to Home"
   }

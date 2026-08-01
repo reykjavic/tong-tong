@@ -38,7 +38,17 @@
       "thursday": "Donnerstag",
       "friday": "Freitag",
       "saturday": "Samstag",
-      "sunday": "Sonntag"
+      "sunday": "Sonntag",
+      "mondayShort": "Mo",
+      "tuesdayShort": "Di",
+      "wednesdayShort": "Mi",
+      "thursdayShort": "Do",
+      "fridayShort": "Fr",
+      "saturdayShort": "Sa",
+      "sundayShort": "So",
+      "lunchTitle": "Mittagstisch",
+      "buffetTitle": "All-You-Can-Eat Buffet",
+      "reservation": "Bei einer Reservierung ab 15 Personen (z. B. Geburtstage oder ähnliche Veranstaltungen) auch an beliebigen Tagen organisierbar – kontaktieren Sie uns einfach telefonisch."
     }
   },
   "posts": {
@@ -81,7 +91,6 @@
   },
   "common": {
     "languageToggle": "EN",
-    "footer": "© 2026 China Restaurant Tong Tong. Alle Rechte vorbehalten.",
     "readMore": "Mehr lesen",
     "backToHome": "Zurück zur Startseite"
   }
