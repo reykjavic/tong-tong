@@ -1,4 +1,3 @@
-import matter from 'gray-matter'
 import { useEffect, useState } from 'react'
 
 export interface Post {
@@ -33,6 +32,31 @@ export function formatPostDate(iso: string, language: string): string {
     month: 'long',
     day: 'numeric',
   })
+}
+
+// Minimal YAML frontmatter parser (gray-matter depends on Node's Buffer,
+// which is unavailable in the browser). Handles the scalar fields Decap
+// writes for posts: title, date, featured_image, excerpt, body.
+function parseFrontmatter(raw: string): { data: Record<string, string>; content: string } {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(raw)
+  if (!match) return { data: {}, content: raw }
+  const data: Record<string, string> = {}
+  for (const line of match[1].split(/\r?\n/)) {
+    const idx = line.indexOf(':')
+    if (idx > 0) {
+      const key = line.slice(0, idx).trim()
+      let value = line.slice(idx + 1).trim()
+      // strip surrounding quotes
+      if (value.length >= 2 && (value[0] === '"' || value[0] === "'") && value[value.length - 1] === value[0]) {
+        value = value.slice(1, -1)
+      }
+      // drop inline YAML comments (a trailing # not preceded by a space is literal)
+      const hash = value.indexOf(' #')
+      if (hash > 0) value = value.slice(0, hash)
+      data[key] = value
+    }
+  }
+  return { data, content: raw.slice(match[0].length) }
 }
 
 function truncate(text: string, max = 180): string {
@@ -72,7 +96,7 @@ async function fetchPosts(): Promise<Post[]> {
         // 'no-store' guarantees a fresh 200 with a body (avoids 304 responses
         // whose body fetch() can fail to materialize).
         const raw = await (await fetch(rawUrl(`${POSTS_DIR}/${file.name}`), { cache: 'no-store' })).text()
-        const { data, content } = matter(raw)
+        const { data, content } = parseFrontmatter(raw)
         const slug = file.name.replace(/\.md$/, '')
         return {
           slug,
