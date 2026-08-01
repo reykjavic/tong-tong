@@ -32,6 +32,7 @@
       "title": "Opening Hours",
       "open": "Open",
       "closed": "Closed",
+      "closedLabel": "Closed",
       "monday": "Monday",
       "tuesday": "Tuesday",
       "wednesday": "Wednesday",
@@ -46,9 +47,14 @@
       "fridayShort": "Fri",
       "saturdayShort": "Sat",
       "sundayShort": "Sun",
+      "noonTitle": "Lunch",
+      "eveningTitle": "Dinner",
       "lunchTitle": "Lunch Special",
-      "buffetTitle": "All-You-Can-Eat Buffet",
-      "reservation": "Reservations of 15+ guests (e.g. birthdays or similar events) can be arranged on any day – just give us a call."
+      "buffetTitle": "Buffet",
+      "buffetNoonTitle": "Lunch Buffet",
+      "buffetEveningTitle": "Dinner Buffet",
+      "holidayShort": "Holidays",
+      "reservation": "The All-You-Can-Eat Buffet can be arranged on any day for reservations of 15+ guests (e.g. birthdays or similar events) – just give us a call."
     }
   },
   "posts": {
@@ -74,7 +80,12 @@
     "email": "Email",
     "map": "Google Maps",
     "hours": "Opening Hours",
-    "clickToCall": "Call Now"
+    "clickToCall": "Call Now",
+    "restaurantName": "China-Restaurant Tong Tong",
+    "street": "Europaplatz 2",
+    "city": "35619 Braunfels",
+    "phoneNumber": "+49 (0) 6442 931082",
+    "directions": "Directions"
   },
   "impressum": {
     "title": "Imprint",

@@ -1,8 +1,7 @@
 import { useI18n } from '../i18n'
-import { Box, Container, Paper, Typography, Button, Chip, Grid, Card, CardContent, Skeleton, useTheme, useMediaQuery, Stack, Divider, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material'
+import { Box, Container, Paper, Typography, Button, Chip, Grid, Card, CardContent, Skeleton, useTheme, useMediaQuery, Stack } from '@mui/material'
 import { usePosts, formatPostDate } from '../posts'
-import { AccessTime } from '@mui/icons-material'
-import { useState, useEffect } from 'react'
+import OpeningHours from '../components/OpeningHours'
 import 'swiper/css'
 import 'swiper/css/pagination'
 import 'swiper/css/navigation'
@@ -239,140 +238,13 @@ function BuffetTeaserSection() {
   )
 }
 
-function OpeningHoursSection() {
-  const { t } = useI18n()
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
-  const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    const checkStatus = () => {
-      const now = new Date()
-      const day = now.getDay()
-      const minutes = now.getHours() * 60 + now.getMinutes()
-      // Closed Mondays; otherwise open 11:30-14:30 (lunch) and 17:30-22:30 (dinner)
-      const isClosedDay = day === 1
-      const lunchTime = minutes >= 11 * 60 + 30 && minutes < 14 * 60 + 30
-      const dinnerTime = minutes >= 17 * 60 + 30 && minutes < 22 * 60 + 30
-      setIsOpen(!isClosedDay && (lunchTime || dinnerTime))
-    }
-    checkStatus()
-    const interval = setInterval(checkStatus, 60000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const dayShorts = [
-    t('home.hours.mondayShort'),
-    t('home.hours.tuesdayShort'),
-    t('home.hours.wednesdayShort'),
-    t('home.hours.thursdayShort'),
-    t('home.hours.fridayShort'),
-    t('home.hours.saturdayShort'),
-    t('home.hours.sundayShort'),
-  ]
-
-  const closed = t('home.hours.closed')
-  const dash = '–'
-  const regularHours = '11:30 – 14:30\n17:30 – 22:30'
-  const lunchHours = '11:30 – 14:30'
-  const buffetHours = '18:00 – 22:00'
-  const buffetSundayHours = '11:30 – 14:30\n18:00 – 22:00'
-
-  const rows = [
-    { label: t('home.hours.title'), values: [closed, regularHours, regularHours, regularHours, regularHours, regularHours, regularHours] },
-    { label: t('home.hours.lunchTitle'), values: [dash, lunchHours, lunchHours, lunchHours, lunchHours, lunchHours, dash] },
-    { label: t('home.hours.buffetTitle'), values: [dash, dash, dash, dash, buffetHours, buffetHours, buffetSundayHours] },
-  ]
-
-  return (
-    <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 6 } }}>
-      <Paper elevation={3} sx={{
-        borderRadius: 3,
-        overflow: 'hidden',
-        bgcolor: theme.palette.background.paper,
-      }}>
-        <Box sx={{
-          bgcolor: theme.palette.primary.main,
-          p: { xs: 3, sm: 4 },
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 2,
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <AccessTime sx={{ fontSize: 32, color: 'white' }} />
-            <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ color: 'white', fontWeight: 700 }}>
-              {t('home.hours.title')}
-            </Typography>
-          </Box>
-          <Chip
-            label={isOpen ? t('home.hours.open') : t('home.hours.closed')}
-            sx={{
-              bgcolor: isOpen ? '#4CAF50' : '#F44336',
-              color: 'white',
-              fontWeight: 700,
-              fontSize: '1rem',
-              px: 2,
-            }}
-          />
-        </Box>
-        <Box sx={{ p: { xs: 2, sm: 4 } }}>
-          <Box sx={{ overflowX: 'auto' }}>
-            <Table size="small" sx={{ minWidth: 640 }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 700, color: 'text.secondary', whiteSpace: 'nowrap', borderBottom: `2px solid ${theme.palette.primary.main}` }} />
-                  {dayShorts.map((d, i) => (
-                    <TableCell key={i} align="center" sx={{ fontWeight: 700, color: theme.palette.primary.main, whiteSpace: 'nowrap', borderBottom: `2px solid ${theme.palette.primary.main}` }}>
-                      {d}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((row, i) => (
-                  <TableRow key={i} sx={{ '&:last-child td': { borderBottom: 0 } }}>
-                    <TableCell sx={{ fontWeight: 700, color: 'text.secondary', whiteSpace: 'nowrap', fontSize: '0.85rem' }}>
-                      {row.label}
-                    </TableCell>
-                    {row.values.map((v, j) => {
-                      const isDisabled = v === closed || v === dash
-                      return (
-                        <TableCell key={j} align="center" sx={{
-                          whiteSpace: 'pre-line',
-                          lineHeight: 1.4,
-                          fontSize: '0.8rem',
-                          color: isDisabled ? theme.palette.text.disabled : theme.palette.primary.main,
-                          fontStyle: isDisabled ? 'italic' : 'normal',
-                          fontWeight: isDisabled ? 400 : 600,
-                        }}>
-                          {v}
-                        </TableCell>
-                      )
-                    })}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Box>
-          <Divider sx={{ my: 3 }} />
-          <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-            {t('home.hours.reservation')}
-          </Typography>
-        </Box>
-      </Paper>
-    </Container>
-  )
-}
-
 export default function Home() {
   return (
     <>
       <HeroSection />
       <LatestNewsSection />
       <BuffetTeaserSection />
-      <OpeningHoursSection />
+      <OpeningHours />
     </>
   )
 }
