@@ -8,7 +8,9 @@ import 'swiper/css/navigation'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Autoplay, Pagination, Navigation as SwiperNavigation } from 'swiper/modules'
 import { Link } from 'wouter'
-import heroImage from '../assets/images/legacy-background-image.jpg'
+import heroInterior1 from '../assets/images/hero-interior-1.webp'
+import heroInterior2 from '../assets/images/hero-interior-2.webp'
+import heroImage from '../assets/images/legacy-background-image.webp'
 
 interface HeroSlide {
   bg?: string
@@ -25,7 +27,9 @@ function HeroSection() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   const slides: HeroSlide[] = [
-    { image: heroImage, title: t('home.hero.title1'), subtitle: t('home.hero.title2'), ctaMenu: true },
+    { image: heroInterior1, title: t('home.hero.title1'), subtitle: t('home.hero.title2'), ctaMenu: true },
+    { image: heroInterior2, title: t('home.hero.title1'), subtitle: t('home.hero.title2'), ctaMenu: false },
+    { image: heroImage, title: t('home.hero.title1'), subtitle: t('home.hero.title2'), ctaMenu: false },
     { bg: 'linear-gradient(135deg, #7B1F2B 0%, #4A1018 100%)', title: t('contact.title'), subtitle: '', ctaContact: true },
   ]
 

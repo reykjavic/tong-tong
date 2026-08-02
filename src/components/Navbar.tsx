@@ -2,6 +2,7 @@ import { useState, type MouseEvent } from 'react'
 import {
   AppBar,
   Toolbar,
+  Container,
   Typography,
   Button,
   Box,
@@ -46,109 +47,114 @@ export default function Navbar() {
 
   return (
     <AppBar position="static" sx={{ bgcolor: 'primary.main' }}>
-      <Toolbar>
-        <Box
-          component={Link}
-          href="/"
-          aria-label="Tong Tong – Startseite"
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textDecoration: 'none',
-            borderRadius: 0.4,
-            bgcolor: '#39FF14',
-            px: 2.5,
-            py: 1.3,
-            gap: 1,
-            transition: 'transform 0.2s ease',
-            '&:hover': { transform: 'scale(1.05)' },
-          }}
-        >
-          <Typography
-            sx={{
-              color: 'red',
-              fontWeight: 900,
-              fontSize: '1.3rem',
-              letterSpacing: '0.05em',
-              fontFamily: '"Open Sans", sans-serif',
-              lineHeight: 1,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Tong Tong
-          </Typography>
-          <Typography
-            sx={{
-              color: 'red',
-              fontWeight: 700,
-              fontSize: '0.9rem',
-              fontFamily: '"PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif',
-              lineHeight: 1.2,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            冬冬饭店
-          </Typography>
-        </Box>
-        <Box sx={{ flexGrow: 1 }} />
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          {links.map((link) => (
-            <Button
-              key={link.href}
+      <Container maxWidth="lg">
+        <Toolbar disableGutters sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-start', minWidth: 0 }}>
+            <Box
               component={Link}
-              href={link.href}
-              color="inherit"
+              href="/"
+              aria-label="Tong Tong – Startseite"
               sx={{
-                fontFamily: 'Roboto, sans-serif',
-                fontWeight: 500,
-                textTransform: 'none',
-                fontSize: '0.95rem',
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' },
-                '&[data-wouter-link-active]': {
-                  borderBottom: '2px solid white',
-                  fontWeight: 700,
-                },
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textDecoration: 'none',
+                borderRadius: 0.4,
+                bgcolor: '#39FF14',
+                px: 2.5,
+                py: 1.3,
+                gap: 1,
+                transition: 'transform 0.2s ease',
+                '&:hover': { transform: 'scale(1.05)' },
               }}
             >
-              {t(link.key)}
+              <Typography
+                sx={{
+                  color: 'red',
+                  fontWeight: 900,
+                  fontSize: '1.3rem',
+                  letterSpacing: '0.05em',
+                  fontFamily: '"Open Sans", sans-serif',
+                  lineHeight: 1,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Tong Tong
+              </Typography>
+              <Typography
+                sx={{
+                  color: 'red',
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                  fontFamily: '"PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif',
+                  lineHeight: 1.2,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                冬冬饭店
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            {links.map((link) => (
+              <Button
+                key={link.href}
+                component={Link}
+                href={link.href}
+                color="inherit"
+                sx={{
+                  fontFamily: 'Roboto, sans-serif',
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  fontSize: '0.95rem',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' },
+                  '&[data-wouter-link-active]': {
+                    borderBottom: '2px solid white',
+                    fontWeight: 700,
+                  },
+                }}
+              >
+                {t(link.key)}
+              </Button>
+            ))}
+          </Box>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            {/* Language dropdown trigger */}
+            <Button
+              onClick={openLangMenu}
+              aria-haspopup="menu"
+              aria-expanded={langMenuOpen}
+              aria-label="Sprache wählen"
+              sx={{
+                height: 34,
+                px: 1,
+                gap: 0.5,
+                borderRadius: '8px',
+                color: '#fff',
+                bgcolor: 'rgba(255,255,255,0.15)',
+                textTransform: 'none',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
+              }}
+            >
+              <Box
+                sx={{
+                  width: 26,
+                  height: 18,
+                  borderRadius: '4px',
+                  backgroundImage: `url("${currentLang.flag}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              />
+              <Typography sx={{ fontWeight: 700, fontSize: '0.8rem', lineHeight: 1 }}>
+                {currentLang.label}
+              </Typography>
+              <ExpandMore sx={{ fontSize: 18, opacity: 0.9 }} />
             </Button>
-          ))}
-        </Box>
-        {/* Language dropdown trigger */}
-        <Button
-          onClick={openLangMenu}
-          aria-haspopup="menu"
-          aria-expanded={langMenuOpen}
-          aria-label="Sprache wählen"
-          sx={{
-            ml: 1,
-            height: 34,
-            px: 1,
-            gap: 0.5,
-            borderRadius: '8px',
-            color: '#fff',
-            bgcolor: 'rgba(255,255,255,0.15)',
-            textTransform: 'none',
-            '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
-          }}
-        >
-          <Box
-            sx={{
-              width: 26,
-              height: 18,
-              borderRadius: '4px',
-              backgroundImage: `url("${currentLang.flag}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          />
-          <Typography sx={{ fontWeight: 700, fontSize: '0.8rem', lineHeight: 1 }}>
-            {currentLang.label}
-          </Typography>
-          <ExpandMore sx={{ fontSize: 18, opacity: 0.9 }} />
-        </Button>
-        <Menu
+          </Box>
+        </Toolbar>
+      </Container>
+      <Menu
           anchorEl={langMenuAnchor}
           open={langMenuOpen}
           onClose={closeLangMenu}
@@ -192,7 +198,6 @@ export default function Navbar() {
             )
           })}
         </Menu>
-      </Toolbar>
     </AppBar>
   )
 }
