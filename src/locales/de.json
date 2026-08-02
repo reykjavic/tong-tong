@@ -9,6 +9,36 @@
     "impressum": "Impressum",
     "datenschutz": "Datenschutz"
   },
+  "meta": {
+    "home": {
+      "title": "Tong Tong – Chinesisches Restaurant in Braunfels",
+      "description": "China-Restaurant Tong Tong in Braunfels – über 30 Jahre asiatische Küche, Spezial-Buffet und TeppanYaki-Grill. Europaplatz 2, 35619 Braunfels."
+    },
+    "about": {
+      "title": "Über uns – China-Restaurant Tong Tong",
+      "description": "Erfahren Sie mehr über China-Restaurant Tong Tong – unsere Geschichte, über 30 Jahre asiatische Küche, Spezial-Buffet und TeppanYaki-Grill in Braunfels."
+    },
+    "menu": {
+      "title": "Speisekarte – China-Restaurant Tong Tong",
+      "description": "Entdecken Sie die Speisekarte von China-Restaurant Tong Tong – traditionelle asiatische Küche und eigene Kreationen."
+    },
+    "contact": {
+      "title": "Kontakt & Öffnungszeiten – China-Restaurant Tong Tong",
+      "description": "Kontakt und Öffnungszeiten von China-Restaurant Tong Tong in Braunfels – Telefon +49 (0) 6442 931082, Europaplatz 2."
+    },
+    "posts": {
+      "title": "Aktuelles – China-Restaurant Tong Tong",
+      "description": "Aktuelles und Neuigkeiten von China-Restaurant Tong Tong in Braunfels."
+    },
+    "impressum": {
+      "title": "Impressum – China-Restaurant Tong Tong",
+      "description": "Impressum von China-Restaurant Tong Tong – Angaben gemäß § 5 TMG."
+    },
+    "datenschutz": {
+      "title": "Datenschutzerklärung – China-Restaurant Tong Tong",
+      "description": "Datenschutzerklärung von China-Restaurant Tong Tong gemäß DSGVO."
+    }
+  },
   "home": {
     "hero": {
       "title1": "Willkommen bei",

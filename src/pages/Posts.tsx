@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n'
 import { PAGE_VERTICAL_PADDING } from '../layout'
+import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
 import { Box, Container, Typography, Paper, Button, Card, CardContent, CardMedia, Skeleton, useTheme } from '@mui/material'
 import { Link } from 'wouter'
 import { usePosts, formatPostDate, type Post } from '../posts'
@@ -52,6 +53,7 @@ export default function Posts() {
 
   return (
     <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
+      <VisuallyHiddenH1>{t('posts.title')}</VisuallyHiddenH1>
       {status === 'loading' && <LoadingCard />}
         {showEmpty && (
           <Paper elevation={2} sx={{ p: { xs: 3, sm: 6 }, borderRadius: 3 }}>

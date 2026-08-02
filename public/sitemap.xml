@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://tong-tong.eu/</loc>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://tong-tong.eu/about</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://tong-tong.eu/menu</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://tong-tong.eu/contact</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://tong-tong.eu/posts</loc>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://tong-tong.eu/impressum</loc>
+    <changefreq>yearly</changefreq>
+  </url>
+  <url>
+    <loc>https://tong-tong.eu/datenschutz</loc>
+    <changefreq>yearly</changefreq>
+  </url>
+</urlset>

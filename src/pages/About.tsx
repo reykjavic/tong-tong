@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n'
 import { PAGE_VERTICAL_PADDING } from '../layout'
+import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
 import { Box, Container, Paper, Typography, Grid, Card, CardContent, useTheme, useMediaQuery } from '@mui/material'
 
 export default function About() {
@@ -16,6 +17,7 @@ export default function About() {
 
   return (
     <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
+      <VisuallyHiddenH1>{t('about.title')}</VisuallyHiddenH1>
         <Paper elevation={3} sx={{ borderRadius: 3, p: { xs: 3, sm: 5 }, bgcolor: theme.palette.background.paper }}>
           <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: theme.palette.primary.main }}>
             {t('about.greeting')}

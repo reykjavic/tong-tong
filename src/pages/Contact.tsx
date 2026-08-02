@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n'
 import { PAGE_VERTICAL_PADDING } from '../layout'
+import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
 import { Box, Container, Typography, Paper, Button, Link as MuiLink, Grid, Divider, useTheme } from '@mui/material'
 import { Place, Phone } from '@mui/icons-material'
 import OpeningHours from '../components/OpeningHours'
@@ -14,6 +15,7 @@ export default function Contact() {
   return (
     <>
       <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
+        <VisuallyHiddenH1>{t('contact.title')}</VisuallyHiddenH1>
         <Grid container spacing={3}>
           <Grid item xs={12} md={5}>
             <Paper elevation={2} sx={{ p: { xs: 3, sm: 4 }, borderRadius: 3, height: '100%' }}>

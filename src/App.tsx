@@ -3,6 +3,7 @@ import { CssBaseline, Box, Container, Paper, ThemeProvider } from '@mui/material
 import theme from './theme'
 import { I18nProvider } from './i18n'
 import Navbar from './components/Navbar'
+import PageMeta from './components/PageMeta'
 import Footer from './components/Footer'
 import Home from './pages/HomePage'
 import About from './pages/About'
@@ -16,6 +17,7 @@ function RouterContent() {
   return (
     <>
       <CssBaseline />
+      <PageMeta />
       <Navbar />
       <Box
         component="main"

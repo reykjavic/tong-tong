@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n'
 import { PAGE_VERTICAL_PADDING } from '../layout'
+import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
 import { Box, Container, Paper, Button, useTheme } from '@mui/material'
 
 const MENU_PDF_URL = 'https://tong-tong.eu/wp-content/uploads/2025/12/Speisekarte-1.pdf'
@@ -10,6 +11,7 @@ export default function Menu() {
 
   return (
     <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
+      <VisuallyHiddenH1>{t('menu.title')}</VisuallyHiddenH1>
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <Button
             variant="contained"

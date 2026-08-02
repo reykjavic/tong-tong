@@ -3,6 +3,7 @@ import { PAGE_VERTICAL_PADDING } from '../layout'
 import { Box, Container, Paper, Typography, Button, Chip, Skeleton, useTheme, useMediaQuery, Stack } from '@mui/material'
 import { usePosts, formatPostDate } from '../posts'
 import OpeningHours from '../components/OpeningHours'
+import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
 import 'swiper/css'
 import 'swiper/css/pagination'
 import 'swiper/css/navigation'
@@ -181,8 +182,10 @@ function LatestNewsSection() {
 }
 
 export default function Home() {
+  const { t } = useI18n()
   return (
     <Box sx={{ py: PAGE_VERTICAL_PADDING }}>
+      <VisuallyHiddenH1>{t('meta.home.title')}</VisuallyHiddenH1>
       <HeroSection />
       <LatestNewsSection />
       <OpeningHours />

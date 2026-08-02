@@ -9,6 +9,36 @@
     "impressum": "Imprint",
     "datenschutz": "Privacy Policy"
   },
+  "meta": {
+    "home": {
+      "title": "Tong Tong – Chinese Restaurant in Braunfels",
+      "description": "China Restaurant Tong Tong in Braunfels – over 30 years of Asian cuisine, special buffet and TeppanYaki grill. Europaplatz 2, 35619 Braunfels."
+    },
+    "about": {
+      "title": "About Us – China Restaurant Tong Tong",
+      "description": "Learn more about China Restaurant Tong Tong – our history, over 30 years of Asian cuisine, special buffet and TeppanYaki grill in Braunfels."
+    },
+    "menu": {
+      "title": "Menu – China Restaurant Tong Tong",
+      "description": "Discover the menu of China Restaurant Tong Tong – traditional Asian cuisine and our own creations."
+    },
+    "contact": {
+      "title": "Contact & Opening Hours – China Restaurant Tong Tong",
+      "description": "Contact and opening hours of China Restaurant Tong Tong in Braunfels – phone +49 (0) 6442 931082, Europaplatz 2."
+    },
+    "posts": {
+      "title": "News – China Restaurant Tong Tong",
+      "description": "News and updates from China Restaurant Tong Tong in Braunfels."
+    },
+    "impressum": {
+      "title": "Imprint – China Restaurant Tong Tong",
+      "description": "Imprint of China Restaurant Tong Tong – information pursuant to § 5 TMG."
+    },
+    "datenschutz": {
+      "title": "Privacy Policy – China Restaurant Tong Tong",
+      "description": "Privacy policy of China Restaurant Tong Tong in accordance with the GDPR."
+    }
+  },
   "home": {
     "hero": {
       "title1": "Welcome to",

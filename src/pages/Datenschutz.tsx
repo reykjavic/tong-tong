@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n'
 import { PAGE_VERTICAL_PADDING } from '../layout'
+import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
 import { Box, Container, Paper, Typography, useTheme } from '@mui/material'
 
 export default function Datenschutz() {
@@ -17,6 +18,7 @@ export default function Datenschutz() {
 
   return (
     <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
+      <VisuallyHiddenH1>{t('datenschutz.title')}</VisuallyHiddenH1>
         <Paper elevation={3} sx={{ borderRadius: 3, p: { xs: 3, sm: 5 }, bgcolor: theme.palette.background.paper }}>
           <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.8, mb: 3 }}>
             {t('datenschutz.intro')}
