@@ -59,3 +59,15 @@ Goal: separate a protected **staging** env from public **production**, and later
 - [ ] **Post detail view** (`/posts/:slug`): render a single post on its own page
 - [ ] After detail views exist, point the homepage "Read More" at the post detail (currently → `/posts`) or remove it per product decision
 - [x] Removed unused `gray-matter` dependency from `package.json` (was replaced by inline parser)
+
+## 🔒 Decap CMS OAuth security — do immediately AFTER going live
+
+**Sequencing:** requires `tong-tong.eu` moved from Strato → AWS (ACM cert + DNS → CloudFront) first, so the Lambda's `site_id` allowlist has a stable production origin to validate against. Do this right after the domain cutover.
+
+**Problem (2026-08-02 audit):** the custom OAuth Lambda (`decap-oauth/index.mjs`) trusts the `state`/`site_id` param as the token destination and echoes `e.origin` back in postMessage. An attacker can phish a repo collaborator into authorizing from a malicious page and receive the `repo`-scoped token. No secrets are in the repo, and a random stranger's own token has no write access — so this is a phishing/open-redirect exposure, not "anyone can publish."
+
+- [ ] **Lambda allowlist**: validate `site_id`/state against an allowlist (production origin + `localhost:5173` for dev); refuse token delivery otherwise; close the `e.origin` echo in the `/callback` handshake
+- [ ] **`site_domain`** in `public/admin/config.yml` (defense-in-depth alongside the Lambda fix)
+- [ ] **Gate `/admin/`**: CloudFront Function basic-auth (like staging plan) or IP allowlist, since only the owner edits content
+- [ ] **Verify GitHub OAuth App**: registered callback URL is exactly the Lambda's `/callback`, nothing wildcarded
+- [ ] Consider rotating the GitHub OAuth App client secret before/after going live
