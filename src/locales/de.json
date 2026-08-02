@@ -63,15 +63,37 @@
   },
   "about": {
     "title": "Über uns",
-    "heading1": "Unsere Geschichte",
-    "heading2": "Was uns besonders macht",
-    "placeholder": "[Hier steht Text über die Geschichte von China Restaurant Tong Tong]"
+    "subtitle": "China-Restaurant in Braunfels",
+    "greeting": "Liebe Gäste,",
+    "intro1": "unser China-Restaurant Tong Tong ist seit über 30 Jahren Ihre Adresse für kulinarische Köstlichkeiten Asiens, mit der wir unsere Gäste verwöhnen möchten. Wir bedienen viele kulinarische Trends aus der traditionellen asiatischen Küche, die wir u. a. auf unseren Reisen rund um den Globus kennengelernt und nach Deutschland mitgebracht haben.",
+    "intro2": "Einerseits bereiten wir Gerichte auf traditionelle Art zu, zeichnen uns aber andererseits auch durch eigene Kreationen beim Zubereiten der Speisen aus. Diese Vielfältigkeit unseres Angebots kommt unseren Gästen zugute.",
+    "highlightsTitle": "Was uns auszeichnet",
+    "highlightsSubtitle": "Warum Gäste zu uns kommen",
+    "buffet": {
+      "title": "Spezial Buffet",
+      "text": "Unser Spezial Buffet erfreut sich immer größerer Beliebtheit."
+    },
+    "teppanyaki": {
+      "title": "TeppanYaki-Grill",
+      "text": "Frisch zubereitete Grillspezialitäten vom TeppanYaki-Grill."
+    },
+    "service": {
+      "title": "Service & Ambiente",
+      "text": "Unser freundlicher Service und ein stilvolles Ambiente sorgen für eine angenehme Atmosphäre."
+    },
+    "events": {
+      "title": "Feiern & Events",
+      "text": "Gerne richten wir Familienfeierlichkeiten und Jubiläen für Sie aus – inklusive kostenloser Gestaltung der Tischdekoration nach Ihren Wünschen."
+    },
+    "closing": "Wir freuen uns auf Sie!",
+    "signoff": "Ihr Tong Tong Team"
   },
   "menu": {
     "title": "Speisekarte",
     "subtitle": "Entdecken Sie unsere vielfältigen Gerichte",
     "pdfTitle": "Speisekarte (PDF)",
-    "download": "Herunterladen"
+    "download": "Herunterladen",
+    "openInNewTab": "Speisekarte in neuem Tab öffnen"
   },
   "contact": {
     "title": "Kontakt & Öffnungszeiten",
@@ -89,16 +111,47 @@
   },
   "impressum": {
     "title": "Impressum",
-    "heading": "Angemäß § 5 TMG",
-    "address": "Adresse",
-    "phone": "Telefon",
-    "email": "E-Mail",
-    "website": "Website"
+    "heading": "Angaben gemäß § 5 TMG",
+    "name": "China-Restaurant Tong Tong",
+    "representedBy": "Vertreten durch:",
+    "representatives": "Christine Mohr und Thomas Mohr",
+    "address": "Adresse:",
+    "street": "Europaplatz 2",
+    "city": "35619 Braunfels",
+    "phone": "Telefon:",
+    "phoneNumber": "+49 (0) 6442 931082",
+    "vatLabel": "Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:",
+    "vatNumber": "11 039 307 60187 56 1143",
+    "authorityLabel": "Aufsichtsbehörde:",
+    "authority": "Gewerbeamt Braunfels"
   },
   "datenschutz": {
     "title": "Datenschutzerklärung",
-    "heading": "Datenschutzerklärung",
-    "placeholder": "[Hier steht der Datenschutztext gemäß DSGVO]"
+    "intro": "Der Schutz Ihrer persönlichen Daten ist uns wichtig. Da unser Angebot bewusst ohne Registrierung, Formulare oder Tracking auskommt, verarbeiten wir nur die Daten, die beim Besuch einer Website technisch anfallen. Nachfolgend informieren wir Sie gemäß Art. 13 DSGVO über die Verarbeitung personenbezogener Daten.",
+    "controller": {
+      "title": "Verantwortlicher",
+      "text": "China-Restaurant Tong Tong, vertreten durch Christine Mohr und Thomas Mohr, Europaplatz 2, 35619 Braunfels, Tel.: +49 (0) 6442 931082."
+    },
+    "hosting": {
+      "title": "Hosting & Server-Logfiles",
+      "text": "Beim Besuch dieser Website verarbeitet unser Hosting-Anbieter automatisch technische Zugriffsdaten (u. a. IP-Adresse, Datum und Uhrzeit, aufgerufene Seiten). Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einem sicheren und stabilen Betrieb). Diese Daten werden nicht zusammengeführt und nicht für eine Profilerstellung verwendet."
+    },
+    "fonts": {
+      "title": "Google Fonts",
+      "text": "Zur einheitlichen Darstellung von Schriftarten lädt diese Website Google Fonts (Google LLC, USA). Beim Aufruf wird Ihre IP-Adresse an Google übertragen. Weitere Informationen finden Sie in der Datenschutzerklärung von Google (policies.google.com/privacy)."
+    },
+    "localStorage": {
+      "title": "Lokale Speicherung (localStorage)",
+      "text": "Ihre Sprachauswahl (Deutsch/Englisch) wird ausschließlich lokal in Ihrem Browser (localStorage) gespeichert. Diese Daten verlassen nicht Ihr Gerät und werden an uns nicht übermittelt."
+    },
+    "contact": {
+      "title": "Kontaktaufnahme",
+      "text": "Wenn Sie uns per Telefon oder E-Mail kontaktieren, verarbeiten wir Ihre Angaben ausschließlich zur Bearbeitung Ihrer Anfrage. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b bzw. f DSGVO."
+    },
+    "rights": {
+      "title": "Ihre Rechte",
+      "text": "Sie haben nach Maßgabe der DSGVO das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch sowie das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren."
+    }
   },
   "common": {
     "languageToggle": "EN",

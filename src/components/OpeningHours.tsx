@@ -106,16 +106,13 @@ export default function OpeningHours() {
               {/* Data rows */}
               {rows.map((row) => (
                 <Fragment key={row.key}>
-                  <Box sx={{
-                    fontWeight: 700,
-                    color: 'text.secondary',
-                    whiteSpace: 'pre-line',
-                    lineHeight: 1.3,
-                    fontSize: '0.85rem',
-                    py: 1.5,
-                    pr: 1,
-                  }}>
-                    {`${row.title}\n${row.time}`}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', py: 1.5, pr: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary', lineHeight: 1.3, fontSize: '1rem' }}>
+                      {row.title}
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.3, fontSize: { xs: '1rem', sm: '1.1rem' } }}>
+                      {row.time}
+                    </Typography>
                   </Box>
                   {row.days.map((available, j) => (
                     <Box key={j} sx={{

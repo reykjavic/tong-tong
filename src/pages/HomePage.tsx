@@ -1,5 +1,5 @@
 import { useI18n } from '../i18n'
-import { Box, Container, Paper, Typography, Button, Chip, Grid, Card, CardContent, Skeleton, useTheme, useMediaQuery, Stack } from '@mui/material'
+import { Box, Container, Paper, Typography, Button, Chip, Skeleton, useTheme, useMediaQuery, Stack } from '@mui/material'
 import { usePosts, formatPostDate } from '../posts'
 import OpeningHours from '../components/OpeningHours'
 import 'swiper/css'
@@ -26,7 +26,6 @@ function HeroSection() {
 
   const slides: HeroSlide[] = [
     { image: heroImage, title: t('home.hero.title1'), subtitle: t('home.hero.title2'), ctaMenu: true },
-    { bg: 'linear-gradient(135deg, #2B2D42 0%, #1a1b2e 100%)', title: t('buffet.title'), subtitle: t('home.buffet.subtitle'), ctaMenu: false },
     { bg: 'linear-gradient(135deg, #7B1F2B 0%, #4A1018 100%)', title: t('contact.title'), subtitle: '', ctaContact: true },
   ]
 
@@ -176,74 +175,11 @@ function LatestNewsSection() {
   )
 }
 
-function BuffetTeaserSection() {
-  const { t } = useI18n()
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
-
-  const items = [
-    { icon: '🥡', title: 'Flexibel', subtitle: 'Mehrere Buffet-Formate für jeden Anlass' },
-    { icon: '🥢', title: 'Frisch', subtitle: 'Täglich frische Auswahl für Sie zubereitet' },
-    { icon: '⭐', title: 'Beliebt', subtitle: 'Ein Favorit in Braunfels seit Jahren' },
-  ]
-
-  return (
-    <Box sx={{
-      py: { xs: 4, sm: 6 },
-      bgcolor: theme.palette.primary.main + '08',
-      borderTop: `1px solid ${theme.palette.primary.main}20`,
-      borderBottom: `1px solid ${theme.palette.primary.main}20`,
-    }}>
-      <Container maxWidth="lg">
-        <Typography variant={isMobile ? 'h5' : 'h3'} sx={{ fontWeight: 700, mb: 1, textAlign: 'center', color: theme.palette.primary.main }}>
-          {t('home.buffet.title')}
-        </Typography>
-        <Typography variant="body1" sx={{ color: 'text.secondary', mb: { xs: 4, sm: 5 }, textAlign: 'center' }}>
-          {t('home.buffet.subtitle')}
-        </Typography>
-        <Grid container spacing={3}>
-          {items.map((item, i) => (
-            <Grid item xs={12} sm={4} key={i}>
-              <Card sx={{
-                height: '100%',
-                borderRadius: 3,
-                bgcolor: theme.palette.background.paper,
-                boxShadow: `0 4px 20px ${theme.palette.primary.main}15`,
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                '&:hover': { transform: 'translateY(-4px)', boxShadow: `0 8px 30px ${theme.palette.primary.main}25` },
-              }}>
-                <CardContent sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography variant={isMobile ? 'h2' : 'h1'} sx={{ mb: 2 }}>{item.icon}</Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: theme.palette.primary.main }}>
-                    {item.title}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    {item.subtitle}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-        <Box sx={{ textAlign: 'center', mt: 4 }}>
-          <Button variant="contained" component={Link} to="/buffet" sx={{
-            bgcolor: theme.palette.primary.main, fontWeight: 600, px: 5, py: 1.2, fontSize: '1.05rem',
-            '&:hover': { bgcolor: theme.palette.primary.dark },
-          }}>
-            {t('home.buffet.cta')}
-          </Button>
-        </Box>
-      </Container>
-    </Box>
-  )
-}
-
 export default function Home() {
   return (
     <>
       <HeroSection />
       <LatestNewsSection />
-      <BuffetTeaserSection />
       <OpeningHours />
     </>
   )

@@ -11,7 +11,6 @@ import Contact from './pages/Contact'
 import Impressum from './pages/Impressum'
 import Datenschutz from './pages/Datenschutz'
 import Posts from './pages/Posts'
-import Buffet from './pages/Buffet'
 
 function RouterContent() {
   return (
@@ -31,7 +30,6 @@ function RouterContent() {
               <Route path="/" component={Home} />
               <Route path="/about" component={About} />
               <Route path="/menu" component={Menu} />
-              <Route path="/buffet" component={Buffet} />
               <Route path="/contact" component={Contact} />
               <Route path="/posts" component={Posts} />
               <Route path="/impressum" component={Impressum} />

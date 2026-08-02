@@ -63,15 +63,37 @@
   },
   "about": {
     "title": "About Us",
-    "heading1": "Our Story",
-    "heading2": "What Makes Us Special",
-    "placeholder": "[This is where the story of China Restaurant Tong Tong will be]"
+    "subtitle": "Chinese Restaurant in Braunfels",
+    "greeting": "Dear guests,",
+    "intro1": "our China Restaurant Tong Tong has been your address for Asian culinary delights for over 30 years, and we want to pamper our guests with them. We take up many culinary trends from traditional Asian cuisine, which we got to know on our travels around the globe and brought back to Germany.",
+    "intro2": "On the one hand we prepare our dishes the traditional way, but on the other hand we also distinguish ourselves through our own creations in preparing the food. This variety of our offerings benefits our guests.",
+    "highlightsTitle": "What Makes Us Special",
+    "highlightsSubtitle": "Why guests come to us",
+    "buffet": {
+      "title": "Special Buffet",
+      "text": "Our special buffet is becoming increasingly popular."
+    },
+    "teppanyaki": {
+      "title": "TeppanYaki Grill",
+      "text": "Freshly prepared grill specialties from the TeppanYaki grill."
+    },
+    "service": {
+      "title": "Service & Ambience",
+      "text": "Our friendly service and a stylish ambience create a pleasant atmosphere."
+    },
+    "events": {
+      "title": "Celebrations & Events",
+      "text": "We are happy to host family celebrations and anniversaries for you – including free table decoration designed to your wishes."
+    },
+    "closing": "We look forward to seeing you!",
+    "signoff": "The Tong Tong Team"
   },
   "menu": {
     "title": "Menu",
     "subtitle": "Discover our diverse dishes",
     "pdfTitle": "Menu (PDF)",
-    "download": "Download"
+    "download": "Download",
+    "openInNewTab": "Open menu in a new tab"
   },
   "contact": {
     "title": "Contact & Opening Hours",
@@ -89,16 +111,47 @@
   },
   "impressum": {
     "title": "Imprint",
-    "heading": "According to § 5 TMG",
-    "address": "Address",
-    "phone": "Phone",
-    "email": "Email",
-    "website": "Website"
+    "heading": "Information pursuant to § 5 TMG",
+    "name": "China-Restaurant Tong Tong",
+    "representedBy": "Represented by:",
+    "representatives": "Christine Mohr and Thomas Mohr",
+    "address": "Address:",
+    "street": "Europaplatz 2",
+    "city": "35619 Braunfels",
+    "phone": "Phone:",
+    "phoneNumber": "+49 (0) 6442 931082",
+    "vatLabel": "VAT identification number pursuant to § 27 a of the German Value Added Tax Act:",
+    "vatNumber": "11 039 307 60187 56 1143",
+    "authorityLabel": "Supervisory authority:",
+    "authority": "Gewerbeamt Braunfels"
   },
   "datenschutz": {
     "title": "Privacy Policy",
-    "heading": "Privacy Policy",
-    "placeholder": "[This is where the privacy policy text according to GDPR will be]"
+    "intro": "The protection of your personal data is important to us. Since our offer deliberately works without registration, forms or tracking, we only process the data that arises technically when visiting a website. Below we inform you in accordance with Art. 13 GDPR about the processing of personal data.",
+    "controller": {
+      "title": "Controller",
+      "text": "China-Restaurant Tong Tong, represented by Christine Mohr and Thomas Mohr, Europaplatz 2, 35619 Braunfels, phone: +49 (0) 6442 931082."
+    },
+    "hosting": {
+      "title": "Hosting & Server Log Files",
+      "text": "When you visit this website, our hosting provider automatically processes technical access data (including IP address, date and time, pages visited). The legal basis is Art. 6 (1) lit. f GDPR (legitimate interest in a secure and stable operation). This data is not merged and is not used for profiling."
+    },
+    "fonts": {
+      "title": "Google Fonts",
+      "text": "To display fonts consistently, this website loads Google Fonts (Google LLC, USA). When you call it up, your IP address is transmitted to Google. Further information can be found in Google's privacy policy (policies.google.com/privacy)."
+    },
+    "localStorage": {
+      "title": "Local Storage (localStorage)",
+      "text": "Your language selection (German/English) is stored exclusively locally in your browser (localStorage). This data does not leave your device and is not transmitted to us."
+    },
+    "contact": {
+      "title": "Contact",
+      "text": "If you contact us by phone or email, we process your details exclusively to handle your request. The legal basis is Art. 6 (1) lit. b or f GDPR."
+    },
+    "rights": {
+      "title": "Your Rights",
+      "text": "Under the GDPR you have the right to access, rectification, erasure, restriction of processing, data portability and objection, as well as the right to lodge a complaint with a data protection supervisory authority."
+    }
   },
   "common": {
     "languageToggle": "DE",
