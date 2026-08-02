@@ -103,8 +103,8 @@ export default function Navbar() {
                 href={link.href}
                 color="inherit"
                 sx={{
-                  fontFamily: 'Roboto, sans-serif',
-                  fontWeight: 500,
+                  fontFamily: 'Libre Franklin, sans-serif',
+                  fontWeight: 600,
                   textTransform: 'none',
                   fontSize: '0.95rem',
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' },

@@ -24,8 +24,8 @@ function RouterContent() {
           minHeight: 'calc(100vh - 64px)',
         }}
       >
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <Paper elevation={0} sx={{ p: { xs: 2, sm: 4 }, bgcolor: 'background.default' }}>
+        <Container maxWidth="lg" sx={{ py: 0 }}>
+          <Paper elevation={0} sx={{ p: 0, bgcolor: 'background.default' }}>
             <Switch>
               <Route path="/" component={Home} />
               <Route path="/about" component={About} />

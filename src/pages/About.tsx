@@ -1,4 +1,5 @@
 import { useI18n } from '../i18n'
+import { PAGE_VERTICAL_PADDING } from '../layout'
 import { Box, Container, Paper, Typography, Grid, Card, CardContent, useTheme, useMediaQuery } from '@mui/material'
 
 export default function About() {
@@ -14,23 +15,7 @@ export default function About() {
   ]
 
   return (
-    <Box>
-      <Box sx={{
-        py: { xs: 5, sm: 7 },
-        textAlign: 'center',
-        background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-      }}>
-        <Container maxWidth="lg">
-          <Typography variant={isMobile ? 'h4' : 'h2'} sx={{ color: 'white', fontWeight: 700 }}>
-            {t('about.title')}
-          </Typography>
-          <Typography variant={isMobile ? 'subtitle1' : 'h6'} sx={{ color: 'rgba(255,255,255,0.85)', fontWeight: 400, mt: 1 }}>
-            {t('about.subtitle')}
-          </Typography>
-        </Container>
-      </Box>
-
-      <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 6 } }}>
+    <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
         <Paper elevation={3} sx={{ borderRadius: 3, p: { xs: 3, sm: 5 }, bgcolor: theme.palette.background.paper }}>
           <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: theme.palette.primary.main }}>
             {t('about.greeting')}
@@ -82,7 +67,6 @@ export default function About() {
             {t('about.signoff')}
           </Typography>
         </Box>
-      </Container>
-    </Box>
+    </Container>
   )
 }

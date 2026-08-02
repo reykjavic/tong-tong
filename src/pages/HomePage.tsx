@@ -1,4 +1,5 @@
 import { useI18n } from '../i18n'
+import { PAGE_VERTICAL_PADDING } from '../layout'
 import { Box, Container, Paper, Typography, Button, Chip, Skeleton, useTheme, useMediaQuery, Stack } from '@mui/material'
 import { usePosts, formatPostDate } from '../posts'
 import OpeningHours from '../components/OpeningHours'
@@ -181,10 +182,10 @@ function LatestNewsSection() {
 
 export default function Home() {
   return (
-    <>
+    <Box sx={{ py: PAGE_VERTICAL_PADDING }}>
       <HeroSection />
       <LatestNewsSection />
       <OpeningHours />
-    </>
+    </Box>
   )
 }

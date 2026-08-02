@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n'
-import { Box, Container, Typography, Paper, Button, Link as MuiLink, Grid, Divider, useTheme, useMediaQuery } from '@mui/material'
+import { PAGE_VERTICAL_PADDING } from '../layout'
+import { Box, Container, Typography, Paper, Button, Link as MuiLink, Grid, Divider, useTheme } from '@mui/material'
 import { Place, Phone } from '@mui/icons-material'
 import OpeningHours from '../components/OpeningHours'
 
@@ -9,14 +10,10 @@ const MAPS_EMBED_URL =
 export default function Contact() {
   const { t } = useI18n()
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   return (
     <>
-      <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 6 } }}>
-        <Typography variant={isMobile ? 'h4' : 'h2'} sx={{ fontWeight: 700, mb: 3, color: theme.palette.primary.main }}>
-          {t('contact.title')}
-        </Typography>
+      <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={5}>
             <Paper elevation={2} sx={{ p: { xs: 3, sm: 4 }, borderRadius: 3, height: '100%' }}>

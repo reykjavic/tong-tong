@@ -18,7 +18,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica Neue", sans-serif',
+    fontFamily: '"Libre Franklin", "Helvetica Neue", helvetica, arial, sans-serif',
     h1: { fontWeight: 600 },
     h2: { fontWeight: 600 },
     h3: { fontWeight: 600 },

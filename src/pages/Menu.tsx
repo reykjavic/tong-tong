@@ -1,31 +1,15 @@
 import { useI18n } from '../i18n'
-import { Box, Container, Paper, Typography, Button, useTheme, useMediaQuery } from '@mui/material'
+import { PAGE_VERTICAL_PADDING } from '../layout'
+import { Box, Container, Paper, Button, useTheme } from '@mui/material'
 
 const MENU_PDF_URL = 'https://tong-tong.eu/wp-content/uploads/2025/12/Speisekarte-1.pdf'
 
 export default function Menu() {
   const { t } = useI18n()
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   return (
-    <Box>
-      <Box sx={{
-        py: { xs: 5, sm: 7 },
-        textAlign: 'center',
-        background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-      }}>
-        <Container maxWidth="lg">
-          <Typography variant={isMobile ? 'h4' : 'h2'} sx={{ color: 'white', fontWeight: 700 }}>
-            {t('menu.title')}
-          </Typography>
-          <Typography variant={isMobile ? 'subtitle1' : 'h6'} sx={{ color: 'rgba(255,255,255,0.85)', fontWeight: 400, mt: 1 }}>
-            {t('menu.subtitle')}
-          </Typography>
-        </Container>
-      </Box>
-
-      <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 6 } }}>
+    <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <Button
             variant="contained"
@@ -49,7 +33,6 @@ export default function Menu() {
             sx={{ width: '100%', height: { xs: 600, sm: 800 }, border: 'none', display: 'block' }}
           />
         </Paper>
-      </Container>
-    </Box>
+    </Container>
   )
 }

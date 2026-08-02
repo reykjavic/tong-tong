@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n'
-import { Box, Container, Typography, Paper, Button, Card, CardContent, CardMedia, Skeleton, useTheme, useMediaQuery } from '@mui/material'
+import { PAGE_VERTICAL_PADDING } from '../layout'
+import { Box, Container, Typography, Paper, Button, Card, CardContent, CardMedia, Skeleton, useTheme } from '@mui/material'
 import { Link } from 'wouter'
 import { usePosts, formatPostDate, type Post } from '../posts'
 import Markdown from '../components/Markdown'
@@ -45,19 +46,13 @@ function LoadingCard() {
 
 export default function Posts() {
   const { t, language } = useI18n()
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const { status, posts } = usePosts()
 
   const showEmpty = status === 'error' || (status === 'ready' && posts.length === 0)
 
   return (
-    <Box sx={{ minHeight: '60vh', py: { xs: 4, sm: 6 } }}>
-      <Container maxWidth="lg">
-        <Typography variant={isMobile ? 'h4' : 'h2'} sx={{ fontWeight: 700, mb: 1, color: theme.palette.primary.main }}>
-          {t('posts.title')}
-        </Typography>
-        {status === 'loading' && <LoadingCard />}
+    <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
+      {status === 'loading' && <LoadingCard />}
         {showEmpty && (
           <Paper elevation={2} sx={{ p: { xs: 3, sm: 6 }, borderRadius: 3 }}>
             <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3, lineHeight: 1.8 }}>
@@ -75,7 +70,6 @@ export default function Posts() {
             ))}
           </Box>
         )}
-      </Container>
-    </Box>
+    </Container>
   )
 }

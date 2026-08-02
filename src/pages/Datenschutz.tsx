@@ -1,10 +1,10 @@
 import { useI18n } from '../i18n'
-import { Box, Container, Paper, Typography, useTheme, useMediaQuery } from '@mui/material'
+import { PAGE_VERTICAL_PADDING } from '../layout'
+import { Box, Container, Paper, Typography, useTheme } from '@mui/material'
 
 export default function Datenschutz() {
   const { t } = useI18n()
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   const sections = [
     { title: t('datenschutz.controller.title'), text: t('datenschutz.controller.text') },
@@ -16,20 +16,7 @@ export default function Datenschutz() {
   ]
 
   return (
-    <Box>
-      <Box sx={{
-        py: { xs: 5, sm: 7 },
-        textAlign: 'center',
-        background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-      }}>
-        <Container maxWidth="lg">
-          <Typography variant={isMobile ? 'h4' : 'h2'} sx={{ color: 'white', fontWeight: 700 }}>
-            {t('datenschutz.title')}
-          </Typography>
-        </Container>
-      </Box>
-
-      <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 6 } }}>
+    <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
         <Paper elevation={3} sx={{ borderRadius: 3, p: { xs: 3, sm: 5 }, bgcolor: theme.palette.background.paper }}>
           <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.8, mb: 3 }}>
             {t('datenschutz.intro')}
@@ -45,7 +32,6 @@ export default function Datenschutz() {
             </Box>
           ))}
         </Paper>
-      </Container>
-    </Box>
+    </Container>
   )
 }
