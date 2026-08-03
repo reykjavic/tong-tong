@@ -32,13 +32,12 @@ function RouterContent() {
       <Box
         component="main"
         sx={{
-          bgcolor: 'background.default',
           minHeight: 'calc(100vh - 64px)',
           overflowX: 'hidden',
         }}
       >
         <Container maxWidth="lg" sx={{ py: 0 }}>
-          <Paper elevation={0} sx={{ p: 0, bgcolor: 'background.default' }}>
+          <Paper elevation={0} sx={{ p: 0, bgcolor: 'transparent' }}>
             <Switch>
               <Route path="/" component={Home} />
               <Route path="/about" component={About} />
