@@ -1,4 +1,5 @@
-import { Switch, Route } from 'wouter'
+import { useEffect } from 'react'
+import { Switch, Route, useLocation } from 'wouter'
 import { CssBaseline, Box, Container, Paper, ThemeProvider } from '@mui/material'
 import theme from './theme'
 import { I18nProvider } from './i18n'
@@ -13,10 +14,19 @@ import Impressum from './pages/Impressum'
 import Datenschutz from './pages/Datenschutz'
 import Posts from './pages/Posts'
 
+function ScrollToTop() {
+  const [location] = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
+  return null
+}
+
 function RouterContent() {
   return (
     <>
       <CssBaseline />
+      <ScrollToTop />
       <PageMeta />
       <Navbar />
       <Box
@@ -24,6 +34,7 @@ function RouterContent() {
         sx={{
           bgcolor: 'background.default',
           minHeight: 'calc(100vh - 64px)',
+          overflowX: 'hidden',
         }}
       >
         <Container maxWidth="lg" sx={{ py: 0 }}>

@@ -1,5 +1,4 @@
 import { useI18n } from '../i18n'
-import { PAGE_VERTICAL_PADDING } from '../layout'
 import { Box, Container, Paper, Typography, Button, Chip, Skeleton, useTheme, useMediaQuery, Stack } from '@mui/material'
 import { usePosts, formatPostDate } from '../posts'
 import OpeningHours from '../components/OpeningHours'
@@ -36,7 +35,13 @@ function HeroSection() {
   ]
 
   return (
-    <Box sx={{ position: 'relative', overflow: 'hidden' }}>
+    <Box sx={{
+      position: 'relative',
+      overflow: 'hidden',
+      // Break out of the lg container so the hero is truly full-bleed.
+      width: '100vw',
+      marginLeft: 'calc(50% - 50vw)',
+    }}>
       <Swiper
         modules={[Autoplay, Pagination, SwiperNavigation]}
         spaceBetween={0}
@@ -45,7 +50,7 @@ function HeroSection() {
         pagination={{ clickable: true }}
         navigation
         loop
-        style={{ height: isMobile ? '400px' : '550px' }}
+        style={{ height: '100vh' }}
       >
         {slides.map((slide, i) => (
           <SwiperSlide key={i}>
@@ -58,10 +63,10 @@ function HeroSection() {
               justifyContent: slide.image ? 'flex-end' : 'center',
               textAlign: 'center',
               background: slide.image
-                ? `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${slide.image}) center/cover no-repeat`
+                ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url(${slide.image}) center/cover no-repeat`
                 : slide.bg,
               px: 2,
-              py: { xs: 4, sm: 6 },
+              py: { xs: 8, sm: 10 },
             }}>
               {!slide.image && (
                 <>
@@ -97,6 +102,14 @@ function HeroSection() {
           </SwiperSlide>
         ))}
       </Swiper>
+      {/* Top gradient keeps the floating navbar readable over any slide. */}
+      <Box sx={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 2,
+        pointerEvents: 'none',
+        background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 30%, transparent 60%)',
+      }} />
     </Box>
   )
 }
@@ -184,7 +197,7 @@ function LatestNewsSection() {
 export default function Home() {
   const { t } = useI18n()
   return (
-    <Box sx={{ py: PAGE_VERTICAL_PADDING }}>
+    <Box sx={{ py: 0 }}>
       <VisuallyHiddenH1>{t('meta.home.title')}</VisuallyHiddenH1>
       <HeroSection />
       <LatestNewsSection />

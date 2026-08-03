@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 import {
   AppBar,
   Toolbar,
@@ -11,7 +11,7 @@ import {
   ListItemIcon,
 } from '@mui/material'
 import { Check, ExpandMore } from '@mui/icons-material'
-import { Link } from 'wouter'
+import { Link, useLocation } from 'wouter'
 import { useI18n } from '../i18n'
 import deFlag from '../assets/flags/de.svg'
 import gbFlag from '../assets/flags/gb.svg'
@@ -30,9 +30,23 @@ const LANGUAGES = [
 
 export default function Navbar() {
   const { language, t, setLanguage } = useI18n()
+  const [location] = useLocation()
+  const isHome = location === '/'
+  const [scrolled, setScrolled] = useState(false)
   const [langMenuAnchor, setLangMenuAnchor] = useState<HTMLElement | null>(null)
   const langMenuOpen = Boolean(langMenuAnchor)
   const currentLang = LANGUAGES.find((l) => l.code === language) ?? LANGUAGES[0]
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 80)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // Transparent, floating navbar over the fullscreen hero on the home page;
+  // becomes a solid bar once the user scrolls (or on any other page).
+  const transparent = isHome && !scrolled
 
   const openLangMenu = (event: MouseEvent<HTMLElement>) => {
     setLangMenuAnchor(event.currentTarget)
@@ -46,7 +60,14 @@ export default function Navbar() {
   }
 
   return (
-    <AppBar position="static" sx={{ bgcolor: 'primary.main' }}>
+    <AppBar
+      position={isHome ? 'fixed' : 'static'}
+      sx={{
+        bgcolor: transparent ? 'transparent' : 'primary.main',
+        boxShadow: transparent ? 'none' : undefined,
+        transition: 'background-color 0.3s ease',
+      }}
+    >
       <Container maxWidth="lg">
         <Toolbar disableGutters sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-start', minWidth: 0 }}>
