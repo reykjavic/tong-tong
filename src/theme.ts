@@ -30,6 +30,20 @@ const theme = createTheme({
     borderRadius: 8,
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          overflowX: 'hidden',
+          backgroundColor: '#FAFAFA',
+          // Soft brand-tinted wash instead of a flat white — gentler on the eyes
+          // and keeps a hint of the teal identity on every page.
+          backgroundImage:
+            'linear-gradient(180deg, rgba(0,105,92,0.08) 0%, rgba(0,105,92,0.03) 30%, rgba(0,105,92,0) 60%)',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed',
+        },
+      },
+    },
     MuiButton: {
       defaultProps: {
         sx: { textTransform: 'none', fontWeight: 500 },

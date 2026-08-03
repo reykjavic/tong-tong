@@ -38,9 +38,10 @@ function HeroSection() {
     <Box sx={{
       position: 'relative',
       overflow: 'hidden',
-      // Break out of the lg container so the hero is truly full-bleed.
       width: '100vw',
+      maxWidth: '100vw',
       marginLeft: 'calc(50% - 50vw)',
+      marginRight: 'calc(50% - 50vw)',
     }}>
       <Swiper
         modules={[Autoplay, Pagination, SwiperNavigation]}
