@@ -3,7 +3,7 @@ import { PAGE_VERTICAL_PADDING } from '../layout'
 import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
 import { Box, Container, Paper, Button, useTheme } from '@mui/material'
 
-const MENU_PDF_URL = 'https://tong-tong.eu/wp-content/uploads/2025/12/Speisekarte-1.pdf'
+const MENU_PDF_URL = '/tong-tong-2026.pdf'
 
 export default function Menu() {
   const { t } = useI18n()
