@@ -149,7 +149,7 @@ export default function Navbar() {
               sx={{
                 height: 34,
                 px: 1,
-                gap: 0.5,
+                gap: 1.25,
                 borderRadius: '8px',
                 color: '#fff',
                 bgcolor: 'rgba(255,255,255,0.15)',
