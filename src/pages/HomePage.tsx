@@ -127,7 +127,7 @@ function HeroSection() {
                     variant="contained"
                     component={isMobile ? 'a' : Link}
                     {...(isMobile
-                      ? { href: '/tong-tong-2026.pdf', target: '_blank', rel: 'noopener noreferrer' }
+                      ? { href: '/tong-tong-2026.pdf' }
                       : { to: '/menu' }
                     )}
                     sx={{

@@ -262,7 +262,7 @@ export default function Navbar() {
                 key={link.href}
                 component={isMenuLink ? 'a' : Link}
                 {...(isMenuLink
-                  ? { href: '/tong-tong-2026.pdf', target: '_blank', rel: 'noopener noreferrer' }
+                  ? { href: '/tong-tong-2026.pdf' }
                   : { href: link.href }
                 )}
                 onClick={() => setDrawerOpen(false)}
