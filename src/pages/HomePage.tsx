@@ -174,15 +174,21 @@ function LatestNewsSection() {
   const { status, posts } = usePosts()
   const post = posts[0]
 
-  return (
-    <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 6 } }}>
+  const sectionHeading = (
+    <>
       <Typography variant={isMobile ? 'h5' : 'h3'} sx={{ fontWeight: 700, mb: 1, color: theme.palette.primary.main }}>
         {t('home.latestNews.title')}
       </Typography>
       <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4 }}>
         {t('home.latestNews.subtitle')}
       </Typography>
-      {status === 'loading' && (
+    </>
+  )
+
+  if (status === 'loading') {
+    return (
+      <Container maxWidth={isMobile ? false : 'lg'} disableGutters={isMobile} sx={{ py: { xs: 4, sm: 6 } }}>
+        <Box sx={{ px: isMobile ? 2 : 0 }}>{sectionHeading}</Box>
         <Paper elevation={3} sx={{ borderRadius: 3, overflow: 'hidden', display: 'flex', flexDirection: isMobile ? 'column' : 'row' }}>
           <Skeleton variant="rectangular" sx={{ width: isMobile ? '100%' : 280, height: isMobile ? 200 : 'auto', borderRadius: 0 }} />
           <Box sx={{ p: { xs: 3, sm: 4 }, flex: 1 }}>
@@ -195,54 +201,63 @@ function LatestNewsSection() {
             <Skeleton variant="rectangular" width={140} height={40} sx={{ borderRadius: 2 }} />
           </Box>
         </Paper>
-      )}
-      {(status === 'error' || (status === 'ready' && !post)) && (
-        <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+      </Container>
+    )
+  }
+
+  if (status === 'error' || (status === 'ready' && !post)) {
+    return (
+      <Container maxWidth={isMobile ? false : 'lg'} disableGutters={isMobile} sx={{ py: { xs: 4, sm: 6 } }}>
+        <Box sx={{ px: isMobile ? 2 : 0 }}>{sectionHeading}</Box>
+        <Typography variant="body1" sx={{ px: isMobile ? 2 : 0, color: 'text.secondary' }}>
           {t('posts.noPosts')}
         </Typography>
-      )}
-      {status === 'ready' && post && (
-        <Paper elevation={3} sx={{
-          borderRadius: 3,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          bgcolor: theme.palette.background.paper,
-        }}>
-          {post.featuredImage ? (
-            <Box component="img" src={post.featuredImage} alt={post.title} sx={{ width: isMobile ? '100%' : 280, height: isMobile ? 200 : 'auto', objectFit: 'cover' }} />
-          ) : (
-            <Box sx={{
-              width: isMobile ? '100%' : 280,
-              height: isMobile ? 200 : 'auto',
-              bgcolor: `linear-gradient(135deg, ${theme.palette.primary.main}40, ${theme.palette.secondary.main}60)`,
-              background: `linear-gradient(135deg, ${theme.palette.primary.main}40, ${theme.palette.secondary.main}60)`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <Typography variant={isMobile ? 'h5' : 'h2'} sx={{ color: 'rgba(255,255,255,0.4)', fontWeight: 800 }}>
-                TT
-              </Typography>
-            </Box>
-          )}
-          <Box sx={{ p: { xs: 3, sm: 4 }, flex: 1 }}>
-            <Chip label={t('home.latestNews.badge')} size="small" sx={{ bgcolor: theme.palette.primary.main, color: 'white', fontWeight: 600, mb: 2 }} />
-            <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: 700, mb: 1 }}>
-              {post.title}
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 2 }}>
-              {formatPostDate(post.date, language)}
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3, lineHeight: 1.7 }}>
-              {post.excerpt}
-            </Typography>
-            <Button variant="contained" component={Link} to="/posts" sx={{ bgcolor: theme.palette.primary.main, fontWeight: 600, '&:hover': { bgcolor: theme.palette.primary.dark } }}>
-              {t('home.latestNews.readMore')}
-            </Button>
-          </Box>
-        </Paper>
-      )}
+      </Container>
+    )
+  }
+
+  if (!post) return null
+
+  const thumbnail = post.featuredImage ? (
+    <Box component="img" src={post.featuredImage} alt={post.title} sx={{ width: isMobile ? '100%' : 280, height: isMobile ? 200 : 'auto', objectFit: 'cover' }} />
+  ) : (
+    <Box sx={{
+      width: isMobile ? '100%' : 280, height: isMobile ? 200 : 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: `linear-gradient(135deg, ${theme.palette.primary.main}40, ${theme.palette.secondary.main}60)`,
+    }}>
+      <Typography variant={isMobile ? 'h5' : 'h2'} sx={{ color: 'rgba(255,255,255,0.4)', fontWeight: 800 }}>TT</Typography>
+    </Box>
+  )
+
+  const postContent = (
+    <Box sx={{ p: { xs: 3, sm: 4 }, flex: 1 }}>
+      <Chip label={t('home.latestNews.badge')} size="small" sx={{ bgcolor: theme.palette.primary.main, color: 'white', fontWeight: 600, mb: 2 }} />
+      <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: 700, mb: 1 }}>
+        {post.title}
+      </Typography>
+      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 2 }}>
+        {formatPostDate(post.date, language)}
+      </Typography>
+      <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3, lineHeight: 1.7 }}>
+        {post.excerpt}
+      </Typography>
+      <Button variant="contained" component={Link} to="/posts" sx={{ bgcolor: theme.palette.primary.main, fontWeight: 600, '&:hover': { bgcolor: theme.palette.primary.dark } }}>
+        {t('home.latestNews.readMore')}
+      </Button>
+    </Box>
+  )
+
+  return (
+    <Container maxWidth={isMobile ? false : 'lg'} disableGutters={isMobile} sx={{ py: { xs: 4, sm: 6 } }}>
+      <Box sx={{ px: isMobile ? 2 : 0 }}>{sectionHeading}</Box>
+      <Paper elevation={3} sx={{
+        borderRadius: 3, overflow: 'hidden',
+        display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+        bgcolor: theme.palette.background.paper,
+      }}>
+        {thumbnail}
+        {postContent}
+      </Paper>
     </Container>
   )
 }

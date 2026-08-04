@@ -18,8 +18,7 @@ export default function Menu() {
             variant="contained"
             component="a"
             href={MENU_PDF_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+            {...(!isMobile && { target: '_blank', rel: 'noopener noreferrer' })}
             fullWidth={isMobile}
             sx={{
               bgcolor: theme.palette.primary.main, fontWeight: 600, px: 4, py: 1.2,

@@ -84,6 +84,7 @@
       "buffetNoonTitle": "Buffet Mittags",
       "buffetEveningTitle": "Buffet Abends",
       "holidayShort": "Feiertage",
+      "starHint": "★ = Feiertage",
       "reservation": "All-You-Can-Eat Buffet ist bei einer Reservierung ab 15 Personen (z. B. Geburtstage oder ähnliche Veranstaltungen) auch an beliebigen Tagen organisierbar – kontaktieren Sie uns einfach telefonisch."
     }
   },
@@ -123,8 +124,8 @@
     "subtitle": "Entdecken Sie unsere vielfältigen Gerichte",
     "pdfTitle": "Speisekarte (PDF)",
     "download": "Herunterladen",
-    "openInNewTab": "Speisekarte in neuem Tab öffnen",
-    "mobileHint": "Die Speisekarte wird als PDF in einem neuen Tab geöffnet."
+    "openInNewTab": "Speisekarte als PDF ansehen",
+    "mobileHint": "Die Speisekarte wird als PDF angezeigt."
   },
   "contact": {
     "title": "Kontakt & Öffnungszeiten",

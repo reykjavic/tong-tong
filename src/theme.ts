@@ -32,6 +32,13 @@ const theme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        // overflow-x: clip (with hidden fallback for older browsers) kills any
+        // horizontal scroll at the root, without making the document a scroll
+        // container (which would break position: fixed descendants).
+        html: {
+          overflowX: 'clip',
+          '@supports not (overflow: clip)': { overflowX: 'hidden' },
+        },
         body: {
           overflowX: 'hidden',
           backgroundColor: '#FAFAFA',

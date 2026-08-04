@@ -8,11 +8,14 @@ export default function VisuallyHiddenH1({ children }: { children: ReactNode }) 
       component="h1"
       sx={{
         position: 'absolute',
-        width: 1,
-        height: 1,
-        margin: -1,
+        left: 0,
+        top: 0,
+        width: '1px',
+        height: '1px',
+        margin: 0,
         padding: 0,
         overflow: 'hidden',
+        clipPath: 'inset(50%)',
         clip: 'rect(0 0 0 0)',
         whiteSpace: 'nowrap',
         border: 0,

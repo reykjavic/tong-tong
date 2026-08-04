@@ -1,6 +1,6 @@
 import { useI18n } from '../i18n'
 import { Box, Container, Paper, Typography, Chip, useTheme, useMediaQuery, Divider } from '@mui/material'
-import { AccessTime } from '@mui/icons-material'
+import { AccessTime, Star } from '@mui/icons-material'
 import { Fragment, useState, useEffect } from 'react'
 
 export default function OpeningHours() {
@@ -45,7 +45,7 @@ export default function OpeningHours() {
   ]
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 6 } }}>
+    <Container maxWidth={isMobile ? false : 'lg'} disableGutters={isMobile} sx={{ py: { xs: 4, sm: 6 } }}>
       <Paper elevation={3} sx={{
         borderRadius: 3,
         overflow: 'hidden',
@@ -78,57 +78,108 @@ export default function OpeningHours() {
           />
         </Box>
         <Box sx={{ p: { xs: 2, sm: 4 } }}>
-          <Box sx={{ overflowX: 'auto' }}>
-            <Box sx={{
-              display: 'grid',
-              gridTemplateColumns: `120px repeat(${dayShorts.length}, 1fr)`,
-            }}>
-              {/* Header row */}
-              <Box sx={{
-                borderBottom: `1px solid ${theme.palette.divider}`,
-                py: 1.5,
-              }} />
-              {dayShorts.map((d, i) => (
-                <Box key={i} sx={{
-                  textAlign: 'center',
-                  fontWeight: 700,
-                  color: theme.palette.primary.main,
-                  whiteSpace: 'nowrap',
-                  borderBottom: `1px solid ${theme.palette.divider}`,
-                  fontSize: '0.95rem',
-                  px: 1,
-                  py: 1.5,
-                }}>
-                  {d}
-                </Box>
-              ))}
-
-              {/* Data rows */}
+          {isMobile ? (
+            /* Mobile: card-based layout — one card per time slot with day indicators */
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
               {rows.map((row) => (
-                <Fragment key={row.key}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', py: 1.5, pr: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary', lineHeight: 1.3, fontSize: '1rem', whiteSpace: 'nowrap' }}>
+                <Box key={row.key}>
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary', lineHeight: 1.3, fontSize: '0.9rem' }}>
                       {row.title}
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.3, fontSize: { xs: '1rem', sm: '1.1rem' }, whiteSpace: 'nowrap' }}>
+                    <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.3, fontSize: '0.95rem' }}>
                       {row.time}
                     </Typography>
                   </Box>
-                  {row.days.map((available, j) => (
-                    <Box key={j} sx={{
-                      textAlign: 'center',
-                      fontSize: '1.1rem',
-                      py: 1.5,
-                      color: available ? theme.palette.primary.main : theme.palette.text.disabled,
-                      fontWeight: available ? 600 : 400,
-                    }}>
-                      {available ? '✓' : '–'}
-                    </Box>
-                  ))}
-                </Fragment>
+                  <Box sx={{ display: 'flex', gap: 0.3, justifyContent: 'space-between' }}>
+                    {dayShorts.map((label, j) => {
+                      const isHoliday = j === dayShorts.length - 1
+                      return (
+                        <Box key={j} sx={{
+                          textAlign: 'center',
+                          minWidth: 0,
+                          flex: '1 1 0',
+                          px: 0.15,
+                          py: 0.35,
+                          borderRadius: 0.75,
+                          fontSize: '0.68rem',
+                          fontWeight: row.days[j] ? 700 : 400,
+                          color: row.days[j] ? '#fff' : theme.palette.text.disabled,
+                          bgcolor: row.days[j] ? theme.palette.primary.main : 'transparent',
+                          border: row.days[j] ? 'none' : `1px solid ${theme.palette.divider}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                          {isHoliday ? (
+                            <Star sx={{ fontSize: '0.7rem' }} />
+                          ) : (
+                            label
+                          )}
+                        </Box>
+                      )
+                    })}
+                  </Box>
+                </Box>
               ))}
+              <Typography variant="caption" sx={{ color: 'text.disabled', textAlign: 'center', mt: 0.5 }}>
+                {t('home.hours.starHint')}
+              </Typography>
             </Box>
-          </Box>
+          ) : (
+            /* Desktop: grid table with day columns */
+            <Box sx={{ overflowX: 'auto' }}>
+              <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: `120px repeat(${dayShorts.length}, 1fr)`,
+              }}>
+                {/* Header row */}
+                <Box sx={{
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                  py: 1.5,
+                }} />
+                {dayShorts.map((d, i) => (
+                  <Box key={i} sx={{
+                    textAlign: 'center',
+                    fontWeight: 700,
+                    color: theme.palette.primary.main,
+                    whiteSpace: 'nowrap',
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+                    fontSize: '0.95rem',
+                    px: 1,
+                    py: 1.5,
+                  }}>
+                    {d}
+                  </Box>
+                ))}
+
+                {/* Data rows */}
+                {rows.map((row) => (
+                  <Fragment key={row.key}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', py: 1.5, pr: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary', lineHeight: 1.3, fontSize: '1rem', whiteSpace: 'nowrap' }}>
+                        {row.title}
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.3, fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
+                        {row.time}
+                      </Typography>
+                    </Box>
+                    {row.days.map((available, j) => (
+                      <Box key={j} sx={{
+                        textAlign: 'center',
+                        fontSize: '1.1rem',
+                        py: 1.5,
+                        color: available ? theme.palette.primary.main : theme.palette.text.disabled,
+                        fontWeight: available ? 600 : 400,
+                      }}>
+                        {available ? '✓' : '–'}
+                      </Box>
+                    ))}
+                  </Fragment>
+                ))}
+              </Box>
+            </Box>
+          )}
           <Divider sx={{ my: 3 }} />
           <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
             {t('home.hours.reservation')}

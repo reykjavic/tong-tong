@@ -1,4 +1,4 @@
-import { useEffect, useState, type MouseEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react'
 import {
   AppBar,
   Toolbar,
@@ -44,6 +44,9 @@ export default function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const langMenuOpen = Boolean(langMenuAnchor)
   const currentLang = LANGUAGES.find((l) => l.code === language) ?? LANGUAGES[0]
+  // Measured height of the AppBar, so the fixed navbar never covers content.
+  const appBarRef = useRef<HTMLDivElement>(null)
+  const [navbarHeight, setNavbarHeight] = useState(0)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80)
@@ -52,8 +55,18 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Transparent, floating navbar over the fullscreen hero on the home page;
-  // becomes a solid bar once the user scrolls (or on any other page).
+  useLayoutEffect(() => {
+    const el = appBarRef.current
+    if (!el) return
+    const update = () => setNavbarHeight(el.offsetHeight)
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [isMobile, isHome])
+
+  // Fixed on mobile (always) and on home page (hero overlay). Static on
+  // desktop non-home pages where the navbar sits naturally in the flow.
   const transparent = isHome && !scrolled
 
   const openLangMenu = (event: MouseEvent<HTMLElement>) => {
@@ -68,14 +81,22 @@ export default function Navbar() {
   }
 
   return (
-    <AppBar
-      position={isHome ? 'fixed' : 'static'}
-      sx={{
-        bgcolor: transparent ? 'transparent' : 'primary.main',
-        boxShadow: transparent ? 'none' : undefined,
-        transition: 'background-color 0.3s ease',
-      }}
-    >
+    <>
+      {/* On mobile, the navbar is fixed and out of the document flow. On non-home
+          pages there is no full-screen hero underneath, so reserve its measured
+          height so content isn't hidden behind the solid bar. */}
+      {isMobile && !isHome && <Box aria-hidden sx={{ height: navbarHeight }} />}
+      <AppBar
+        ref={appBarRef}
+        position={(isHome || isMobile) ? 'fixed' : 'static'}
+        sx={{
+          bgcolor: transparent ? 'transparent' : 'primary.main',
+          boxShadow: transparent ? 'none' : undefined,
+          transition: 'background-color 0.3s ease',
+          // Give the fixed AppBar breathing room below the mobile status bar
+          ...(isMobile && { pt: 'env(safe-area-inset-top, 8px)' }),
+        }}
+      >
       <Container maxWidth="lg">
         <Toolbar disableGutters sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-start', minWidth: 0 }}>
@@ -100,10 +121,10 @@ export default function Navbar() {
               <Typography
                 sx={{
                   color: 'red',
-                  fontWeight: 900,
-                  fontSize: '1.3rem',
-                  letterSpacing: '0.05em',
-                  fontFamily: '"Open Sans", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '1.5rem',
+                  letterSpacing: '0.02em',
+                  fontFamily: '"Kaushan Script", cursive',
                   lineHeight: 1,
                   whiteSpace: 'nowrap',
                 }}
@@ -248,7 +269,7 @@ export default function Navbar() {
       <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         <Box sx={{ width: 280, p: 2, display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, mb: 1 }}>
-            <Typography sx={{ fontWeight: 800, color: 'red', bgcolor: '#39FF14', px: 1.5, py: 0.5, borderRadius: 0.6 }}>
+            <Typography sx={{ fontWeight: 700, color: 'red', bgcolor: '#39FF14', px: 1.5, py: 0.5, borderRadius: 0.6, fontFamily: '"Kaushan Script", cursive', fontSize: '1.2rem' }}>
               Tong Tong
             </Typography>
             <IconButton onClick={() => setDrawerOpen(false)} aria-label="Menü schließen">
@@ -325,6 +346,7 @@ export default function Navbar() {
           })}
         </Box>
       </Drawer>
-    </AppBar>
+      </AppBar>
+    </>
   )
 }

@@ -1,7 +1,7 @@
 import { useI18n } from '../i18n'
 import { PAGE_VERTICAL_PADDING } from '../layout'
 import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
-import { Box, Container, Typography, Paper, Button, Link as MuiLink, Grid, Divider, useTheme } from '@mui/material'
+import { Box, Container, Typography, Paper, Button, Link as MuiLink, Grid, Divider, useTheme, useMediaQuery } from '@mui/material'
 import { Place, Phone } from '@mui/icons-material'
 import OpeningHours from '../components/OpeningHours'
 
@@ -11,68 +11,82 @@ const MAPS_EMBED_URL =
 export default function Contact() {
   const { t } = useI18n()
   const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+
+  const addressCard = (
+    <Paper elevation={2} sx={{ p: { xs: 3, sm: 4 }, borderRadius: 3 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: theme.palette.primary.main }}>
+        <Place sx={{ verticalAlign: 'middle', mr: 1 }} />
+        {t('contact.address')}
+      </Typography>
+      <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
+        {t('contact.restaurantName')}
+        <br />
+        {t('contact.street')}
+        <br />
+        {t('contact.city')}
+      </Typography>
+      <Divider sx={{ my: 3 }} />
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: theme.palette.primary.main }}>
+        <Phone sx={{ verticalAlign: 'middle', mr: 1 }} />
+        {t('contact.phone')}
+      </Typography>
+      <Typography variant="body1" sx={{ mb: 3 }}>
+        <MuiLink href="tel:+496442931082" sx={{ color: theme.palette.primary.main, textDecoration: 'none', fontWeight: 600 }}>
+          {t('contact.phoneNumber')}
+        </MuiLink>
+      </Typography>
+      <Button
+        variant="contained"
+        component="a"
+        href="tel:+496442931082"
+        sx={{ bgcolor: theme.palette.primary.main, fontWeight: 600, '&:hover': { bgcolor: theme.palette.primary.dark } }}
+      >
+        <Phone sx={{ mr: 1, fontSize: 20 }} />
+        {t('contact.clickToCall')}
+      </Button>
+    </Paper>
+  )
+
+  const mapCard = (
+    <Paper elevation={2} sx={{ p: { xs: 3, sm: 4 }, borderRadius: 3 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: theme.palette.primary.main }}>
+        {t('contact.directions')}
+      </Typography>
+      <Box sx={{ position: 'relative', width: '100%', pt: '70%', borderRadius: 2, overflow: 'hidden' }}>
+        <iframe
+          src={MAPS_EMBED_URL}
+          title={t('contact.map')}
+          loading="lazy"
+          allowFullScreen
+          referrerPolicy="no-referrer-when-downgrade"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+        />
+      </Box>
+    </Paper>
+  )
 
   return (
     <>
-      <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
+      <Container maxWidth={isMobile ? false : 'lg'} disableGutters={isMobile} sx={{ py: PAGE_VERTICAL_PADDING }}>
         <VisuallyHiddenH1>{t('contact.title')}</VisuallyHiddenH1>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={5}>
-            <Paper elevation={2} sx={{ p: { xs: 3, sm: 4 }, borderRadius: 3, height: '100%' }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: theme.palette.primary.main }}>
-                <Place sx={{ verticalAlign: 'middle', mr: 1 }} />
-                {t('contact.address')}
-              </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
-                {t('contact.restaurantName')}
-                <br />
-                {t('contact.street')}
-                <br />
-                {t('contact.city')}
-              </Typography>
-              <Divider sx={{ my: 3 }} />
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: theme.palette.primary.main }}>
-                <Phone sx={{ verticalAlign: 'middle', mr: 1 }} />
-                {t('contact.phone')}
-              </Typography>
-              <Typography variant="body1" sx={{ mb: 3 }}>
-                <MuiLink href="tel:+496442931082" sx={{ color: theme.palette.primary.main, textDecoration: 'none', fontWeight: 600 }}>
-                  {t('contact.phoneNumber')}
-                </MuiLink>
-              </Typography>
-              <Button
-                variant="contained"
-                component="a"
-                href="tel:+496442931082"
-                sx={{
-                  bgcolor: theme.palette.primary.main,
-                  fontWeight: 600,
-                  '&:hover': { bgcolor: theme.palette.primary.dark },
-                }}
-              >
-                <Phone sx={{ mr: 1, fontSize: 20 }} />
-                {t('contact.clickToCall')}
-              </Button>
-            </Paper>
+        {isMobile ? (
+          /* Mobile: full-width stacked cards */
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {addressCard}
+            {mapCard}
+          </Box>
+        ) : (
+          /* Desktop: side-by-side Grid */
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={5}>
+              {addressCard}
+            </Grid>
+            <Grid item xs={12} md={7}>
+              {mapCard}
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={7}>
-            <Paper elevation={2} sx={{ p: { xs: 3, sm: 4 }, borderRadius: 3, height: '100%' }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: theme.palette.primary.main }}>
-                {t('contact.directions')}
-              </Typography>
-              <Box sx={{ position: 'relative', width: '100%', pt: '70%', borderRadius: 2, overflow: 'hidden' }}>
-                <iframe
-                  src={MAPS_EMBED_URL}
-                  title={t('contact.map')}
-                  loading="lazy"
-                  allowFullScreen
-                  referrerPolicy="no-referrer-when-downgrade"
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
-                />
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
+        )}
       </Container>
       <OpeningHours />
     </>

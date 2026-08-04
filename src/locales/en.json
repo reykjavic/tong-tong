@@ -84,6 +84,7 @@
       "buffetNoonTitle": "Lunch Buffet",
       "buffetEveningTitle": "Dinner Buffet",
       "holidayShort": "Holidays",
+      "starHint": "★ = Holidays",
       "reservation": "The All-You-Can-Eat Buffet can be arranged on any day for reservations of 15+ guests (e.g. birthdays or similar events) – just give us a call."
     }
   },
@@ -123,8 +124,8 @@
     "subtitle": "Discover our diverse dishes",
     "pdfTitle": "Menu (PDF)",
     "download": "Download",
-    "openInNewTab": "Open menu in a new tab",
-    "mobileHint": "The menu opens as a PDF in a new tab."
+    "openInNewTab": "View menu as PDF",
+    "mobileHint": "The menu will be displayed as a PDF."
   },
   "contact": {
     "title": "Contact & Opening Hours",
