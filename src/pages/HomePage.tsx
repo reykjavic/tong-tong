@@ -18,8 +18,6 @@ interface HeroSlide {
   image?: string
   title: string
   subtitle: string
-  ctaMenu?: boolean
-  ctaContact?: boolean
 }
 
 function HeroSection() {
@@ -28,10 +26,10 @@ function HeroSection() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   const slides: HeroSlide[] = [
-    { image: heroInterior1, title: t('home.hero.title1'), subtitle: t('home.hero.title2'), ctaMenu: true },
-    { image: heroInterior2, title: t('home.hero.title1'), subtitle: t('home.hero.title2'), ctaMenu: false },
-    { image: heroImage, title: t('home.hero.title1'), subtitle: t('home.hero.title2'), ctaMenu: false },
-    { bg: 'linear-gradient(135deg, #7B1F2B 0%, #4A1018 100%)', title: t('contact.title'), subtitle: '', ctaContact: true },
+    { image: heroInterior1, title: t('home.hero.title1'), subtitle: t('home.hero.title2') },
+    { image: heroInterior2, title: t('home.hero.title1'), subtitle: t('home.hero.title2') },
+    { image: heroImage, title: t('home.hero.title1'), subtitle: t('home.hero.title2') },
+    { bg: 'linear-gradient(135deg, #7B1F2B 0%, #4A1018 100%)', title: t('contact.title'), subtitle: '' },
   ]
 
   return (
@@ -87,7 +85,7 @@ function HeroSection() {
         pagination={{ clickable: true }}
         navigation
         loop
-        style={{ height: isMobile ? '100svh' : '100vh' }}
+        style={{ height: isMobile ? '100dvh' : '100vh' }}
       >
         {slides.map((slide, i) => (
           <SwiperSlide key={i}>
@@ -117,40 +115,6 @@ function HeroSection() {
                   )}
                 </>
               )}
-              <Stack
-                direction={isMobile ? 'column' : 'row'}
-                spacing={isMobile ? 1 : 2}
-                sx={{ mt: 2, alignItems: 'center' }}
-              >
-                {(slide.ctaMenu || i === 0) && (
-                  <Button
-                    variant="contained"
-                    component={isMobile ? 'a' : Link}
-                    {...(isMobile
-                      ? { href: '/tong-tong-2026.pdf' }
-                      : { to: '/menu' }
-                    )}
-                    sx={{
-                      bgcolor: '#fff', color: theme.palette.primary.main, fontWeight: 700,
-                      px: isMobile ? 3 : 4, py: isMobile ? 1 : 1.2,
-                      fontSize: isMobile ? '0.95rem' : '1.1rem',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
-                    }}
-                  >
-                    {t('home.hero.ctaMenu')}
-                  </Button>
-                )}
-                {(slide.ctaContact || i === 0) && (
-                  <Button variant="outlined" component={Link} to="/contact" sx={{
-                    borderColor: '#fff', color: '#fff', fontWeight: 700,
-                    px: isMobile ? 3 : 4, py: isMobile ? 1 : 1.2,
-                    fontSize: isMobile ? '0.95rem' : '1.1rem',
-                    '&:hover': { borderColor: 'rgba(255,255,255,0.6)', bgcolor: 'rgba(255,255,255,0.1)' },
-                  }}>
-                    {t('home.hero.ctaContact')}
-                  </Button>
-                )}
-              </Stack>
             </Box>
           </SwiperSlide>
         ))}
@@ -163,6 +127,51 @@ function HeroSection() {
         pointerEvents: 'none',
         background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 30%, transparent 60%)',
       }} />
+      {/* CTA buttons are a fixed overlay so they don't move when switching slides. */}
+      <Stack
+        direction={isMobile ? 'column' : 'row'}
+        spacing={isMobile ? 1 : 2}
+        sx={{
+          position: 'absolute',
+          bottom: { xs: '16%', sm: '14%' },
+          left: 0,
+          right: 0,
+          zIndex: 3,
+          alignItems: 'center',
+          justifyContent: 'center',
+          px: 2,
+        }}
+      >
+        <Button
+          variant="contained"
+          component={isMobile ? 'a' : Link}
+          {...(isMobile
+            ? { href: '/tong-tong-2026.pdf' }
+            : { to: '/menu' }
+          )}
+          sx={{
+            bgcolor: '#fff', color: theme.palette.primary.main, fontWeight: 700,
+            px: isMobile ? 3 : 4, py: isMobile ? 1 : 1.2,
+            fontSize: isMobile ? '0.95rem' : '1.1rem',
+            '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
+          }}
+        >
+          {t('home.hero.ctaMenu')}
+        </Button>
+        <Button
+          variant="outlined"
+          component={Link}
+          to={isMobile ? '/hours' : '/contact'}
+          sx={{
+            borderColor: '#fff', color: '#fff', fontWeight: 700,
+            px: isMobile ? 3 : 4, py: isMobile ? 1 : 1.2,
+            fontSize: isMobile ? '0.95rem' : '1.1rem',
+            '&:hover': { borderColor: 'rgba(255,255,255,0.6)', bgcolor: 'rgba(255,255,255,0.1)' },
+          }}
+        >
+          {isMobile ? t('home.hero.ctaHours') : t('home.hero.ctaContact')}
+        </Button>
+      </Stack>
     </Box>
   )
 }

@@ -10,6 +10,7 @@ import Home from './pages/HomePage'
 import About from './pages/About'
 import Menu from './pages/Menu'
 import Contact from './pages/Contact'
+import Hours from './pages/Hours'
 import Impressum from './pages/Impressum'
 import Datenschutz from './pages/Datenschutz'
 import Posts from './pages/Posts'
@@ -43,6 +44,7 @@ function RouterContent() {
               <Route path="/about" component={About} />
               <Route path="/menu" component={Menu} />
               <Route path="/contact" component={Contact} />
+              <Route path="/hours" component={Hours} />
               <Route path="/posts" component={Posts} />
               <Route path="/impressum" component={Impressum} />
               <Route path="/datenschutz" component={Datenschutz} />

@@ -166,6 +166,9 @@ export default function OpeningHours() {
                     </Box>
                     {row.days.map((available, j) => (
                       <Box key={j} sx={{
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        justifyContent: 'center',
                         textAlign: 'center',
                         fontSize: '1.1rem',
                         py: 1.5,

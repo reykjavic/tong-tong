@@ -266,13 +266,26 @@ export default function Navbar() {
             )
           })}
         </Menu>
-      <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        <Box sx={{ width: 280, p: 2, display: 'flex', flexDirection: 'column' }}>
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{
+          sx: {
+            width: 280,
+            bgcolor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(5px)',
+            WebkitBackdropFilter: 'blur(1px)',
+            color: '#fff',
+          },
+        }}
+      >
+        <Box sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5, mb: 1 }}>
             <Typography sx={{ fontWeight: 700, color: 'red', bgcolor: '#39FF14', px: 1.5, py: 0.5, borderRadius: 0.6, fontFamily: '"Kaushan Script", cursive', fontSize: '1.2rem' }}>
               Tong Tong
             </Typography>
-            <IconButton onClick={() => setDrawerOpen(false)} aria-label="Menü schließen">
+            <IconButton onClick={() => setDrawerOpen(false)} aria-label="Menü schließen" sx={{ color: '#fff' }}>
               <CloseIcon />
             </IconButton>
           </Box>
@@ -291,16 +304,16 @@ export default function Navbar() {
                   justifyContent: 'flex-start',
                   px: 1.5,
                   py: 1.2,
-                  color: 'text.primary',
+                  color: '#fff',
                   fontWeight: 600,
                   textTransform: 'none',
                   fontSize: '1rem',
                   borderRadius: 2,
-                  '&:hover': { bgcolor: 'action.hover' },
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
                   '&[data-wouter-link-active]': {
-                    color: theme.palette.primary.main,
+                    color: '#fff',
                     fontWeight: 700,
-                    bgcolor: `${theme.palette.primary.main}14`,
+                    bgcolor: 'rgba(255,255,255,0.18)',
                   },
                 }}
               >
@@ -308,8 +321,8 @@ export default function Navbar() {
               </Button>
             )
           })}
-          <Divider sx={{ my: 1.5 }} />
-          <Typography variant="overline" sx={{ px: 1, color: 'text.secondary', fontWeight: 700 }}>
+          <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.2)' }} />
+          <Typography variant="overline" sx={{ px: 1, color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>
             {t('common.language')}
           </Typography>
           {LANGUAGES.map((lang) => {
@@ -323,7 +336,7 @@ export default function Navbar() {
                   px: 1.5,
                   py: 1,
                   gap: 1.5,
-                  color: isActive ? theme.palette.primary.main : 'text.primary',
+                  color: isActive ? '#fff' : 'rgba(255,255,255,0.7)',
                   fontWeight: isActive ? 700 : 500,
                   textTransform: 'none',
                   borderRadius: 2,
@@ -339,8 +352,8 @@ export default function Navbar() {
                     backgroundPosition: 'center',
                   }}
                 />
-                <Typography sx={{ fontSize: '0.95rem' }}>{lang.name}</Typography>
-                {isActive && <Check sx={{ ml: 'auto', fontSize: 20 }} />}
+                <Typography sx={{ fontSize: '0.95rem', color: '#fff' }}>{lang.name}</Typography>
+                {isActive && <Check sx={{ ml: 'auto', fontSize: 20, color: '#fff' }} />}
               </Button>
             )
           })}

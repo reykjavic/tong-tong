@@ -26,6 +26,10 @@
       "title": "Kontakt & Öffnungszeiten – China-Restaurant Tong Tong",
       "description": "Kontakt und Öffnungszeiten von China-Restaurant Tong Tong in Braunfels – Telefon +49 (0) 6442 931082, Europaplatz 2."
     },
+    "hours": {
+      "title": "Öffnungszeiten – China-Restaurant Tong Tong",
+      "description": "Öffnungszeiten von China-Restaurant Tong Tong in Braunfels – Mittagstisch, Buffet und Abendessen."
+    },
     "posts": {
       "title": "Aktuelles – China-Restaurant Tong Tong",
       "description": "Aktuelles und Neuigkeiten von China-Restaurant Tong Tong in Braunfels."
@@ -45,7 +49,8 @@
       "title2": "Tong Tong",
       "subtitle": "Chinesisches Restaurant in Braunfels",
       "ctaMenu": "Speisekarte ansehen",
-      "ctaContact": "Kontakt aufnehmen"
+      "ctaContact": "Kontakt aufnehmen",
+      "ctaHours": "Öffnungszeiten ansehen"
     },
     "latestNews": {
       "title": "Aktuelles",

@@ -9,6 +9,7 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
   '/about': { title: 'meta.about.title', description: 'meta.about.description' },
   '/menu': { title: 'meta.menu.title', description: 'meta.menu.description' },
   '/contact': { title: 'meta.contact.title', description: 'meta.contact.description' },
+  '/hours': { title: 'meta.hours.title', description: 'meta.hours.description' },
   '/posts': { title: 'meta.posts.title', description: 'meta.posts.description' },
   '/impressum': { title: 'meta.impressum.title', description: 'meta.impressum.description' },
   '/datenschutz': { title: 'meta.datenschutz.title', description: 'meta.datenschutz.description' },
