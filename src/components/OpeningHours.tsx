@@ -83,7 +83,7 @@ export default function OpeningHours() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
               {rows.map((row) => (
                 <Box key={row.key}>
-                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, mb: 1 }}>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary', lineHeight: 1.3, fontSize: '0.9rem' }}>
                       {row.title}
                     </Typography>
