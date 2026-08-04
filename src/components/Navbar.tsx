@@ -255,32 +255,38 @@ export default function Navbar() {
               <CloseIcon />
             </IconButton>
           </Box>
-          {links.map((link) => (
-            <Button
-              key={link.href}
-              component={Link}
-              href={link.href}
-              onClick={() => setDrawerOpen(false)}
-              sx={{
-                justifyContent: 'flex-start',
-                px: 1.5,
-                py: 1.2,
-                color: 'text.primary',
-                fontWeight: 600,
-                textTransform: 'none',
-                fontSize: '1rem',
-                borderRadius: 2,
-                '&:hover': { bgcolor: 'action.hover' },
-                '&[data-wouter-link-active]': {
-                  color: theme.palette.primary.main,
-                  fontWeight: 700,
-                  bgcolor: `${theme.palette.primary.main}14`,
-                },
-              }}
-            >
-              {t(link.key)}
-            </Button>
-          ))}
+          {links.map((link) => {
+            const isMenuLink = link.href === '/menu'
+            return (
+              <Button
+                key={link.href}
+                component={isMenuLink ? 'a' : Link}
+                {...(isMenuLink
+                  ? { href: '/tong-tong-2026.pdf', target: '_blank', rel: 'noopener noreferrer' }
+                  : { href: link.href }
+                )}
+                onClick={() => setDrawerOpen(false)}
+                sx={{
+                  justifyContent: 'flex-start',
+                  px: 1.5,
+                  py: 1.2,
+                  color: 'text.primary',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  borderRadius: 2,
+                  '&:hover': { bgcolor: 'action.hover' },
+                  '&[data-wouter-link-active]': {
+                    color: theme.palette.primary.main,
+                    fontWeight: 700,
+                    bgcolor: `${theme.palette.primary.main}14`,
+                  },
+                }}
+              >
+                {t(link.key)}
+              </Button>
+            )
+          })}
           <Divider sx={{ my: 1.5 }} />
           <Typography variant="overline" sx={{ px: 1, color: 'text.secondary', fontWeight: 700 }}>
             {t('common.language')}

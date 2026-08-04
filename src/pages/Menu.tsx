@@ -39,7 +39,7 @@ export default function Menu() {
               component="iframe"
               src={MENU_PDF_URL}
               title={t('menu.pdfTitle')}
-              sx={{ width: '100%', height: { xs: 600, sm: 800 }, border: 'none', display: 'block' }}
+              sx={{ width: '100%', height: 800, border: 'none', display: 'block' }}
             />
           </Paper>
         )}

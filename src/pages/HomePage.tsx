@@ -42,6 +42,42 @@ function HeroSection() {
       maxWidth: '100vw',
       marginLeft: 'calc(50% - 50vw)',
       marginRight: 'calc(50% - 50vw)',
+      // Swiper navigation overrides — glass-morphism buttons, properly sized & padded for mobile/desktop
+      '& .swiper-button-next, & .swiper-button-prev': {
+        color: '#fff',
+        width: 36,
+        height: 36,
+        borderRadius: '50%',
+        bgcolor: 'rgba(255,255,255,0.15)',
+        backdropFilter: 'blur(6px)',
+        transition: 'background-color 0.2s ease',
+        '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
+        '&::after': {
+          fontSize: '0.85rem',
+          fontWeight: 700,
+          [theme.breakpoints.up('sm')]: { fontSize: '1.1rem' },
+        },
+        [theme.breakpoints.up('sm')]: {
+          width: 44,
+          height: 44,
+        },
+      },
+      '& .swiper-button-next': {
+        right: 8,
+        [theme.breakpoints.up('sm')]: { right: 16 },
+      },
+      '& .swiper-button-prev': {
+        left: 8,
+        [theme.breakpoints.up('sm')]: { left: 16 },
+      },
+      '& .swiper-pagination-bullet': {
+        bgcolor: '#fff',
+        opacity: 0.5,
+      },
+      '& .swiper-pagination-bullet-active': {
+        bgcolor: '#fff',
+        opacity: 1,
+      },
     }}>
       <Swiper
         modules={[Autoplay, Pagination, SwiperNavigation]}
@@ -81,18 +117,34 @@ function HeroSection() {
                   )}
                 </>
               )}
-              <Stack direction="row" spacing={2} sx={{ mt: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <Stack
+                direction={isMobile ? 'column' : 'row'}
+                spacing={isMobile ? 1 : 2}
+                sx={{ mt: 2, alignItems: 'center' }}
+              >
                 {(slide.ctaMenu || i === 0) && (
-                  <Button variant="contained" component={Link} to="/menu" sx={{
-                    bgcolor: '#fff', color: theme.palette.primary.main, fontWeight: 700, px: 4, py: 1.2, fontSize: '1.1rem',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
-                  }}>
+                  <Button
+                    variant="contained"
+                    component={isMobile ? 'a' : Link}
+                    {...(isMobile
+                      ? { href: '/tong-tong-2026.pdf', target: '_blank', rel: 'noopener noreferrer' }
+                      : { to: '/menu' }
+                    )}
+                    sx={{
+                      bgcolor: '#fff', color: theme.palette.primary.main, fontWeight: 700,
+                      px: isMobile ? 3 : 4, py: isMobile ? 1 : 1.2,
+                      fontSize: isMobile ? '0.95rem' : '1.1rem',
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
+                    }}
+                  >
                     {t('home.hero.ctaMenu')}
                   </Button>
                 )}
                 {(slide.ctaContact || i === 0) && (
                   <Button variant="outlined" component={Link} to="/contact" sx={{
-                    borderColor: '#fff', color: '#fff', fontWeight: 700, px: 4, py: 1.2, fontSize: '1.1rem',
+                    borderColor: '#fff', color: '#fff', fontWeight: 700,
+                    px: isMobile ? 3 : 4, py: isMobile ? 1 : 1.2,
+                    fontSize: isMobile ? '0.95rem' : '1.1rem',
                     '&:hover': { borderColor: 'rgba(255,255,255,0.6)', bgcolor: 'rgba(255,255,255,0.1)' },
                   }}>
                     {t('home.hero.ctaContact')}
