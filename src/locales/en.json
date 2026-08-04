@@ -123,7 +123,8 @@
     "subtitle": "Discover our diverse dishes",
     "pdfTitle": "Menu (PDF)",
     "download": "Download",
-    "openInNewTab": "Open menu in a new tab"
+    "openInNewTab": "Open menu in a new tab",
+    "mobileHint": "The menu opens as a PDF in a new tab."
   },
   "contact": {
     "title": "Contact & Opening Hours",
@@ -185,6 +186,7 @@
   },
   "common": {
     "languageToggle": "DE",
+    "language": "Language",
     "readMore": "Read More",
     "backToHome": "Back to Home"
   }

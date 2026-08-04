@@ -123,7 +123,8 @@
     "subtitle": "Entdecken Sie unsere vielfältigen Gerichte",
     "pdfTitle": "Speisekarte (PDF)",
     "download": "Herunterladen",
-    "openInNewTab": "Speisekarte in neuem Tab öffnen"
+    "openInNewTab": "Speisekarte in neuem Tab öffnen",
+    "mobileHint": "Die Speisekarte wird als PDF in einem neuen Tab geöffnet."
   },
   "contact": {
     "title": "Kontakt & Öffnungszeiten",
@@ -185,6 +186,7 @@
   },
   "common": {
     "languageToggle": "EN",
+    "language": "Sprache",
     "readMore": "Mehr lesen",
     "backToHome": "Zurück zur Startseite"
   }

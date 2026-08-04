@@ -51,7 +51,7 @@ function HeroSection() {
         pagination={{ clickable: true }}
         navigation
         loop
-        style={{ height: '100vh' }}
+        style={{ height: isMobile ? '100svh' : '100vh' }}
       >
         {slides.map((slide, i) => (
           <SwiperSlide key={i}>
