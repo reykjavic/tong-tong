@@ -41,6 +41,10 @@
     "datenschutz": {
       "title": "Privacy Policy – China Restaurant Tong Tong",
       "description": "Privacy policy of China Restaurant Tong Tong in accordance with the GDPR."
+    },
+    "notFound": {
+      "title": "Page not found – China Restaurant Tong Tong",
+      "description": "The requested page was not found."
     }
   },
   "home": {
@@ -131,6 +135,10 @@
     "download": "Download",
     "openInNewTab": "View menu as PDF",
     "mobileHint": "The menu will be displayed as a PDF."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "message": "Sorry, the page you're looking for doesn't exist. It may have been moved or removed."
   },
   "contact": {
     "title": "Contact & Opening Hours",

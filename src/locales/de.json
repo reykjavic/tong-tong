@@ -41,6 +41,10 @@
     "datenschutz": {
       "title": "Datenschutzerklärung – China-Restaurant Tong Tong",
       "description": "Datenschutzerklärung von China-Restaurant Tong Tong gemäß DSGVO."
+    },
+    "notFound": {
+      "title": "Seite nicht gefunden – China-Restaurant Tong Tong",
+      "description": "Die gewünschte Seite wurde nicht gefunden."
     }
   },
   "home": {
@@ -131,6 +135,10 @@
     "download": "Herunterladen",
     "openInNewTab": "Speisekarte als PDF ansehen",
     "mobileHint": "Die Speisekarte wird als PDF angezeigt."
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "message": "Die gewünschte Seite existiert leider nicht. Vielleicht wurde sie verschoben oder entfernt."
   },
   "contact": {
     "title": "Kontakt & Öffnungszeiten",

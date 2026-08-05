@@ -13,6 +13,8 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
   '/posts': { title: 'meta.posts.title', description: 'meta.posts.description' },
   '/impressum': { title: 'meta.impressum.title', description: 'meta.impressum.description' },
   '/datenschutz': { title: 'meta.datenschutz.title', description: 'meta.datenschutz.description' },
+  // Fallback for unknown locations (rendered by the 404 route in App.tsx).
+  notFound: { title: 'meta.notFound.title', description: 'meta.notFound.description' },
 }
 
 export default function PageMeta() {
@@ -20,7 +22,7 @@ export default function PageMeta() {
   const { t } = useI18n()
 
   useEffect(() => {
-    const meta = ROUTE_META[location] ?? ROUTE_META['/']
+    const meta = ROUTE_META[location] ?? ROUTE_META.notFound
     document.title = t(meta.title)
     const description = document.querySelector('meta[name="description"]')
     if (description) description.setAttribute('content', t(meta.description))

@@ -25,23 +25,34 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 ├── tsconfig.json              # TypeScript config
 ├── src/
 │   ├── main.tsx               # App entry point
-│   ├── App.tsx                # Wouter routes + MUI ThemeProvider
+│   ├── App.tsx                # Wouter routes (React.lazy + Suspense) + MUI ThemeProvider
 │   ├── theme.ts               # MUI theme configuration
 │   ├── i18n.tsx               # Language detection + context
+│   ├── layout.ts              # Shared layout constants (PAGE_VERTICAL_PADDING)
+│   ├── posts.ts               # Post fetching/parsing (GitHub Contents API + frontmatter)
 │   ├── locales/               # Translation JSON files (de.json, en.json)
 │   ├── pages/                 # Route components (HomePage.tsx, About.tsx, etc.)
 │   │   ├── HomePage.tsx       # Home page component
-│   │   ├── Buffet.tsx         # Buffet page
+│   │   ├── About.tsx          # About page
 │   │   ├── Contact.tsx        # Contact page
 │   │   ├── Datenschutz.tsx    # Privacy policy page
 │   │   ├── Impressum.tsx      # Impression page (legally required in Germany)
-│   │   ├── Menu.tsx           # Menu page
-│   │   └── Posts.tsx          # Blog posts page
+│   │   ├── Menu.tsx           # Menu page (PDF viewer)
+│   │   ├── Hours.tsx          # Opening hours page
+│   │   ├── Posts.tsx          # Blog posts page
+│   │   └── NotFound.tsx       # 404 catch-all route
 │   └── components/            # Reusable MUI components
 │       ├── Navbar.tsx         # Navigation bar
-│       └── Footer.tsx         # Footer component
+│       ├── Footer.tsx         # Footer component
+│       ├── PageLayout.tsx     # Shared page shell (main > Container > Paper)
+│       ├── PageMeta.tsx       # Per-route <title> + meta description
+│       ├── OpeningHours.tsx   # Opening hours section (reused on home + /hours)
+│       ├── VisuallyHiddenH1.tsx # Accessible h1 that's visually hidden
+│       └── Markdown.tsx       # Markdown renderer for post bodies
 ├── public/
-│   └── admin/                 # Decap CMS admin files
+│   ├── admin/                 # Decap CMS admin files (index.html + config.yml)
+│   ├── images/                # Static images
+│   └── tong-tong-2026.pdf     # Menu PDF
 └── content/
     └── posts/                 # Markdown posts managed by Decap CMS
 ```
@@ -52,6 +63,7 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 - **MUI sx prop** for inline styles, `styled` for complex reusable styles
 - **Emotion** for CSS-in-JS (MUI default)
 - **Markdown** for content files (posts via Decap CMS)
+- **Navigation:** It is *intentional* that not every route appears in the navbar. The navbar links only `/`, `/about`, `/menu`, `/contact`; routes like `/hours`, `/posts`, `/impressum`, `/datenschutz` are reachable via deep links/CTAs instead. Don't add routes to the navbar unless the owner explicitly asks.
 
 ## What to Avoid
 - No Bootstrap, Tailwind, or plain CSS for styling — use MUI
@@ -62,13 +74,12 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 ## Internationalization (i18n)
 - **Default language:** German (`de`)
 - **Supported languages:** German (`de`), English (`en`)
-- **Auto-detection:** Detect user's language via browser locale (`navigator.language`) and IP geolocation
-- **IP-based detection:** If IP is from Germany → default to German; otherwise → default to English
-- **Language toggle:** User can always switch between DE and EN, with preference saved in localStorage
+- **Auto-detection:** Initial language from browser locale (`navigator.language`) only — no IP geolocation
+- **Language toggle:** User can always switch between DE and EN, with preference saved in localStorage under `tt-lang`
 - Translation files stored in `/src/locales/de.json` and `/src/locales/en.json`
 
 ## Common Tasks Quick Reference
-- **New page**: Create a component in `src/pages/` (e.g., `Contact.tsx`) + add Wouter route in `App.tsx`
+- **New page**: Create a component in `src/pages/` (e.g., `Contact.tsx`) + add a `React.lazy` import and Wouter `<Route>` in `App.tsx` (before the catch-all 404 route)
 - **New component**: Create in `src/components/` and import with MUI components
 - **Theme change**: Edit `src/theme.ts`
 - **New translation**: Add to both `/src/locales/de.json` and `/src/locales/en.json`
