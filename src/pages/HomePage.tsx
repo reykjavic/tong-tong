@@ -273,12 +273,16 @@ function LatestNewsSection() {
 
 export default function Home() {
   const { t } = useI18n()
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   return (
     <Box sx={{ py: 0 }}>
       <ScreenReaderPageTitle>{t('meta.home.title')}</ScreenReaderPageTitle>
       <HeroSection />
       <LatestNewsSection />
-      <OpeningHours />
+      <Container maxWidth={isMobile ? false : 'lg'} disableGutters={isMobile} sx={{ py: { xs: 4, sm: 6 } }}>
+        <OpeningHours />
+      </Container>
     </Box>
   )
 }
