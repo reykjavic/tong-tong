@@ -3,6 +3,36 @@ import { Box, Container, Paper, Typography, Chip, useTheme, useMediaQuery, Divid
 import { AccessTime, Star } from '@mui/icons-material'
 import { Fragment, useState, useEffect } from 'react'
 
+// ---- Schedule: one source of truth for both the table and the live chip. ----
+type Window = { start: string; end: string }
+const SCHEDULE = {
+  lunch:         { start: '11:30', end: '14:30' },
+  dinner:        { start: '17:30', end: '22:30' },
+  lunchSpecial:  { start: '11:30', end: '14:30' },
+  buffetNoon:    { start: '11:30', end: '14:30' },
+  buffetEvening: { start: '18:00', end: '22:00' },
+} as const
+
+// Time helpers: minute-of-day arithmetic for the open check, and the display
+// range (NBSP around the en dash — matches the existing strings exactly).
+const toMinutes = (time: string) => {
+  const [hours, minutes] = time.split(':').map(Number)
+  return hours * 60 + minutes
+}
+const inWindow = (minutes: number, { start, end }: Window) =>
+  minutes >= toMinutes(start) && minutes < toMinutes(end)
+const range = ({ start, end }: Window) => `${start} – ${end}`
+
+// ---- Day columns: the table's column order, Mon … Sun, then the holiday star.
+// onDays spells out the active columns by name instead of a cryptic boolean row. ----
+type DayColumn = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun' | 'holiday'
+const DAY_COLUMNS: DayColumn[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'holiday']
+const onDays = (...days: DayColumn[]) => DAY_COLUMNS.map((d) => days.includes(d))
+
+// Date.prototype.getDay() numbers (0 = Sunday) — the JS weekday convention
+// differs from the table's Mon-first columns above, so it gets its own names.
+const DOW = { SUN: 0, MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6 } as const
+
 export default function OpeningHours() {
   const { t } = useI18n()
   const theme = useTheme()
@@ -14,11 +44,10 @@ export default function OpeningHours() {
       const now = new Date()
       const day = now.getDay()
       const minutes = now.getHours() * 60 + now.getMinutes()
-      // Closed Mondays; otherwise open 11:30-14:30 (lunch) and 17:30-22:30 (dinner)
-      const isClosedDay = day === 1
-      const lunchTime = minutes >= 11 * 60 + 30 && minutes < 14 * 60 + 30
-      const dinnerTime = minutes >= 17 * 60 + 30 && minutes < 22 * 60 + 30
-      setIsOpen(!isClosedDay && (lunchTime || dinnerTime))
+      // Closed Mondays; otherwise open for lunch and dinner.
+      const isClosedDay = day === DOW.MON
+      const isOpenTime = inWindow(minutes, SCHEDULE.lunch) || inWindow(minutes, SCHEDULE.dinner)
+      setIsOpen(!isClosedDay && isOpenTime)
     }
     checkStatus()
     const interval = setInterval(checkStatus, 60000)
@@ -37,11 +66,11 @@ export default function OpeningHours() {
   ]
 
   const rows = [
-    { key: 'noon',           title: t('home.hours.noonTitle'),           time: '11:30 – 14:30', days: [false, true,  true,  true,  true,  true,  true,  true ] },
-    { key: 'evening',        title: t('home.hours.eveningTitle'),        time: '17:30 – 22:30', days: [false, true,  true,  true,  true,  true,  true,  true ] },
-    { key: 'lunch',          title: t('home.hours.lunchTitle'),          time: '11:30 – 14:30', days: [false, true,  true,  true,  true,  true,  false, false] },
-    { key: 'buffet-noon',    title: t('home.hours.buffetNoonTitle'),     time: '11:30 – 14:30', days: [false, false, false, false, false, false, true,  true ] },
-    { key: 'buffet-evening', title: t('home.hours.buffetEveningTitle'),  time: '18:00 – 22:00', days: [false, false, false, false, true,  true,  true,  true ] },
+    { key: 'noon',           title: t('home.hours.noonTitle'),           time: range(SCHEDULE.lunch),         days: onDays('tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'holiday') },
+    { key: 'evening',        title: t('home.hours.eveningTitle'),        time: range(SCHEDULE.dinner),        days: onDays('tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'holiday') },
+    { key: 'lunch',          title: t('home.hours.lunchTitle'),          time: range(SCHEDULE.lunchSpecial),  days: onDays('tue', 'wed', 'thu', 'fri', 'sat') },
+    { key: 'buffet-noon',    title: t('home.hours.buffetNoonTitle'),     time: range(SCHEDULE.buffetNoon),    days: onDays('sun', 'holiday') },
+    { key: 'buffet-evening', title: t('home.hours.buffetEveningTitle'),  time: range(SCHEDULE.buffetEvening), days: onDays('fri', 'sat', 'sun', 'holiday') },
   ]
 
   return (
