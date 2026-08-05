@@ -17,9 +17,9 @@ import {
 } from '@mui/material'
 import { Check, ExpandMore, Close as CloseIcon, Menu as MenuIcon } from '@mui/icons-material'
 import { Link, useLocation } from 'wouter'
-import { useI18n } from '../i18n'
-import deFlag from '../assets/flags/de.svg'
-import gbFlag from '../assets/flags/gb.svg'
+import { useI18n } from '../../i18n'
+import deFlag from '../../assets/flags/de.svg'
+import gbFlag from '../../assets/flags/gb.svg'
 
 const links = [
   { href: '/', key: 'nav.home' },

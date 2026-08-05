@@ -3,10 +3,10 @@ import { Switch, Route, useLocation } from 'wouter'
 import { CssBaseline, Box, CircularProgress, ThemeProvider } from '@mui/material'
 import theme from './theme'
 import { I18nProvider } from './i18n'
-import Navbar from './components/Navbar'
-import PageMeta from './components/PageMeta'
-import Footer from './components/Footer'
-import PageLayout from './components/PageLayout'
+import Navbar from './components/layout/Navbar'
+import PageMeta from './components/features/PageMeta'
+import Footer from './components/layout/Footer'
+import PageLayout from './components/layout/PageLayout'
 
 // Route-level code splitting: each page loads in its own chunk on first visit,
 // keeping the initial bundle small.

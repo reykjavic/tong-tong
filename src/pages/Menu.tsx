@@ -1,7 +1,6 @@
 import { useI18n } from '../i18n'
-import { PAGE_VERTICAL_PADDING } from '../layout'
-import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
-import { Box, Container, Paper, Button, Typography, useTheme, useMediaQuery } from '@mui/material'
+import PageContainer from '../components/layout/PageContainer'
+import { Box, Paper, Button, Typography, useTheme, useMediaQuery } from '@mui/material'
 
 const MENU_PDF_URL = '/tong-tong-2026.pdf'
 
@@ -11,9 +10,8 @@ export default function Menu() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   return (
-    <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
-      <VisuallyHiddenH1>{t('menu.title')}</VisuallyHiddenH1>
-        <Box sx={{ textAlign: 'center', mb: 3 }}>
+    <PageContainer title={t('menu.title')}>
+      <Box sx={{ textAlign: 'center', mb: 3 }}>
           <Button
             variant="contained"
             component="a"
@@ -42,6 +40,6 @@ export default function Menu() {
             />
           </Paper>
         )}
-    </Container>
+    </PageContainer>
   )
 }

@@ -2,7 +2,7 @@ import { Typography } from '@mui/material'
 import type { ReactNode } from 'react'
 
 // Screen-reader-only H1 so every page has exactly one, without visual noise.
-export default function VisuallyHiddenH1({ children }: { children: ReactNode }) {
+export default function ScreenReaderPageTitle({ children }: { children: ReactNode }) {
   return (
     <Typography
       component="h1"

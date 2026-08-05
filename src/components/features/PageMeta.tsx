@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation } from 'wouter'
-import { useI18n } from '../i18n'
+import { useI18n } from '../../i18n'
 
 // Map each route to i18n keys for its <title> and meta description.
 // Kept in sync with the routes registered in App.tsx.

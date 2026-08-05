@@ -8,4 +8,7 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  server: {
+    host: true, // bind to 0.0.0.0 so LAN/mobile devices can reach the dev server
+  },
 })

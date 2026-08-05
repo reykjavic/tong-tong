@@ -15,7 +15,7 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 5. **German legal requirements** - This is a German business website. Impressum and Datenschutz (privacy) are legally required.
 
 ## File Structure Conventions
-> **Note:** User has requested a flat src/ directory structure for all subsequent development.
+> **Note:** The `src/` top level stays flat (single files at the `src/` root, `src/pages/`, `src/locales/`). The exception is `src/components/`, organized into `layout/`, `ui/`, and `features/` subfolders (see classification rule below).
 ```
 /
 ├── SPEC.md                    # Project requirements
@@ -42,13 +42,22 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 │   │   ├── Posts.tsx          # Blog posts page
 │   │   └── NotFound.tsx       # 404 catch-all route
 │   └── components/            # Reusable MUI components
-│       ├── Navbar.tsx         # Navigation bar
-│       ├── Footer.tsx         # Footer component
-│       ├── PageLayout.tsx     # Shared page shell (main > Container > Paper)
-│       ├── PageMeta.tsx       # Per-route <title> + meta description
-│       ├── OpeningHours.tsx   # Opening hours section (reused on home + /hours)
-│       ├── VisuallyHiddenH1.tsx # Accessible h1 that's visually hidden
-│       └── Markdown.tsx       # Markdown renderer for post bodies
+│       ├── layout/            # Page chrome & structure (where things go)
+│       │   ├── Navbar.tsx     #   Navigation bar
+│       │   ├── Footer.tsx     #   Footer component
+│       │   ├── PageLayout.tsx #   App-wide shell (main > Container > Paper)
+│       │   └── PageContainer.tsx # Per-page wrapper: vertical padding + sr-only <h1>
+│       ├── ui/                # Dumb presentational primitives (no hooks/logic)
+│       │   ├── ContentCard.tsx#   Shared static-content Paper wrapper
+│       │   ├── ScreenReaderPageTitle.tsx # sr-only <h1> for the page title
+│       │   └── typography/    #   Text system: Title + BodyText primitives
+│       │       ├── Title.tsx  #     Brand heading (primary color, 700 weight)
+│       │       ├── BodyText.tsx #   Body paragraph (secondary color, lineHeight 1.7)
+│       │       └── index.ts   #     Barrel export
+│       └── features/          # Product-specific, self-contained units
+│           ├── PageMeta.tsx   #   Per-route <title> + meta description
+│           ├── OpeningHours.tsx # Opening hours section (reused on home + /hours)
+│           └── Markdown.tsx   #   Markdown renderer for post bodies
 ├── public/
 │   ├── admin/                 # Decap CMS admin files (index.html + config.yml)
 │   ├── images/                # Static images
@@ -56,6 +65,11 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 └── content/
     └── posts/                 # Markdown posts managed by Decap CMS
 ```
+
+**Where a new component goes** (decide in this order):
+1. **Knows about the product** (restaurant, opening hours, posts, routes) → `components/features/`
+2. **Defines page structure/chrome** (navbar, footer, the page shell) → `components/layout/`
+3. Otherwise, a **dumb presentational primitive** (pure props → markup, no hooks/data) → `components/ui/`
 
 ## Coding Standards
 - **TypeScript** preferred over JavaScript

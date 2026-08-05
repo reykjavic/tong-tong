@@ -1,9 +1,8 @@
 import { useI18n } from '../i18n'
-import { PAGE_VERTICAL_PADDING } from '../layout'
-import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
-import { Box, Container, Typography, Paper, Button, Link as MuiLink, Grid, Divider, useTheme, useMediaQuery } from '@mui/material'
+import PageContainer from '../components/layout/PageContainer'
+import { Box, Typography, Paper, Button, Link as MuiLink, Grid, Divider, useTheme, useMediaQuery } from '@mui/material'
 import { Place, Phone } from '@mui/icons-material'
-import OpeningHours from '../components/OpeningHours'
+import OpeningHours from '../components/features/OpeningHours'
 
 const MAPS_EMBED_URL =
   'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2536.859714738695!2d8.391808216312537!3d50.518176990362726!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47bc4f15ef994165%3A0x1b21e30f9a0f016a!2sChina-Restaurant%20Tong%20Tong!5e0!3m2!1sen!2sde!4v1586771078683!5m2!1sen!2sde'
@@ -68,8 +67,7 @@ export default function Contact() {
 
   return (
     <>
-      <Container maxWidth={isMobile ? false : 'lg'} disableGutters={isMobile} sx={{ py: PAGE_VERTICAL_PADDING }}>
-        <VisuallyHiddenH1>{t('contact.title')}</VisuallyHiddenH1>
+      <PageContainer title={t('contact.title')}>
         {isMobile ? (
           /* Mobile: full-width stacked cards */
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -87,8 +85,10 @@ export default function Contact() {
             </Grid>
           </Grid>
         )}
-      </Container>
-      <OpeningHours />
+      </PageContainer>
+      <Box sx={{ py: { xs: 4, sm: 6 } }}>
+        <OpeningHours />
+      </Box>
     </>
   )
 }

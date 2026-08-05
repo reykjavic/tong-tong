@@ -1,27 +1,29 @@
-import { Button, Container, Paper, Typography } from '@mui/material'
+import { Button, Stack } from '@mui/material'
 import { Link } from 'wouter'
 import { useI18n } from '../i18n'
-import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
+import ScreenReaderPageTitle from '../components/ui/ScreenReaderPageTitle'
+import { Title, BodyText } from '../components/ui/typography'
 
 export default function NotFound() {
   const { t } = useI18n()
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 8, sm: 12 } }}>
-      <VisuallyHiddenH1>{t('notFound.title')}</VisuallyHiddenH1>
-      <Paper elevation={0} sx={{ p: { xs: 4, sm: 6 }, textAlign: 'center', bgcolor: 'transparent' }}>
-        <Typography variant="h2" sx={{ fontWeight: 800, color: 'primary.main', mb: 1 }}>
-          404
-        </Typography>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          {t('notFound.title')}
-        </Typography>
-        <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4 }}>
-          {t('notFound.message')}
-        </Typography>
-        <Button variant="contained" component={Link} href="/" sx={{ bgcolor: 'primary.main', fontWeight: 600, '&:hover': { bgcolor: 'primary.dark' } }}>
-          {t('common.backToHome')}
-        </Button>
-      </Paper>
-    </Container>
+    <Stack spacing={2} alignItems="center" sx={{ py: { xs: 8, sm: 12 }, maxWidth: 'sm', mx: 'auto' }}>
+      <ScreenReaderPageTitle>{t('notFound.title')}</ScreenReaderPageTitle>
+      <Title variant="h2" align="center">
+        404
+      </Title>
+      <Title variant="h5" align="center" color="text.primary">
+        {t('notFound.title')}
+      </Title>
+      <BodyText align="center">{t('notFound.message')}</BodyText>
+      <Button
+        variant="contained"
+        component={Link}
+        href="/"
+        sx={{ fontWeight: 600, '&:hover': { bgcolor: 'primary.dark' } }}
+      >
+        {t('common.backToHome')}
+      </Button>
+    </Stack>
   )
 }
