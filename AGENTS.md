@@ -46,7 +46,7 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 │       │   ├── Navbar.tsx     #   Navigation bar
 │       │   ├── Footer.tsx     #   Footer component
 │       │   ├── PageLayout.tsx #   App-wide shell (main > Container > Paper)
-│       │   └── PageContainer.tsx # Per-page wrapper: Container + sr-only <h1>
+│       │   └── PageContainer.tsx # Per-page wrapper: vertical padding + sr-only <h1>
 │       ├── ui/                # Dumb presentational primitives (no hooks/logic)
 │       │   ├── ContentCard.tsx#   Shared static-content Paper wrapper
 │       │   ├── ScreenReaderPageTitle.tsx # sr-only <h1> for the page title

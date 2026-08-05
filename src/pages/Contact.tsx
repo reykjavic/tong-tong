@@ -67,7 +67,7 @@ export default function Contact() {
 
   return (
     <>
-      <PageContainer title={t('contact.title')} isMobile>
+      <PageContainer title={t('contact.title')}>
         {isMobile ? (
           /* Mobile: full-width stacked cards */
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -86,7 +86,9 @@ export default function Contact() {
           </Grid>
         )}
       </PageContainer>
-      <OpeningHours />
+      <Box sx={{ py: { xs: 4, sm: 6 } }}>
+        <OpeningHours />
+      </Box>
     </>
   )
 }

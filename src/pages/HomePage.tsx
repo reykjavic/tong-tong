@@ -1,5 +1,5 @@
 import { useI18n } from '../i18n'
-import { Box, Container, Paper, Typography, Button, Chip, Skeleton, useTheme, useMediaQuery, Stack } from '@mui/material'
+import { Box, Paper, Typography, Button, Chip, Skeleton, useTheme, useMediaQuery, Stack } from '@mui/material'
 import { usePosts, formatPostDate } from '../posts'
 import OpeningHours from '../components/features/OpeningHours'
 import ScreenReaderPageTitle from '../components/ui/ScreenReaderPageTitle'
@@ -196,8 +196,8 @@ function LatestNewsSection() {
 
   if (status === 'loading') {
     return (
-      <Container maxWidth={isMobile ? false : 'lg'} disableGutters={isMobile} sx={{ py: { xs: 4, sm: 6 } }}>
-        <Box sx={{ px: isMobile ? 2 : 0 }}>{sectionHeading}</Box>
+      <Box sx={{ py: { xs: 4, sm: 6 } }}>
+        {sectionHeading}
         <Paper elevation={3} sx={{ borderRadius: 3, overflow: 'hidden', display: 'flex', flexDirection: isMobile ? 'column' : 'row' }}>
           <Skeleton variant="rectangular" sx={{ width: isMobile ? '100%' : 280, height: isMobile ? 200 : 'auto', borderRadius: 0 }} />
           <Box sx={{ p: { xs: 3, sm: 4 }, flex: 1 }}>
@@ -210,18 +210,18 @@ function LatestNewsSection() {
             <Skeleton variant="rectangular" width={140} height={40} sx={{ borderRadius: 2 }} />
           </Box>
         </Paper>
-      </Container>
+      </Box>
     )
   }
 
   if (status === 'error' || (status === 'ready' && !post)) {
     return (
-      <Container maxWidth={isMobile ? false : 'lg'} disableGutters={isMobile} sx={{ py: { xs: 4, sm: 6 } }}>
-        <Box sx={{ px: isMobile ? 2 : 0 }}>{sectionHeading}</Box>
-        <Typography variant="body1" sx={{ px: isMobile ? 2 : 0, color: 'text.secondary' }}>
+      <Box sx={{ py: { xs: 4, sm: 6 } }}>
+        {sectionHeading}
+        <Typography variant="body1" sx={{ color: 'text.secondary' }}>
           {t('posts.noPosts')}
         </Typography>
-      </Container>
+      </Box>
     )
   }
 
@@ -257,8 +257,8 @@ function LatestNewsSection() {
   )
 
   return (
-    <Container maxWidth={isMobile ? false : 'lg'} disableGutters={isMobile} sx={{ py: { xs: 4, sm: 6 } }}>
-      <Box sx={{ px: isMobile ? 2 : 0 }}>{sectionHeading}</Box>
+    <Box sx={{ py: { xs: 4, sm: 6 } }}>
+      {sectionHeading}
       <Paper elevation={3} sx={{
         borderRadius: 3, overflow: 'hidden',
         display: 'flex', flexDirection: isMobile ? 'column' : 'row',
@@ -267,22 +267,20 @@ function LatestNewsSection() {
         {thumbnail}
         {postContent}
       </Paper>
-    </Container>
+    </Box>
   )
 }
 
 export default function Home() {
   const { t } = useI18n()
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   return (
     <Box sx={{ py: 0 }}>
       <ScreenReaderPageTitle>{t('meta.home.title')}</ScreenReaderPageTitle>
       <HeroSection />
       <LatestNewsSection />
-      <Container maxWidth={isMobile ? false : 'lg'} disableGutters={isMobile} sx={{ py: { xs: 4, sm: 6 } }}>
+      <Box sx={{ py: { xs: 4, sm: 6 } }}>
         <OpeningHours />
-      </Container>
+      </Box>
     </Box>
   )
 }
