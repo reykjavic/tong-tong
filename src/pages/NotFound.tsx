@@ -1,7 +1,7 @@
 import { Button, Container, Paper, Typography } from '@mui/material'
 import { Link } from 'wouter'
 import { useI18n } from '../i18n'
-import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
+import VisuallyHiddenH1 from '../components/ui/VisuallyHiddenH1'
 
 export default function NotFound() {
   const { t } = useI18n()

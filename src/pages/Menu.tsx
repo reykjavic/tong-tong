@@ -1,6 +1,6 @@
 import { useI18n } from '../i18n'
 import { PAGE_VERTICAL_PADDING } from '../layout'
-import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
+import VisuallyHiddenH1 from '../components/ui/VisuallyHiddenH1'
 import { Box, Container, Paper, Button, Typography, useTheme, useMediaQuery } from '@mui/material'
 
 const MENU_PDF_URL = '/tong-tong-2026.pdf'

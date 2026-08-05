@@ -1,44 +1,39 @@
 import { useI18n } from '../i18n'
 import { PAGE_VERTICAL_PADDING } from '../layout'
-import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
-import { Box, Container, Paper, Typography, useTheme } from '@mui/material'
+import VisuallyHiddenH1 from '../components/ui/VisuallyHiddenH1'
+import ContentCard from '../components/ui/ContentCard'
+import { Title, BodyText } from '../components/ui/typography'
+import { Container, Stack } from '@mui/material'
 
 export default function Impressum() {
   const { t } = useI18n()
-  const theme = useTheme()
 
   return (
     <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
       <VisuallyHiddenH1>{t('impressum.title')}</VisuallyHiddenH1>
-        <Paper elevation={3} sx={{ borderRadius: 3, p: { xs: 3, sm: 5 }, bgcolor: theme.palette.background.paper }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: theme.palette.primary.main }}>
-            {t('impressum.heading')}
-          </Typography>
-
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-            {t('impressum.name')}
-          </Typography>
-
-          <Box sx={{ '& > :not(:last-child)': { mb: 2 } }}>
-            <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-              <strong>{t('impressum.representedBy')}</strong> {t('impressum.representatives')}
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-              <strong>{t('impressum.address')}</strong> {t('impressum.street')}, {t('impressum.city')}
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-              <strong>{t('impressum.phone')}</strong> {t('impressum.phoneNumber')}
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-              <strong>{t('impressum.vatLabel')}</strong>
-              <br />
-              {t('impressum.vatNumber')}
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-              <strong>{t('impressum.authorityLabel')}</strong> {t('impressum.authority')}
-            </Typography>
-          </Box>
-        </Paper>
+      <ContentCard>
+        <Stack spacing={2}>
+          <Title variant="h5">{t('impressum.heading')}</Title>
+          <Title variant="h6" color="text.primary">{t('impressum.name')}</Title>
+          <BodyText>
+            <strong>{t('impressum.representedBy')}</strong> {t('impressum.representatives')}
+          </BodyText>
+          <BodyText>
+            <strong>{t('impressum.address')}</strong> {t('impressum.street')}, {t('impressum.city')}
+          </BodyText>
+          <BodyText>
+            <strong>{t('impressum.phone')}</strong> {t('impressum.phoneNumber')}
+          </BodyText>
+          <BodyText>
+            <strong>{t('impressum.vatLabel')}</strong>
+            <br />
+            {t('impressum.vatNumber')}
+          </BodyText>
+          <BodyText>
+            <strong>{t('impressum.authorityLabel')}</strong> {t('impressum.authority')}
+          </BodyText>
+        </Stack>
+      </ContentCard>
     </Container>
   )
 }

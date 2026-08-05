@@ -1,10 +1,10 @@
 import { useI18n } from '../i18n'
 import { PAGE_VERTICAL_PADDING } from '../layout'
-import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
+import VisuallyHiddenH1 from '../components/ui/VisuallyHiddenH1'
 import { Box, Container, Typography, Paper, Button, Card, CardContent, CardMedia, Skeleton, useTheme } from '@mui/material'
 import { Link } from 'wouter'
 import { usePosts, formatPostDate, type Post } from '../posts'
-import Markdown from '../components/Markdown'
+import Markdown from '../components/features/Markdown'
 
 function PostCard({ post, language }: { post: Post; language: string }) {
   const theme = useTheme()

@@ -1,6 +1,6 @@
 import { useI18n } from '../i18n'
-import VisuallyHiddenH1 from '../components/VisuallyHiddenH1'
-import OpeningHours from '../components/OpeningHours'
+import VisuallyHiddenH1 from '../components/ui/VisuallyHiddenH1'
+import OpeningHours from '../components/features/OpeningHours'
 
 export default function Hours() {
   const { t } = useI18n()
