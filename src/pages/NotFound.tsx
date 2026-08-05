@@ -1,13 +1,13 @@
 import { Button, Container, Paper, Typography } from '@mui/material'
 import { Link } from 'wouter'
 import { useI18n } from '../i18n'
-import VisuallyHiddenH1 from '../components/ui/VisuallyHiddenH1'
+import ScreenReaderPageTitle from '../components/ui/ScreenReaderPageTitle'
 
 export default function NotFound() {
   const { t } = useI18n()
   return (
     <Container maxWidth="sm" sx={{ py: { xs: 8, sm: 12 } }}>
-      <VisuallyHiddenH1>{t('notFound.title')}</VisuallyHiddenH1>
+      <ScreenReaderPageTitle>{t('notFound.title')}</ScreenReaderPageTitle>
       <Paper elevation={0} sx={{ p: { xs: 4, sm: 6 }, textAlign: 'center', bgcolor: 'transparent' }}>
         <Typography variant="h2" sx={{ fontWeight: 800, color: 'primary.main', mb: 1 }}>
           404

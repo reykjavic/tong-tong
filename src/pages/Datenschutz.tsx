@@ -1,9 +1,8 @@
 import { useI18n } from '../i18n'
-import { PAGE_VERTICAL_PADDING } from '../layout'
-import VisuallyHiddenH1 from '../components/ui/VisuallyHiddenH1'
 import ContentCard from '../components/ui/ContentCard'
+import PageContainer from '../components/layout/PageContainer'
 import { Title, BodyText } from '../components/ui/typography'
-import { Container, Stack } from '@mui/material'
+import { Stack } from '@mui/material'
 
 interface Section {
   title: string
@@ -23,8 +22,7 @@ export default function Datenschutz() {
   ]
 
   return (
-    <Container maxWidth="lg" sx={{ py: PAGE_VERTICAL_PADDING }}>
-      <VisuallyHiddenH1>{t('datenschutz.title')}</VisuallyHiddenH1>
+    <PageContainer title={t('datenschutz.title')}>
       <ContentCard>
         <Stack spacing={2}>
           <BodyText>{t('datenschutz.intro')}</BodyText>
@@ -36,6 +34,6 @@ export default function Datenschutz() {
           ))}
         </Stack>
       </ContentCard>
-    </Container>
+    </PageContainer>
   )
 }

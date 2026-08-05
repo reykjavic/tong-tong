@@ -2,7 +2,7 @@ import { useI18n } from '../i18n'
 import { Box, Container, Paper, Typography, Button, Chip, Skeleton, useTheme, useMediaQuery, Stack } from '@mui/material'
 import { usePosts, formatPostDate } from '../posts'
 import OpeningHours from '../components/features/OpeningHours'
-import VisuallyHiddenH1 from '../components/ui/VisuallyHiddenH1'
+import ScreenReaderPageTitle from '../components/ui/ScreenReaderPageTitle'
 import 'swiper/css'
 import 'swiper/css/pagination'
 import 'swiper/css/navigation'
@@ -275,7 +275,7 @@ export default function Home() {
   const { t } = useI18n()
   return (
     <Box sx={{ py: 0 }}>
-      <VisuallyHiddenH1>{t('meta.home.title')}</VisuallyHiddenH1>
+      <ScreenReaderPageTitle>{t('meta.home.title')}</ScreenReaderPageTitle>
       <HeroSection />
       <LatestNewsSection />
       <OpeningHours />

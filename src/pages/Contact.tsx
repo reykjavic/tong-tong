@@ -1,7 +1,6 @@
 import { useI18n } from '../i18n'
-import { PAGE_VERTICAL_PADDING } from '../layout'
-import VisuallyHiddenH1 from '../components/ui/VisuallyHiddenH1'
-import { Box, Container, Typography, Paper, Button, Link as MuiLink, Grid, Divider, useTheme, useMediaQuery } from '@mui/material'
+import PageContainer from '../components/layout/PageContainer'
+import { Box, Typography, Paper, Button, Link as MuiLink, Grid, Divider, useTheme, useMediaQuery } from '@mui/material'
 import { Place, Phone } from '@mui/icons-material'
 import OpeningHours from '../components/features/OpeningHours'
 
@@ -68,8 +67,7 @@ export default function Contact() {
 
   return (
     <>
-      <Container maxWidth={isMobile ? false : 'lg'} disableGutters={isMobile} sx={{ py: PAGE_VERTICAL_PADDING }}>
-        <VisuallyHiddenH1>{t('contact.title')}</VisuallyHiddenH1>
+      <PageContainer title={t('contact.title')} isMobile>
         {isMobile ? (
           /* Mobile: full-width stacked cards */
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -87,7 +85,7 @@ export default function Contact() {
             </Grid>
           </Grid>
         )}
-      </Container>
+      </PageContainer>
       <OpeningHours />
     </>
   )

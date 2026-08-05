@@ -45,10 +45,11 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 │       ├── layout/            # Page chrome & structure (where things go)
 │       │   ├── Navbar.tsx     #   Navigation bar
 │       │   ├── Footer.tsx     #   Footer component
-│       │   └── PageLayout.tsx #   Shared page shell (main > Container > Paper)
+│       │   ├── PageLayout.tsx #   App-wide shell (main > Container > Paper)
+│       │   └── PageContainer.tsx # Per-page wrapper: Container + sr-only <h1>
 │       ├── ui/                # Dumb presentational primitives (no hooks/logic)
 │       │   ├── ContentCard.tsx#   Shared static-content Paper wrapper
-│       │   ├── VisuallyHiddenH1.tsx # Accessible h1 that's visually hidden
+│       │   ├── ScreenReaderPageTitle.tsx # sr-only <h1> for the page title
 │       │   └── typography/    #   Text system: Title + BodyText primitives
 │       │       ├── Title.tsx  #     Brand heading (primary color, 700 weight)
 │       │       ├── BodyText.tsx #   Body paragraph (secondary color, lineHeight 1.7)
