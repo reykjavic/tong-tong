@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Website for China Restaurant Tong Tong (Braunfels, Germany): Vite + React + TypeScript + MUI, statically deployed to AWS S3. Content is German-first with English i18n. `SPEC.md` has the full requirements; `AGENTS.md` contains prior AI-agent conventions. **`SPEC.md` / `README.md` / `AGENTS.md` are stale** — see "Color palette" below for the actual values.
+Website for China Restaurant Tong Tong (Braunfels, Germany): Vite + React + TypeScript + MUI, statically deployed to AWS S3 + CloudFront. Content is German-first with English i18n. `SPEC.md` has the full requirements, annotated with `[built]` / `[planned]` / `[changed]` status markers; `AGENTS.md` contains prior AI-agent conventions; `README.md` documents the current state. The color palette is documented in `theme.ts` (canonical source) and repeated in the README.
 
 ## Commands
 

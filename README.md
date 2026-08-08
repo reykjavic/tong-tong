@@ -32,13 +32,20 @@ npm run preview
 ```
 ├── src/
 │   ├── pages/        # Route components
-│   ├── components/   # Reusable MUI components
+│   ├── components/   # MUI components (layout/ | ui/ | features/)
+│   ├── hooks/        # Custom hooks / data-access modules (e.g. posts.ts)
+│   ├── assets/       # Static images + barrel exports
 │   ├── locales/      # Translation files (de.json, en.json)
 │   ├── App.tsx       # Routes + theme setup
 │   ├── main.tsx      # App entry point
-│   └── theme.ts      # MUI theme config
+│   ├── theme.ts      # MUI theme config
+│   ├── i18n.tsx      # Language detection + translation context
+│   └── layout.ts     # Shared layout constants
 ├── public/
-│   └── admin/        # Decap CMS config
+│   ├── admin/        # Decap CMS config
+│   └── images/       # Decap media folder + og:image social share image
+├── content/
+│   └── posts/        # Decap-managed Markdown posts
 ├── index.html
 ├── package.json
 └── vite.config.ts
@@ -58,4 +65,4 @@ All UI text uses translation files in `src/locales/`:
 
 ## Deployment
 
-Build output goes to `dist/`, ready for S3 upload.
+The site is hosted on **AWS S3** behind **CloudFront** (HTTPS, SPA deep-link rewrites). On every push/merge to `main`, the GitHub Actions workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs `npm ci` → `npm run build` → `aws s3 sync dist/` → CloudFront invalidation.
