@@ -25,7 +25,7 @@ When a real domain is chosen (later):
 - [ ] **DNS** record at the registrar pointing at the CloudFront distribution.
 - [ ] **Cleanup**: bucket policy → CloudFront-only, enable Block All Public Access, disable S3 static website hosting.
 
-## � Staging vs Production (planned — NOT started yet)
+## 🧪 Staging vs Production (planned — NOT started yet)
 Goal: separate a protected **staging** env from public **production**, and later move `tong-tong.eu` from Strato to AWS.
 
 ### Architecture
@@ -44,7 +44,7 @@ Goal: separate a protected **staging** env from public **production**, and later
 - [ ] Optional: **required approval** gate on `production` before anything goes live
 - [ ] Eventually: move `tong-tong.eu` from Strato → AWS (ACM cert + DNS record once production is ready)
 
-## �💡 Ideas / optional
+## 💡 Ideas / optional
 - [ ] Preview deploy for feature branches (separate preview bucket) before merging to `main`
 - [x] Updated `SPEC.md` / `README.md` / `AGENTS.md` to reference `#00695C` deep teal + `#7B1F2B` burgundy (old `#00A896` turquoise is gone)
 

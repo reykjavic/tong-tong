@@ -29,7 +29,8 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 │   ├── theme.ts               # MUI theme configuration
 │   ├── i18n.tsx               # Language detection + context
 │   ├── layout.ts              # Shared layout constants (PAGE_VERTICAL_PADDING)
-│   ├── posts.ts               # Post fetching/parsing (GitHub Contents API + frontmatter)
+│   ├── hooks/                 # Custom hooks / data-access modules
+│   │   └── posts.ts           #   Post fetching/parsing (GitHub Contents API + frontmatter)
 │   ├── locales/               # Translation JSON files (de.json, en.json)
 │   ├── pages/                 # Route components (HomePage.tsx, About.tsx, etc.)
 │   │   ├── HomePage.tsx       # Home page component
