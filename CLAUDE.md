@@ -34,11 +34,11 @@ There is no test suite and no lint script configured. Use `npx tsc --noEmit` for
 - Wouter for routing — never Next.js.
 - German (`de`) is the default language; `en` is a full mirror.
 - Impressum and Datenschutz pages are legally required for this German business site.
-- Keep `src/` flat at the top level: `src/pages/`, `src/locales/`, and single files at the `src/` root (user preference). The exception is `src/components/`, which is organized into `layout/`, `ui/`, and `features/` subfolders (see "Component structure" above).
+- Keep `src/` flat at the top level: `src/pages/`, `src/locales/`, `src/hooks/` (custom hooks / data-access modules, e.g. `src/hooks/posts.ts`), and single files at the `src/` root (user preference). The exception is `src/components/`, which is organized into `layout/`, `ui/`, and `features/` subfolders (see "Component structure" above).
 
 ## Decap CMS (implemented)
 
-Decap CMS manages news posts as Markdown in `content/posts/`, edited via `public/admin/`. Posts are fetched at runtime from GitHub (Contents API + `raw.githubusercontent.com`), rendered by `src/posts.ts`, and shown on the homepage (latest post) and `/posts`. The `decap-oauth` Lambda (in `decap-oauth/`) handles the GitHub OAuth handshake — see `TODO.md` for the pending security hardening before/after the `tong-tong.eu` domain cutover.
+Decap CMS manages news posts as Markdown in `content/posts/`, edited via `public/admin/`. Posts are fetched at runtime from GitHub (Contents API + `raw.githubusercontent.com`), rendered by `src/hooks/posts.ts`, and shown on the homepage (latest post) and `/posts`. The `decap-oauth` Lambda (in `decap-oauth/`) handles the GitHub OAuth handshake — see `TODO.md` for the pending security hardening before/after the `tong-tong.eu` domain cutover.
 
 ## Deployment
 

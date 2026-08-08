@@ -2,7 +2,7 @@ import { useI18n } from '../i18n'
 import PageContainer from '../components/layout/PageContainer'
 import { Box, Typography, Paper, Button, Card, CardContent, CardMedia, Skeleton, useTheme } from '@mui/material'
 import { Link } from 'wouter'
-import { usePosts, formatPostDate, type Post } from '../posts'
+import { usePosts, formatPostDate, type Post } from '../hooks/posts'
 import Markdown from '../components/features/Markdown'
 
 function PostCard({ post, language }: { post: Post; language: string }) {

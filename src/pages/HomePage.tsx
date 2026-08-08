@@ -1,6 +1,6 @@
 import { useI18n } from '../i18n'
 import { Box, Paper, Typography, Button, Chip, Skeleton, useTheme, useMediaQuery, Stack } from '@mui/material'
-import { useLatestPost, formatPostDate } from '../posts'
+import { useLatestPost, formatPostDate } from '../hooks/posts'
 import OpeningHours from '../components/features/OpeningHours'
 import ScreenReaderPageTitle from '../components/ui/ScreenReaderPageTitle'
 import 'swiper/css'
