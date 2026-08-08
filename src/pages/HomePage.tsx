@@ -6,30 +6,19 @@ import ScreenReaderPageTitle from '../components/ui/ScreenReaderPageTitle'
 import 'swiper/css'
 import 'swiper/css/pagination'
 import 'swiper/css/navigation'
+import 'swiper/css/effect-fade'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Autoplay, Pagination, Navigation as SwiperNavigation } from 'swiper/modules'
+import { Autoplay, Pagination, Navigation as SwiperNavigation, EffectFade } from 'swiper/modules'
 import { Link } from 'wouter'
-import heroInterior1 from '../assets/images/hero-interior-1.webp'
-import heroInterior2 from '../assets/images/hero-interior-2.webp'
-import heroImage from '../assets/images/legacy-background-image.webp'
-
-interface HeroSlide {
-  bg?: string
-  image?: string
-  title: string
-  subtitle: string
-}
+import { hero03, hero04, hero06, hero07, hero08, hero11, hero12, hero14 } from '../assets/images'
 
 function HeroSection() {
   const { t } = useI18n()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
-  const slides: HeroSlide[] = [
-    { image: heroInterior1, title: t('home.hero.title1'), subtitle: t('home.hero.title2') },
-    { image: heroInterior2, title: t('home.hero.title1'), subtitle: t('home.hero.title2') },
-    { image: heroImage, title: t('home.hero.title1'), subtitle: t('home.hero.title2') },
-    { bg: 'linear-gradient(135deg, #7B1F2B 0%, #4A1018 100%)', title: t('contact.title'), subtitle: '' },
+  const heroImages = [
+    hero03, hero04, hero06, hero07, hero08, hero11, hero12, hero14,
   ]
 
   return (
@@ -78,43 +67,50 @@ function HeroSection() {
       },
     }}>
       <Swiper
-        modules={[Autoplay, Pagination, SwiperNavigation]}
+        modules={[Autoplay, Pagination, SwiperNavigation, EffectFade]}
         spaceBetween={0}
         slidesPerView={1}
+        effect="fade"
+        fadeEffect={{ crossFade: true }}
+        speed={1200}
         autoplay={{ delay: 10000, disableOnInteraction: false }}
         pagination={{ clickable: true }}
         navigation
         loop
         style={{ height: isMobile ? '100dvh' : '100vh' }}
       >
-        {slides.map((slide, i) => (
+        {heroImages.map((image, i) => (
           <SwiperSlide key={i}>
-            <Box sx={{
-              height: '100%',
-              boxSizing: 'border-box',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: slide.image ? 'flex-end' : 'center',
-              textAlign: 'center',
-              background: slide.image
-                ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url(${slide.image}) center/cover no-repeat`
-                : slide.bg,
-              px: 2,
-              py: { xs: 8, sm: 10 },
-            }}>
-              {!slide.image && (
-                <>
-                  <Typography variant={isMobile ? 'h4' : 'h2'} sx={{ color: 'white', fontWeight: 700, mb: 1, textShadow: '0 2px 8px rgba(0,0,0,0.35)' }}>
-                    {slide.title}
-                  </Typography>
-                  {slide.subtitle && (
-                    <Typography variant={isMobile ? 'h6' : 'h4'} sx={{ color: 'rgba(255,255,255,0.9)', fontWeight: 400, mb: isMobile ? 2 : 3 }}>
-                      {slide.subtitle}
-                    </Typography>
-                  )}
-                </>
-              )}
+            <Box sx={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
+              <Box
+                component="img"
+                src={image.src}
+                srcSet={image.srcSet}
+                sizes={image.sizes}
+                alt=""
+                loading={i === 0 ? 'eager' : 'lazy'}
+                fetchPriority={i === 0 ? 'high' : 'auto'}
+                decoding="async"
+                draggable={false}
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                  // Promote each slide image to its own compositor layer so the
+                  // cross-fade is a pure GPU composite instead of a repaint.
+                  willChange: 'opacity',
+                  backfaceVisibility: 'hidden',
+                }}
+              />
+              {/* Dark overlay keeps white CTA buttons readable over any slide. */}
+              <Box sx={{
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35))',
+              }} />
             </Box>
           </SwiperSlide>
         ))}
