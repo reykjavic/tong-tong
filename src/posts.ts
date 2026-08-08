@@ -59,6 +59,21 @@ function parseFrontmatter(raw: string): { data: Record<string, string>; content:
   return { data, content: raw.slice(match[0].length) }
 }
 
+// Parse a single Decap post file into a Post. Shared by the full-list fetch
+// (fetchPosts) and the homepage's latest-only fetch (fetchLatestPost).
+function parsePost(fileName: string, raw: string): Post {
+  const { data, content } = parseFrontmatter(raw)
+  const slug = fileName.replace(/\.md$/, '')
+  return {
+    slug,
+    title: String(data.title ?? slug),
+    date: new Date(data.date ? String(data.date) : 0).toISOString(),
+    featuredImage: data.featured_image ? resolveMedia(String(data.featured_image)) : null,
+    excerpt: data.excerpt ? String(data.excerpt) : stripMarkdown(content),
+    content,
+  }
+}
+
 function truncate(text: string, max = 180): string {
   if (text.length <= max) return text
   const cut = text.slice(0, max)
@@ -96,16 +111,7 @@ async function fetchPosts(): Promise<Post[]> {
         // 'no-store' guarantees a fresh 200 with a body (avoids 304 responses
         // whose body fetch() can fail to materialize).
         const raw = await (await fetch(rawUrl(`${POSTS_DIR}/${file.name}`), { cache: 'no-store' })).text()
-        const { data, content } = parseFrontmatter(raw)
-        const slug = file.name.replace(/\.md$/, '')
-        return {
-          slug,
-          title: String(data.title ?? slug),
-          date: new Date(data.date ? String(data.date) : 0).toISOString(),
-          featuredImage: data.featured_image ? resolveMedia(String(data.featured_image)) : null,
-          excerpt: data.excerpt ? String(data.excerpt) : stripMarkdown(content),
-          content,
-        }
+        return parsePost(file.name, raw)
       } catch (err) {
         // A single unparseable post shouldn't blank the whole list.
         console.error(`Failed to load post ${file.name}:`, err)
@@ -152,4 +158,68 @@ export function usePosts() {
   }, [])
 
   return { status, posts }
+}
+
+// Decap names post files `<date>-<slug>.md`, so filename order equals date
+// order. The homepage only shows the newest post, so instead of fetching and
+// parsing every post file we sort the listing and fetch just the newest one.
+// Kept separate from the full-list cache so /posts still fetches everything.
+async function fetchLatestPost(): Promise<Post | null> {
+  const listRes = await fetch(
+    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${POSTS_DIR}?ref=${GITHUB_BRANCH}`,
+    { cache: 'no-store' },
+  )
+  if (listRes.status === 404) return null // no posts directory on GitHub yet
+  if (!listRes.ok) {
+    throw new Error(`GitHub contents request failed: ${listRes.status}`)
+  }
+  const entries = (await listRes.json()) as { name: string }[]
+  const files = entries
+    .filter((entry) => entry.name.endsWith('.md'))
+    .sort((a, b) => (a.name < b.name ? 1 : a.name > b.name ? -1 : 0))
+
+  for (const file of files) {
+    try {
+      const raw = await (await fetch(rawUrl(`${POSTS_DIR}/${file.name}`), { cache: 'no-store' })).text()
+      return parsePost(file.name, raw)
+    } catch (err) {
+      // A single broken post shouldn't blank the homepage — fall back to the
+      // next-newest one, mirroring fetchPosts' resilience.
+      console.error(`Failed to load post ${file.name}:`, err)
+    }
+  }
+  return null
+}
+
+let latestCache: Promise<Post | null> | null = null
+export function getLatestPost(): Promise<Post | null> {
+  latestCache ??= fetchLatestPost().catch((err) => {
+    latestCache = null
+    throw err
+  })
+  return latestCache
+}
+
+export function useLatestPost() {
+  const [post, setPost] = useState<Post | null>(null)
+  const [status, setStatus] = useState<PostsStatus>('loading')
+
+  useEffect(() => {
+    let alive = true
+    getLatestPost()
+      .then((result) => {
+        if (!alive) return
+        setPost(result)
+        setStatus('ready')
+      })
+      .catch((err) => {
+        console.error('Failed to load latest post:', err)
+        if (alive) setStatus('error')
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  return { status, post }
 }

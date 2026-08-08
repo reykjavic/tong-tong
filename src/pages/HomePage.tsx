@@ -1,6 +1,6 @@
 import { useI18n } from '../i18n'
 import { Box, Paper, Typography, Button, Chip, Skeleton, useTheme, useMediaQuery, Stack } from '@mui/material'
-import { usePosts, formatPostDate } from '../posts'
+import { useLatestPost, formatPostDate } from '../posts'
 import OpeningHours from '../components/features/OpeningHours'
 import ScreenReaderPageTitle from '../components/ui/ScreenReaderPageTitle'
 import 'swiper/css'
@@ -176,8 +176,7 @@ function LatestNewsSection() {
   const { t, language } = useI18n()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
-  const { status, posts } = usePosts()
-  const post = posts[0]
+  const { status, post } = useLatestPost()
 
   const sectionHeading = (
     <>
