@@ -1,11 +1,13 @@
 name: Deploy to S3
 
-# Runs whenever code is pushed/merged into main,
-# or manually via the "Run workflow" button in the Actions tab.
+# Deploy code to the right environment based on branch:
+#   main ──▶ production (tong-tong-homepage)
+#   dev  ──▶ staging    (tong-tong-staging)
+# Manual runs ("Run workflow") deploy whichever branch is selected.
 # Doc-only and CI changes are skipped (no deploy needed).
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
     paths-ignore:
       - "*.md"
       - ".github/**"
@@ -13,9 +15,11 @@ on:
 
 permissions:
   contents: read
+  actions: write # required to upload/download the build artifact
 
 jobs:
-  deploy:
+  # Build once, share the dist/ artifact with both deploy jobs.
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,6 +37,25 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 1
+
+  deploy-production:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -40,6 +63,51 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
           # Change if your bucket is in a different region
           aws-region: eu-central-1
+
+      - name: Guard bucket
+        # Refuse to deploy to the production bucket from the staging path.
+        run: |
+          case "${{ vars.S3_BUCKET }}" in
+            ""|tong-tong-homepage) echo "Refusing to deploy to prod bucket"; exit 1 ;;
+          esac
+
+      - name: Deploy to S3
+        # --delete removes any file in the bucket that is not in dist/,
+        # so the bucket always exactly mirrors the latest build.
+        run: aws s3 sync dist/ s3://${{ vars.S3_BUCKET }} --delete
+
+      - name: Invalidate CloudFront cache
+        # Edge caches the old files after s3 sync, so invalidate everything
+        # to make the new build visible immediately.
+        run: aws cloudfront create-invalidation --distribution-id ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+
+  deploy-staging:
+    needs: build
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
+          # Change if your bucket is in a different region
+          aws-region: eu-central-1
+
+      - name: Guard bucket
+        # Never deploy to the production bucket from the staging job, even if
+        # the S3_BUCKET var is missing/empty (GitHub falls back to repo vars).
+        run: |
+          case "${{ vars.S3_BUCKET }}" in
+            ""|tong-tong-homepage) echo "Refusing to deploy to prod bucket"; exit 1 ;;
+          esac
 
       - name: Deploy to S3
         # --delete removes any file in the bucket that is not in dist/,
