@@ -25,6 +25,7 @@ const links = [
   { href: '/', key: 'nav.home' },
   { href: '/about', key: 'nav.about' },
   { href: '/menu', key: 'nav.menu' },
+  { href: '/order', key: 'nav.order' },
   { href: '/contact', key: 'nav.contact' },
 ]
 
