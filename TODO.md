@@ -29,7 +29,7 @@ When a real domain is chosen (later):
 Goal: separate a **staging** env from public **production**, and later move `tong-tong.eu` from Strato to AWS.
 
 ### Architecture
-- **Production** = bucket `tong-tong-homepage` + CloudFront `E1LHD3TBHOG3VX` → later `tong-tong.eu`. Deploys on merge to `main`.
+- **Production** = bucket `tong-tong-homepage` + CloudFront `E1LHD3TBH0G3VX` → later `tong-tong.eu`. Deploys on merge to `main`.
 - **Staging** = bucket `tong-tong-staging` + CloudFront `EBXC3QHV697GU` (`d22hrnca27jxah.cloudfront.net`). Deploys on merge to `dev`. **Done.**
 
 ### Staging protection
