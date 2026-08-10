@@ -18,12 +18,13 @@ Those files are committed to `main` and served **at runtime from GitHub**:
 `raw.githubusercontent.com` (`resolveMedia`), so a newly uploaded image shows
 up on the live site without a rebuild.
 
-## 2. Stable public URLs (the exception)
+## 2. Stable public URLs — use `public/social/` instead
 
 Vite copies everything in `public/` verbatim into `dist/`, so a file here is
-served at `/images/<file>` on the deployed site. Only use this for files that
-need a fixed, publicly reachable URL that isn't part of the app bundle — e.g.
-`og-image.webp`, the social-share image referenced by `index.html`.
+served at a fixed `/…` path on the deployed site. **But `public/images/` is
+reserved for CMS media.** Files that need a stable public URL but aren't post
+images (e.g. `og-image.webp`, the social-share image referenced by
+`index.html`) go in `public/social/` and are served from `/social/…`.
 
 ## Where app images go
 
@@ -37,14 +38,14 @@ they are **not** served from `/images/...`. Don't put app assets here.
 Just like `content/posts/`, the runtime serves CMS media straight from GitHub,
 so you don't need the uploaded image files in your local working copy. This
 repo's dev setup uses git **sparse-checkout** so `public/images/` media files
-are tracked but not materialized — except `og-image.webp` (the social-share
-image referenced by `index.html`) and this `README.md`, which **must** stay in
-the working tree or the build misses the file and the deploy would delete it
-from S3:
+are tracked but not materialized — except this `README.md`, which stays in the
+working tree so it's visible to developers. (App files that live in `public/`
+but need a stable URL — like `public/social/og-image.webp` — are **not**
+excluded; only the CMS media folder is.)
 
 ```bash
 git sparse-checkout set --no-cone '/*' '!/content/posts/' '!/public/images/*' \
-  'public/images/README.md' 'public/images/og-image.webp'
+  'public/images/README.md'
 ```
 
 - Uploaded media stays on `main` (the CMS and runtime keep working); only your
