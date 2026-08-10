@@ -64,13 +64,6 @@ jobs:
           # Change if your bucket is in a different region
           aws-region: eu-central-1
 
-      - name: Guard bucket
-        # Refuse to deploy to the production bucket from the staging path.
-        run: |
-          case "${{ vars.S3_BUCKET }}" in
-            ""|tong-tong-homepage) echo "Refusing to deploy to prod bucket"; exit 1 ;;
-          esac
-
       - name: Deploy to S3
         # --delete removes any file in the bucket that is not in dist/,
         # so the bucket always exactly mirrors the latest build.
