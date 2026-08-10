@@ -1,8 +1,7 @@
 # TODO — Tong Tong Website
 
-Deployment status: ✅ live on S3 static hosting
-`http://tong-tong-homepage.s3-website.eu-central-1.amazonaws.com/`
-CI/CD: GitHub Actions workflow `.github/workflows/deploy.yml` (auto-deploys on push/merge to `main`)
+Deployment status: ✅ live at **https://tong-tong.eu** (S3 + CloudFront, HTTPS)
+CI/CD: GitHub Actions workflow `.github/workflows/deploy.yml` (main → production, dev → staging)
 
 ## ☑️ Done
 - [x] Vite + React + MUI site (i18n DE/EN, navbar with language dropdown + brand mark)
@@ -11,39 +10,38 @@ CI/CD: GitHub Actions workflow `.github/workflows/deploy.yml` (auto-deploys on p
 - [x] Variable: `S3_BUCKET = tong-tong-homepage`
 - [x] IAM user `emon` policy (ListBucket / GetObject / PutObject / DeleteObject)
 
-## 🔜 Next time — production hardening
+## ✅ HTTPS via CloudFront — done
+- [x] **CloudFront distribution** in front of the bucket: OAC origin, redirect HTTP→HTTPS, **custom error responses `403/404 → /index.html`** (SPA deep links work), default root `index.html`.
+- [x] **CloudFront invalidation step in workflow** — `.github/workflows/deploy.yml` runs `aws cloudfront create-invalidation ... --paths "/*"` after `s3 sync`.
+- [x] **AWS-side for invalidation**: `cloudfront:CreateInvalidation` on the `emon` IAM policy + GitHub variable `CLOUDFRONT_DISTRIBUTION_ID` set (watch the zero: production dist is `E1LHD3TBH0G3VX`, **zero not letter O**).
+- [x] **Domain live**: `tong-tong.eu` on CloudFront via Route 53 (ACM cert in us-east-1, A record aliased to `d2p14i2rhwc3q2.cloudfront.net`).
 
-### HTTPS via CloudFront — in progress (testing on default `*.cloudfront.net` URL, no custom domain yet)
-- [x] **CloudFront distribution** in front of the bucket: OAC origin, redirect HTTP→HTTPS, **custom error responses `403/404 → /index.html`** (this fixes SPA deep links like `/posts` — **done**), default root `index.html`.
-- [x] **CloudFront invalidation step in workflow** — `.github/workflows/deploy.yml` now runs `aws cloudfront create-invalidation ... --paths "/*"` after `s3 sync`.
-- [x] **AWS-side for invalidation**: `cloudfront:CreateInvalidation` added to the `emon` IAM policy + GitHub variable `CLOUDFRONT_DISTRIBUTION_ID` set.
-- [x] **Verify** homepage + `/menu` deep link on `https://<distribution-id>.cloudfront.net` (old `http://` S3 URL stays working meanwhile as fallback).
-
-When a real domain is chosen (later):
-- [ ] **ACM certificate** (us-east-1) for the domain + DNS validation.
-- [ ] Add **alternative domain name** + custom SSL cert to the *existing* distribution (edit — no recreate).
-- [ ] **DNS** record at the registrar pointing at the CloudFront distribution.
-- [ ] **Cleanup**: bucket policy → CloudFront-only, enable Block All Public Access, disable S3 static website hosting.
+## 🔜 Production cleanup (small)
+- [ ] **Disable S3 static website hosting** on `tong-tong-homepage` (the old `http://tong-tong-homepage.s3-website...` endpoint still serves; CloudFront is the only entry point now)
+- [ ] Optional: **required approval** gate on the `production` GitHub Environment before anything goes live
 
 ## 🧪 Staging vs Production
-Goal: separate a **staging** env from public **production**, and later move `tong-tong.eu` from Strato to AWS.
+A **staging** env (dev branch) separate from public **production** (main branch). `tong-tong.eu` already lives on AWS.
 
 ### Architecture
-- **Production** = bucket `tong-tong-homepage` + CloudFront `E1LHD3TBH0G3VX` → later `tong-tong.eu`. Deploys on merge to `main`.
-- **Staging** = bucket `tong-tong-staging` + CloudFront `EBXC3QHV697GU` (`d22hrnca27jxah.cloudfront.net`). Deploys on merge to `dev`. **Done.**
+- **Production** = bucket `tong-tong-homepage` + CloudFront `E1LHD3TBH0G3VX` → `tong-tong.eu`. Deploys on merge to `main`.
+- **Staging** = bucket `tong-tong-staging` + CloudFront `EBXC3QHV697GU` (`d22hrnca27jxah.cloudfront.net`). Deploys on merge to `dev`.
 
 ### Staging protection
 - [x] Staging bucket: **Block Public Access ON**
 - [x] CloudFront **OAC** so only CloudFront can read the staging bucket
-- [ ] **CloudFront Response Headers Policy** → `X-Robots-Tag: noindex` on the staging URL (skipped during setup — `emon-cli` lacked `cloudfront:CreateResponseHeadersPolicy`)
+- [ ] **CloudFront Response Headers Policy** → `X-Robots-Tag: noindex` on the staging URL (skipped during setup — needs `cloudfront:CreateResponseHeadersPolicy` on the staging IAM user)
 - [x] No public S3 website URL for staging
 
 ### Workflow & GitHub Environments
 - [x] One workflow, two jobs: `deploy-staging` (dev) + `deploy-production` (main), sharing a `build` job + artifact
 - [x] GitHub **Environments** `staging` + `production`, each with own `S3_BUCKET` + `CLOUDFRONT_DISTRIBUTION_ID` vars
 - [x] Separate deploy IAM user **`emon-staging`** scoped to staging resources (keys in `staging` env secrets)
-- [ ] Optional: **required approval** gate on `production` before anything goes live
-- [ ] Eventually: move `tong-tong.eu` from Strato → AWS (ACM cert + DNS record once production is ready)
+- [x] Staging **guard step**: refuses to deploy to the production bucket from the staging job
+- [x] **Domain cutover done**: `tong-tong.eu` on AWS (ACM cert + Route 53 → CloudFront)
+
+## 🛒 Online ordering — deferred (was on `dev`)
+Planned but **not being implemented right now**. The `dev` branch carries a `/order` placeholder page + "Online bestellen" button/nav entry; it was deliberately **excluded** from the `fix/social-image-and-tsconfig` merge to `main`. When building it: hosted checkout (no backend) was the chosen direction; see earlier planning in git history.
 
 ## 💡 Ideas / optional
 - [ ] Preview deploy for feature branches (separate preview bucket) before merging to `main`

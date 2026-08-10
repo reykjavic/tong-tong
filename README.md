@@ -42,10 +42,11 @@ npm run preview
 │   ├── i18n.tsx      # Language detection + translation context
 │   └── layout.ts     # Shared layout constants
 ├── public/
-│   ├── admin/        # Decap CMS config
-│   └── images/       # Decap media folder + og:image social share image
+│   ├── admin/         # Decap CMS config
+│   ├── images/        # Decap CMS media folder (sparse-checked-out locally)
+│   └── social/        # Stable public URLs (og:image social share image)
 ├── content/
-│   └── posts/        # Decap-managed Markdown posts
+│   └── posts/         # Decap-managed Markdown posts (sparse-checked-out locally)
 ├── index.html
 ├── package.json
 └── vite.config.ts
