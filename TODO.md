@@ -25,22 +25,23 @@ When a real domain is chosen (later):
 - [ ] **DNS** record at the registrar pointing at the CloudFront distribution.
 - [ ] **Cleanup**: bucket policy → CloudFront-only, enable Block All Public Access, disable S3 static website hosting.
 
-## 🧪 Staging vs Production (planned — NOT started yet)
-Goal: separate a protected **staging** env from public **production**, and later move `tong-tong.eu` from Strato to AWS.
+## 🧪 Staging vs Production
+Goal: separate a **staging** env from public **production**, and later move `tong-tong.eu` from Strato to AWS.
 
 ### Architecture
-- **Production** = current bucket `tong-tong-homepage` + CloudFront `E1LHD3TBHOG3VX` → later `tong-tong.eu`. Deploy only on merge to `main`.
-- **Staging** = new private bucket (e.g. `tong-tong-staging`) + new CloudFront distribution. Deploy on **every push to any branch**. Protected so the AWS URL isn't public.
+- **Production** = bucket `tong-tong-homepage` + CloudFront `E1LHD3TBHOG3VX` → later `tong-tong.eu`. Deploys on merge to `main`.
+- **Staging** = bucket `tong-tong-staging` + CloudFront `EBXC3QHV697GU` (`d22hrnca27jxah.cloudfront.net`). Deploys on merge to `dev`. **Done.**
 
-### Staging protection (so the staging URL isn't public)
-- [ ] Staging bucket: **Block Public Access ON**
-- [ ] CloudFront **OAC** so only CloudFront can read the staging bucket
-- [ ] **CloudFront Function (viewer request)** → HTTP Basic Auth (username/password) on the staging URL
-- [ ] No public S3 website URL for staging
+### Staging protection
+- [x] Staging bucket: **Block Public Access ON**
+- [x] CloudFront **OAC** so only CloudFront can read the staging bucket
+- [ ] **CloudFront Response Headers Policy** → `X-Robots-Tag: noindex` on the staging URL (skipped during setup — `emon-cli` lacked `cloudfront:CreateResponseHeadersPolicy`)
+- [x] No public S3 website URL for staging
 
 ### Workflow & GitHub Environments
-- [ ] One workflow, two jobs: `staging` (if `ref != main`) + `production` (if `ref == main`)
-- [ ] GitHub **Environments** `staging` + `production`, each with own variables (`S3_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID`, staging auth credentials)
+- [x] One workflow, two jobs: `deploy-staging` (dev) + `deploy-production` (main), sharing a `build` job + artifact
+- [x] GitHub **Environments** `staging` + `production`, each with own `S3_BUCKET` + `CLOUDFRONT_DISTRIBUTION_ID` vars
+- [x] Separate deploy IAM user **`emon-staging`** scoped to staging resources (keys in `staging` env secrets)
 - [ ] Optional: **required approval** gate on `production` before anything goes live
 - [ ] Eventually: move `tong-tong.eu` from Strato → AWS (ACM cert + DNS record once production is ready)
 
