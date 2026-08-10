@@ -31,3 +31,24 @@ Images used by the app itself (hero carousel photos, etc.) live in
 `src/assets/images/` and are imported via `src/assets/images/index.ts`. Vite
 bundles, hashes and optimizes them, and their URLs change on every build —
 they are **not** served from `/images/...`. Don't put app assets here.
+
+## Developers: skip checking the CMS media out
+
+Just like `content/posts/`, the runtime serves CMS media straight from GitHub,
+so you don't need the uploaded image files in your local working copy. This
+repo's dev setup uses git **sparse-checkout** so `public/images/` media files
+are tracked but not materialized — except `og-image.webp` (the social-share
+image referenced by `index.html`) and this `README.md`, which **must** stay in
+the working tree or the build misses the file and the deploy would delete it
+from S3:
+
+```bash
+git sparse-checkout set --no-cone '/*' '!/content/posts/' '!/public/images/*' \
+  'public/images/README.md' 'public/images/og-image.webp'
+```
+
+- Uploaded media stays on `main` (the CMS and runtime keep working); only your
+  working tree skips it. `git add -A` will **not** stage its deletion.
+- `git pull` updates the index but never writes these files locally.
+- Re-enable anytime: `git sparse-checkout set --no-cone '/*'` (or
+  `git sparse-checkout disable`).
