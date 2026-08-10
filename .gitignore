@@ -8,6 +8,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .vite/
+# TypeScript build mode (tsc -b) emit artifacts
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
 
 # Editor
 .vscode/
