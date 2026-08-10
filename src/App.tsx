@@ -18,6 +18,7 @@ const Hours = lazy(() => import('./pages/Hours'))
 const Impressum = lazy(() => import('./pages/Impressum'))
 const Datenschutz = lazy(() => import('./pages/Datenschutz'))
 const Posts = lazy(() => import('./pages/Posts'))
+const Order = lazy(() => import('./pages/Order'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 function ScrollToTop() {
@@ -52,6 +53,7 @@ function RouterContent() {
             <Route path="/contact" component={Contact} />
             <Route path="/hours" component={Hours} />
             <Route path="/posts" component={Posts} />
+            <Route path="/order" component={Order} />
             <Route path="/impressum" component={Impressum} />
             <Route path="/datenschutz" component={Datenschutz} />
             {/* Catch-all: renders for any unmatched path. Must stay last. */}

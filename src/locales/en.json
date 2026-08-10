@@ -34,6 +34,10 @@
       "title": "News – China Restaurant Tong Tong",
       "description": "News and updates from China Restaurant Tong Tong in Braunfels."
     },
+    "order": {
+      "title": "Order Online – China Restaurant Tong Tong",
+      "description": "Order online from China Restaurant Tong Tong – coming soon."
+    },
     "impressum": {
       "title": "Imprint – China Restaurant Tong Tong",
       "description": "Imprint of China Restaurant Tong Tong – information pursuant to § 5 TMG."
@@ -134,7 +138,14 @@
     "pdfTitle": "Menu (PDF)",
     "download": "Download",
     "openInNewTab": "View menu as PDF",
+    "orderButton": "Order Online",
     "mobileHint": "The menu will be displayed as a PDF."
+  },
+  "order": {
+    "title": "Order Online",
+    "comingSoon": "Online ordering is coming soon",
+    "message": "We're working on online ordering. In the meantime, feel free to visit us in person or give us a call – we look forward to seeing you!",
+    "backToMenu": "Back to the menu"
   },
   "notFound": {
     "title": "Page not found",

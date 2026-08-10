@@ -34,6 +34,10 @@
       "title": "Aktuelles – China-Restaurant Tong Tong",
       "description": "Aktuelles und Neuigkeiten von China-Restaurant Tong Tong in Braunfels."
     },
+    "order": {
+      "title": "Online bestellen – China-Restaurant Tong Tong",
+      "description": "Bestellen Sie bequem online bei China-Restaurant Tong Tong – bald verfügbar."
+    },
     "impressum": {
       "title": "Impressum – China-Restaurant Tong Tong",
       "description": "Impressum von China-Restaurant Tong Tong – Angaben gemäß § 5 TMG."
@@ -134,7 +138,14 @@
     "pdfTitle": "Speisekarte (PDF)",
     "download": "Herunterladen",
     "openInNewTab": "Speisekarte als PDF ansehen",
+    "orderButton": "Online bestellen",
     "mobileHint": "Die Speisekarte wird als PDF angezeigt."
+  },
+  "order": {
+    "title": "Online bestellen",
+    "comingSoon": "Online-Bestellung ist bald verfügbar",
+    "message": "Wir arbeiten gerade an der Online-Bestellung. Besuchen Sie uns einfach vor Ort oder rufen Sie uns an – wir freuen uns auf Sie!",
+    "backToMenu": "Zurück zur Speisekarte"
   },
   "notFound": {
     "title": "Seite nicht gefunden",
