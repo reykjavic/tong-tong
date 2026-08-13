@@ -1,0 +1,86 @@
+# Tong Tong serverless WhatsApp backend — SAM template (see SCOPE.md).
+#
+# Milestone 0: the whatsapp-webhook Lambda + API Gateway route. Every future
+# backend Lambda (auth/meta, auth/google, orders, messages, ...) slots in here
+# as another AWS::Serverless::Function resource — SAM wires the API route,
+# invoke permission and stage automatically, which is the whole point of SAM
+# once there are several functions (decap-oauth currently lives outside this
+# stack; it can be onboarded later).
+#
+# Secrets are NOT in this file. scripts/deploy-whatsapp.sh reads the gitignored
+# backend/.env.whatsapp and passes the values as parameters (NoEcho hides them
+# from the console). Optional params fall back to the handler's defaults when
+# left empty.
+#
+# Deploy:  ./scripts/deploy-whatsapp.sh   (runbook: backend/README.md)
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Tong Tong serverless WhatsApp backend — M0 webhook + auto-reply
+
+Parameters:
+  VerifyToken:
+    Type: String
+    NoEcho: true
+    Description: Token shared with the Meta webhook config (VERIFY_TOKEN)
+  MetaAccessToken:
+    Type: String
+    NoEcho: true
+    Description: Permanent Meta Cloud API system-user token
+  PhoneNumberId:
+    Type: String
+    Description: Numeric ID of the WhatsApp Business number that sends replies
+  AppSecret:
+    Type: String
+    NoEcho: true
+    Description: Meta App secret — HMAC key for X-Hub-Signature-256
+  AutoReplyText:
+    Type: String
+    Default: ''
+    Description: Fixed auto-reply text; empty = handler echoes the inbound message
+  GraphApiVersion:
+    Type: String
+    Default: v25.0
+    Description: Graph API version for the Messages API
+  BusinessWaId:
+    Type: String
+    Default: ''
+    Description: The restaurant's own WhatsApp number (loop guard); empty = rely on the direction field
+
+Resources:
+  WhatsAppWebhookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/whatsapp-webhook/
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Timeout: 10
+      MemorySize: 128
+      Environment:
+        Variables:
+          VERIFY_TOKEN: !Ref VerifyToken
+          META_ACCESS_TOKEN: !Ref MetaAccessToken
+          PHONE_NUMBER_ID: !Ref PhoneNumberId
+          APP_SECRET: !Ref AppSecret
+          AUTO_REPLY_TEXT: !Ref AutoReplyText
+          GRAPH_API_VERSION: !Ref GraphApiVersion
+          BUSINESS_WA_ID: !Ref BusinessWaId
+      Events:
+        WebhookGet:
+          Type: Api
+          Properties:
+            Path: /webhook/whatsapp
+            Method: get
+        WebhookPost:
+          Type: Api
+          Properties:
+            Path: /webhook/whatsapp
+            Method: post
+
+Outputs:
+  WebhookFunction:
+    Description: whatsapp-webhook Lambda ARN
+    Value: !GetAtt WhatsAppWebhookFunction.Arn
+  WebhookUrl:
+    Description: Callback URL to paste into Meta App Dashboard -> Webhooks -> WhatsApp -> Configure
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/webhook/whatsapp'

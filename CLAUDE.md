@@ -28,6 +28,17 @@ There is no test suite and no lint script configured. Use `npx tsc --noEmit` for
 - **Path alias:** `@/` → `src/` (configured in both `vite.config.ts` and `tsconfig.json`).
 - **Home page (`src/pages/HomePage.tsx`):** Swiper carousel hero with CTA buttons, a latest-news card (fetched from GitHub), and the shared `OpeningHours` section (weekday columns × time rows for Öffnungszeiten / Mittagstisch / buffet) with a live open/closed chip (client-side check: closed Mondays, lunch 11:30–14:30, dinner 17:30–22:30) and a reservation note. `src/pages/Hours.tsx` is a dedicated opening-hours page.
 
+## Backend (serverless WhatsApp ordering system)
+
+`SCOPE.md` is the canonical scope for the serverless ordering + kitchen system being built around the site; `backend/README.md` is the Milestone 0 runbook. Product model (v1): **customer orders on the website** (items + email-or-WhatsApp contact + pay-at-pickup) → order stored in DynamoDB (`Pending → Notified → Completed`) → **kitchen dashboard** lists open orders with timeframe buttons (15/20/30/45) that notify the customer on the channel they chose, and shows who has/hasn't been notified. Notifications go via **WhatsApp (Meta Messages API) or email (SES)**. No customer login/payment in v1. Current state: **Milestone 0** (WhatsApp webhook + auto-reply) — an **AWS SAM** app (`backend/template.yaml`), chosen because the backend will grow to several Lambdas (webhook, orders, staff, later auth). Conventions for backend work:
+
+- Lambdas are single self-contained `backend/lambdas/<name>/index.mjs` files — zero npm dependencies, ESM, Node 18+ global `fetch`, same style as `decap-oauth/index.mjs`.
+- Every function and its API Gateway routes live in `backend/template.yaml` (SAM). Deploy via `scripts/deploy-whatsapp.sh` (`sam build` + `sam deploy`; requires the SAM CLI).
+- Secrets never go in the repo. They live in gitignored `backend/.env.whatsapp` (template: `backend/.env.whatsapp.example`) and are injected as `NoEcho` CloudFormation parameters. `META_ACCESS_TOKEN`, `PHONE_NUMBER_ID`, `VERIFY_TOKEN`, `APP_SECRET` are required for the webhook.
+- Meta webhook POSTs must be verified via `X-Hub-Signature-256` HMAC before processing.
+- **We only message customers inside the 24h WhatsApp conversation window their inbound message opened. No template messages, no proactive/out-of-window sends — deliberate product decision.**
+- Orders are **public** (no login); staff routes need a token. Notify idempotency: set `NotifiedAt` only after the send succeeds.
+
 ## Conventions & constraints
 
 - MUI is mandatory for all UI — no Tailwind, Bootstrap, or hand-rolled CSS. Emotion is the CSS-in-JS engine.

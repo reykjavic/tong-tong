@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 - **Name:** China Restaurant Tong Tong (Braunfels)
-- **Goal:** Replace the legacy TYPO3 site with a lightweight, modern, mobile-responsive website integrated with Decap CMS for easy news/posts management.
+- **Goal:** Replace the legacy WordPress site (hosted on Strato) with a lightweight, modern, mobile-responsive website integrated with Decap CMS for easy news/posts management.
 - **Vibe & Design Tone:** Clean & minimalist with a subtle, modern East Asian aesthetic (e.g., generous white space, refined typography, subtle accents).
 - **Primary Color:** **Deep teal** (`#00695C`), implemented as the main theme primary color in MUI, with a burgundy secondary accent (`#7B1F2B`).
 

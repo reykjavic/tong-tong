@@ -2,6 +2,15 @@
 
 Modern website for [China Restaurant Tong Tong](https://maps.app.goo.gl/4z142Z69qbHt3YJg6) in Braunfels, Germany.
 
+## Serverless WhatsApp backend
+
+A serverless WhatsApp ordering & kitchen system is being built in [`backend/`](backend/README.md),
+scoped in [`SCOPE.md`](SCOPE.md). **Milestone 0** (webhook + auto-reply) is in progress —
+a customer message gets an automatic reply. It's an **AWS SAM** application
+(`backend/template.yaml`) deployed via [`scripts/deploy-whatsapp.sh`](scripts/deploy-whatsapp.sh).
+SAM is deliberate here because the backend will grow to several Lambdas (auth for Meta/Google,
+orders, messages) — see SCOPE.md §2 for the reasoning.
+
 ## Tech Stack
 
 - **Vite** — build tool
