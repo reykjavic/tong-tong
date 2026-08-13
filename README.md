@@ -1,6 +1,6 @@
 # Tong Tong — Chinesisches Restaurant Braunfels
 
-Modern website for [China Restaurant Tong Tong](https://maps.app.goo.gl/4z142Z69qbHt3YJg6) in Braunfels, Germany.
+Modern website for [China Restaurant Tong Tong](https://tong-tong.eu) in Braunfels, Germany.
 
 ## Tech Stack
 
