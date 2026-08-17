@@ -17,6 +17,10 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://tong-tong.eu/hours</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://tong-tong.eu/posts</loc>
     <changefreq>weekly</changefreq>
   </url>

@@ -2,6 +2,22 @@
 
 Developer helper scripts. None of these are part of the app or the deploy — they're run by hand.
 
+## `apply-soft-404-fix.sh` + `cloudfront-soft-404-function.js`
+
+Applies the **soft-404 fix** to the CloudFront distributions: a viewer-request
+function serves `index.html` only for the real SPA routes, and the 403/404 error
+responses return the styled `/404.html` page with a real HTTP 404. Run it once,
+by hand, **after** deploying `public/404.html` to S3 (a normal push to `main`):
+
+```bash
+./scripts/apply-soft-404-fix.sh            # production + staging
+./scripts/apply-soft-404-fix.sh E1LHD3TBH0G3VX   # just production
+```
+
+Idempotent — safe to re-run. Needs broad CloudFront permissions (not the deploy
+users `emon` / `emon-staging`). Keep `SPA_ROUTES` in the function file in sync
+with `src/App.tsx` when adding routes.
+
 ## `setup-staging.sh`
 
 One-time AWS bootstrap for the **staging** environment (bucket `tong-tong-staging`,
