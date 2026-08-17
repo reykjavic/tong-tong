@@ -22,6 +22,7 @@ var SPA_ROUTES = [
   '/',
   '/about',
   '/menu',
+  '/order',
   '/contact',
   '/hours',
   '/posts',

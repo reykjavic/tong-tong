@@ -13,6 +13,10 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://tong-tong.eu/order</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://tong-tong.eu/contact</loc>
     <changefreq>monthly</changefreq>
   </url>
