@@ -50,6 +50,7 @@ Goal: separate a **staging** env from public **production**, and later move `ton
 - [ ] **Bump GitHub Actions off Node 20** (deprecation): `actions/checkout@v4`, `actions/setup-node@v4`, `actions/upload-artifact@v4` are being force-run on Node 24 — pin newer major versions (first seen in deploy run `32051443916`, 2026-08-17)
 
 ## 💡 Ideas / optional
+- [ ] **DynamoDB MCP server** when Milestone 2 has a live `RestaurantData` table — lets Claude inspect the table directly during dev. MCP deliberately deferred (2026-08-17): `gh` + `aws` CLIs already cover GitHub/AWS, so `.claude/agents/` was added instead of MCP wiring.
 - [ ] Preview deploy for feature branches (separate preview bucket) before merging to `main`
 - [x] Updated `SPEC.md` / `README.md` / `AGENTS.md` to reference `#00695C` deep teal + `#7B1F2B` burgundy (old `#00A896` turquoise is gone)
 

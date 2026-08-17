@@ -28,6 +28,15 @@ Recurring workflows are packaged as composable skills under `.claude/skills/` (a
 - **github-cli** — GitHub operations via `gh` (PRs, CI runs, API).
 - **aws-cli** — S3 / CloudFront operations via `aws` (deploys, invalidations, infra scripts).
 
+## Agents
+
+Specialized subagents live under `.claude/agents/` (delegation layer — Claude Code picks one when the task fits its `description`; also @-mentionable):
+
+- **code-reviewer** — reviews diffs/PRs against this repo's conventions (i18n mirror, MUI, 6 sync surfaces, P1–P5); read-only.
+- **security-reviewer** — audits code + the AWS/CI surface (OAuth Lambda, soft-404 fn, SAM backend, secrets hygiene); read-only.
+- **db-specialist** — DynamoDB single-table schema + access patterns for the SAM backend (`SCOPE.md` §6 on `dev`).
+- **test-writer** — tests for the frontend (Vitest if introduced) and the SAM lambdas (`node:test`, zero-dep style).
+
 ## Architecture
 
 - **Entry flow:** `src/main.tsx` → `src/App.tsx`, which wraps everything in `ThemeProvider` (MUI) + `I18nProvider`, then renders `Navbar`, a `Switch` of Wouter routes (wrapped in `Suspense`), and `Footer`. All routes and their components are registered in `App.tsx`; route components are `React.lazy` and code-split into per-page chunks.
