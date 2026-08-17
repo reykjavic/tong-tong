@@ -46,6 +46,9 @@ Goal: separate a **staging** env from public **production**, and later move `ton
 - [ ] Optional: **required approval** gate on `production` before anything goes live
 - [ ] Eventually: move `tong-tong.eu` from Strato → AWS (ACM cert + DNS record once production is ready)
 
+## ⚙️ CI maintenance
+- [ ] **Bump GitHub Actions off Node 20** (deprecation): `actions/checkout@v4`, `actions/setup-node@v4`, `actions/upload-artifact@v4` are being force-run on Node 24 — pin newer major versions (first seen in deploy run `32051443916`, 2026-08-17)
+
 ## 💡 Ideas / optional
 - [ ] Preview deploy for feature branches (separate preview bucket) before merging to `main`
 - [x] Updated `SPEC.md` / `README.md` / `AGENTS.md` to reference `#00695C` deep teal + `#7B1F2B` burgundy (old `#00A896` turquoise is gone)
