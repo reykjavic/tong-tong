@@ -14,7 +14,8 @@ CI/CD: GitHub Actions workflow `.github/workflows/deploy.yml` (auto-deploys on p
 ## 🔜 Next time — production hardening
 
 ### HTTPS via CloudFront — in progress (testing on default `*.cloudfront.net` URL, no custom domain yet)
-- [x] **CloudFront distribution** in front of the bucket: OAC origin, redirect HTTP→HTTPS, **custom error responses `403/404 → /index.html`** (this fixes SPA deep links like `/posts` — **done**), default root `index.html`.
+- [x] **CloudFront distribution** in front of the bucket: OAC origin, redirect HTTP→HTTPS, **custom error responses `403/404 → /index.html`** (fixed SPA deep links like `/posts`; superseded by real-404 handling below), default root `index.html`.
+- [x] **Soft-404 fix** (Google Search Console): unknown URLs return a **real HTTP 404** instead of `200 + client-rendered 404`. Viewer-request CloudFront Function `tong-tong-soft-404` (`scripts/cloudfront-soft-404-function.js`) serves `index.html` only for the routes in `src/App.tsx`; distribution error responses 403/404 → `/404.html` with code `404`. CloudFront side applied via `scripts/apply-soft-404-fix.sh`.
 - [x] **CloudFront invalidation step in workflow** — `.github/workflows/deploy.yml` now runs `aws cloudfront create-invalidation ... --paths "/*"` after `s3 sync`.
 - [x] **AWS-side for invalidation**: `cloudfront:CreateInvalidation` added to the `emon` IAM policy + GitHub variable `CLOUDFRONT_DISTRIBUTION_ID` set.
 - [x] **Verify** homepage + `/menu` deep link on `https://<distribution-id>.cloudfront.net` (old `http://` S3 URL stays working meanwhile as fallback).

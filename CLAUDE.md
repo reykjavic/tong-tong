@@ -42,6 +42,6 @@ Decap CMS manages news posts as Markdown in `content/posts/`, edited via `public
 
 ## Deployment
 
-GitHub Actions workflow `.github/workflows/deploy.yml` deploys on push/merge to `main`: `npm ci` → `npm run build` → `aws s3 sync dist/ s3://tong-tong-homepage --delete` (region `eu-central-1`) → CloudFront invalidation. The live site is served over HTTPS via CloudFront in front of the S3 bucket, with 403/404 mapped to `index.html` (so SPA deep links like `/menu` work). See `TODO.md` for the pending `tong-tong.eu` domain cutover, staging env, and Decap CMS OAuth hardening.
+GitHub Actions workflow `.github/workflows/deploy.yml` deploys on push/merge to `main`: `npm ci` → `npm run build` → `aws s3 sync dist/ s3://tong-tong-homepage --delete` (region `eu-central-1`) → CloudFront invalidation. The live site is served over HTTPS via CloudFront in front of the S3 bucket. A viewer-request CloudFront Function (`scripts/cloudfront-soft-404-function.js`) serves `index.html` **only** for the real SPA routes (so deep links like `/menu` work); the distribution's 403/404 error responses serve `public/404.html` with a real HTTP 404, so unknown URLs are genuine 404s, not soft 404s. **Keep the function's route list in sync with the routes in `App.tsx`** when adding pages. See `TODO.md` for the pending `tong-tong.eu` domain cutover, staging env, and Decap CMS OAuth hardening.
 
 `scripts/tmux-work.sh` / `.bat` is a dev helper that launches a 2×2 tmux grid of Claude Code sessions against this repo — not part of the app.

@@ -70,6 +70,15 @@ The site is hosted on **AWS S3** behind **CloudFront** (HTTPS, SPA deep-link rew
 - **`main` → production** — bucket `tong-tong-homepage`, CloudFront `E1LHD3TBH0G3VX` (`d2p14i2rhwc3q2.cloudfront.net`). Runs `npm ci` → `npm run build` → `aws s3 sync dist/` → CloudFront invalidation.
 - **`dev` → staging** — bucket `tong-tong-staging`, CloudFront `EBXC3QHV697GU` (`d22hrnca27jxah.cloudfront.net`). Same steps against the staging bucket. A **guard step** refuses to deploy to the production bucket from the staging job.
 
+### 404 handling (SEO)
+
+Unknown URLs return a **real HTTP 404** (styled page in `public/404.html`) while real SPA routes keep serving `index.html`. Two pieces keep this working and must stay in sync with `src/App.tsx`:
+
+- **`scripts/cloudfront-soft-404-function.js`** — viewer-request CloudFront Function that rewrites only the known routes to `/index.html`; everything else falls through to the origin.
+- **Distribution custom error responses** — 403/404 → `/404.html` with response code `404` (not `200` → `index.html`).
+
+Reapplying the CloudFront side on a fresh distribution is a one-command job: `./scripts/apply-soft-404-fix.sh` (see [scripts/README.md](scripts/README.md)).
+
 ### Staging previews
 
 Push/merge to `dev` to preview an in-progress feature at the staging URL. Content (news posts) is fetched at runtime from GitHub `main`, so staging shows the branch's **code** but `main`'s **content** — expected.
