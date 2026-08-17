@@ -177,7 +177,7 @@ Meta redelivers webhooks on non-200/timeout; persisting by Meta's `message.id` m
 | Function | Env vars (all) | What it does |
 | :------- | :------------- | :----------- |
 | **whatsapp-webhook** (M0) | `VERIFY_TOKEN`, `META_ACCESS_TOKEN`, `PHONE_NUMBER_ID`, `APP_SECRET` (+ optional `AUTO_REPLY_TEXT`, `GRAPH_API_VERSION`, `BUSINESS_WA_ID`) | GET: verify handshake. POST: verify `X-Hub-Signature-256`, parse `entry[].changes[].value.messages[]`, **auto-reply** via Graph API, ack 200 fast. |
-| **orders** (M2) | `DYNAMO_TABLE_NAME` | Validate + insert an order (`ORDER#<id>/METADATA`). Public, no auth. |
+| **orders** (M2) | `DYNAMO_TABLE_NAME` | Gate on `orderingEnabled` (config item) → `403` when off (see §12). Then validate + insert an order (`ORDER#<id>/METADATA`). Public, no auth. |
 | **staff** (M2) | `DYNAMO_TABLE_NAME`, `STAFF_TOKEN` (or Google OAuth vars), `META_ACCESS_TOKEN`, `PHONE_NUMBER_ID`, `SES_FROM_EMAIL`, `SES_REGION` | Verify staff auth. List open orders (GSI). **Notify:** send "ready for pickup" via the order's channel (WhatsApp Messages API or SES email) + set `NotifiedAt`/`PickupInMinutes`. **Status:** mark `Completed`. |
 
 Notification copy (German-first): *"Ihre Bestellung ist in ca. X Minuten abholbereit."* — same message body through either channel.
@@ -225,7 +225,7 @@ Smallest shippable slice: message a number → it auto-replies.
 
 ### M2 — Customer ordering + kitchen dashboard (the core product)
 1. **DynamoDB order model** (§6): `ORDER#<id>/METADATA` + `GSI1` (status → createdAt).
-2. **`orders` Lambda + `POST /api/orders`** (public): accept items + `Channel` (email/WhatsApp) + contact value + `pay_at_pickup`; validate (items non-empty, contact well-formed); insert with `Status: Pending`.
+2. **`orders` Lambda + `POST /api/orders`** (public): gate on `orderingEnabled` (config item, §12) → `403` when off; accept items + `Channel` (email/WhatsApp) + contact value + `pay_at_pickup`; validate (items non-empty, contact well-formed); insert with `Status: Pending`.
 3. **Website order form**: a new route on the existing SPA — product selection, email/WhatsApp field, "pay at pickup" (only option shown in v1), submit → `POST /api/orders`. German-first text via `t()`.
 4. **SES identity**: verify the `tong-tong.eu` domain (or a subdomain) in SES so email can send; set `SES_FROM_EMAIL`.
 5. **`staff` Lambda + kitchen SPA** (`kitchen/`): list open orders (Pending + Notified), each row showing items, total, channel + contact, and **who has/hasn't been notified** (with `NotifiedAt`/`PickupInMinutes`). **Timeframe buttons [15][20][30][45]** → `POST /api/staff/orders/:id/notify` → dispatch via the order's channel (SES or WhatsApp) → set `NotifiedAt`. **Mark completed** → `PATCH /api/staff/orders/:id/status`.
@@ -315,3 +315,4 @@ Rate limiting (API Gateway + Lambda), Meta API retries with exponential backoff 
 5. **Kitchen dashboard placement**: separate `kitchen/` SPA (preferred — keeps build/publish isolated from the public site) vs a `/kitchen` route on the existing site.
 6. **Data-table feature set** for the kitchen list — to be specified before M3.
 7. **Online payment** (later cycle, not v1): likely **PayPal + Google Pay via Stripe** (Google Pay needs a processor underneath). **Apple Pay is probably out** — it requires Apple's $99/yr developer account, too much for a small restaurant. Largest single scope add available; keep out of v1.
+8. **Feature toggle for online ordering (resolved 2026-08-17):** gated by a **server-side flag in DynamoDB**, not a client-side one. Client-side toggles (runtime JSON from S3, build-time const, localStorage) are public and trivially bypassable — they can hide UI but can never stop a direct `POST /api/orders`, so they can't protect the order email. The authoritative gate is a check inside the `orders` Lambda (M2): read `orderingEnabled` from a config item (`PK='config'`, `SK='ordering'`) at request time; when **off** → `403`, no order write, no notification. When **on**, the UI entry points (nav link, Menu CTA, `/order` route) are shown; when off they're hidden or 404. Flip is a single `aws dynamodb put-item` — no deploy. Built in from day one when M2 lands; nothing client-side before that (the `/order` placeholder on `dev` is inert until M2).
