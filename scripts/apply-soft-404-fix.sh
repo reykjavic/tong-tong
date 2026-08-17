@@ -21,6 +21,8 @@
 # Usage: ./scripts/apply-soft-404-fix.sh [DISTRIBUTION_ID ...]
 #   Defaults to the production + staging distributions documented in README.md.
 #   Run once, by hand. It is idempotent — safe to re-run.
+#   If your AWS creds live under a named profile (e.g. `tong-tong`), set it:
+#     AWS_PROFILE=tong-tong ./scripts/apply-soft-404-fix.sh
 
 set -euo pipefail
 
@@ -50,19 +52,21 @@ aws sts get-caller-identity --query Account --output text >/dev/null || {
 # ---------------------------------------------------------------------------
 FUNCTION_CONFIG='{"Comment":"Serve index.html only for real SPA routes; everything else returns a real 404","Runtime":"cloudfront-js-1.0"}'
 
-if aws cloudfront get-function --name "$FUNCTION_NAME" >/dev/null 2>&1; then
+# get-function requires a positional outfile (it writes the function code to
+# a file); we only need the ETag from the JSON response, so use /dev/null.
+if aws cloudfront get-function --name "$FUNCTION_NAME" /dev/null >/dev/null 2>&1; then
   echo "==> Function $FUNCTION_NAME already exists — updating"
-  ETAG="$(aws cloudfront get-function --name "$FUNCTION_NAME" --query ETag --output text)"
+  ETAG="$(aws cloudfront get-function --name "$FUNCTION_NAME" /dev/null --query ETag --output text)"
   aws cloudfront update-function --name "$FUNCTION_NAME" --if-match "$ETAG" \
     --function-config "$FUNCTION_CONFIG" \
     --function-code "fileb://$FUNCTION_FILE" >/dev/null
-  ETAG="$(aws cloudfront get-function --name "$FUNCTION_NAME" --query ETag --output text)"
+  ETAG="$(aws cloudfront get-function --name "$FUNCTION_NAME" /dev/null --query ETag --output text)"
 else
   echo "==> Creating function $FUNCTION_NAME"
   aws cloudfront create-function --name "$FUNCTION_NAME" \
     --function-config "$FUNCTION_CONFIG" \
     --function-code "fileb://$FUNCTION_FILE" >/dev/null
-  ETAG="$(aws cloudfront get-function --name "$FUNCTION_NAME" --query ETag --output text)"
+  ETAG="$(aws cloudfront get-function --name "$FUNCTION_NAME" /dev/null --query ETag --output text)"
 fi
 
 FN_ARN="$(aws cloudfront publish-function --name "$FUNCTION_NAME" --if-match "$ETAG" \
