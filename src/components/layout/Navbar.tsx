@@ -18,6 +18,7 @@ import {
 import { Check, ExpandMore, Close as CloseIcon, Menu as MenuIcon } from '@mui/icons-material'
 import { Link, useLocation } from 'wouter'
 import { useI18n } from '../../i18n'
+import { useConfig } from '../../hooks/config'
 import deFlag from '../../assets/flags/de.svg'
 import gbFlag from '../../assets/flags/gb.svg'
 
@@ -36,8 +37,10 @@ const LANGUAGES = [
 
 export default function Navbar() {
   const { language, t, setLanguage } = useI18n()
+  const { config } = useConfig()
   const [location] = useLocation()
   const theme = useTheme()
+  const visibleLinks = links.filter((link) => !(link.href === '/order' && !config.ordering.enabled))
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const isHome = location === '/'
   const [scrolled, setScrolled] = useState(false)
@@ -148,7 +151,7 @@ export default function Navbar() {
           </Box>
           {!isMobile && (
             <Box sx={{ display: 'flex', gap: 2 }}>
-              {links.map((link) => (
+              {visibleLinks.map((link) => (
                 <Button
                   key={link.href}
                   component={Link}
@@ -290,7 +293,7 @@ export default function Navbar() {
               <CloseIcon />
             </IconButton>
           </Box>
-          {links.map((link) => {
+          {visibleLinks.map((link) => {
             const isMenuLink = link.href === '/menu'
             return (
               <Button

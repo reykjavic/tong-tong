@@ -16,23 +16,27 @@
 
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Tong Tong serverless WhatsApp backend — M0 webhook + auto-reply
+Description: Tong Tong serverless WhatsApp backend — M0 webhook + auto-reply, RestaurantData table
 
 Parameters:
   VerifyToken:
     Type: String
     NoEcho: true
+    Default: ''
     Description: Token shared with the Meta webhook config (VERIFY_TOKEN)
   MetaAccessToken:
     Type: String
     NoEcho: true
+    Default: ''
     Description: Permanent Meta Cloud API system-user token
   PhoneNumberId:
     Type: String
+    Default: ''
     Description: Numeric ID of the WhatsApp Business number that sends replies
   AppSecret:
     Type: String
     NoEcho: true
+    Default: ''
     Description: Meta App secret — HMAC key for X-Hub-Signature-256
   AutoReplyText:
     Type: String
@@ -48,6 +52,21 @@ Parameters:
     Description: The restaurant's own WhatsApp number (loop guard); empty = rely on the direction field
 
 Resources:
+  # Explicit API Gateway REST API (SCOPE.md §12: one API, every function's route
+  # under it). Cors is needed by the public site's browser calls (GET /config
+  # now, POST /api/orders in M2); Meta's webhook POST is server-to-server and
+  # unaffected. SAM adds an OPTIONS mock for every path so preflight never
+  # reaches the Lambdas. The Lambdas return no CORS headers themselves — API
+  # Gateway owns them.
+  BackendApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: "'GET,OPTIONS,POST'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+
   WhatsAppWebhookFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -71,11 +90,76 @@ Resources:
           Properties:
             Path: /webhook/whatsapp
             Method: get
+            RestApiId: !Ref BackendApi
         WebhookPost:
           Type: Api
           Properties:
             Path: /webhook/whatsapp
             Method: post
+            RestApiId: !Ref BackendApi
+
+  # RestaurantData (DynamoDB, single-table — SCOPE.md §6). M0's webhook doesn't
+  # write to it yet; the table is created now so M1 (orders + message log) is ready.
+  # Retain on stack teardown: never destroy order data with a template change.
+  RestaurantData:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: RestaurantData
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: Status
+          AttributeType: S
+        - AttributeName: CreatedAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: Status
+              KeyType: HASH
+            - AttributeName: CreatedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  # Feature-toggle config endpoint (SCOPE.md §12) — GET /config reads the two
+  # toggles from this table. IAM scoped to GetItem on RestaurantData only.
+  ConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/config/
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Timeout: 10
+      MemorySize: 128
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref RestaurantData
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+              Resource:
+                - !GetAtt RestaurantData.Arn
+      Events:
+        ConfigGet:
+          Type: Api
+          Properties:
+            Path: /config
+            Method: get
+            RestApiId: !Ref BackendApi
 
 Outputs:
   WebhookFunction:
@@ -83,4 +167,7 @@ Outputs:
     Value: !GetAtt WhatsAppWebhookFunction.Arn
   WebhookUrl:
     Description: Callback URL to paste into Meta App Dashboard -> Webhooks -> WhatsApp -> Configure
-    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/webhook/whatsapp'
+    Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/webhook/whatsapp'
+  ConfigUrl:
+    Description: Feature-toggle config endpoint for the site (GET /config)
+    Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/config'

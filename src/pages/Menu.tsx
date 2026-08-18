@@ -1,4 +1,5 @@
 import { useI18n } from '../i18n'
+import { useConfig } from '../hooks/config'
 import PageContainer from '../components/layout/PageContainer'
 import { Link } from 'wouter'
 import { Box, Paper, Button, Typography, useTheme, useMediaQuery } from '@mui/material'
@@ -7,12 +8,14 @@ const MENU_PDF_URL = '/tong-tong-2026.pdf'
 
 export default function Menu() {
   const { t } = useI18n()
+  const { config } = useConfig()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   return (
     <PageContainer title={t('menu.title')}>
       <Box sx={{ textAlign: 'center', mb: 3, display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
+          {config.ordering.enabled && (
           <Button
             variant="contained"
             component={Link}
@@ -25,6 +28,7 @@ export default function Menu() {
           >
             {t('menu.orderButton')}
           </Button>
+          )}
           <Button
             variant="contained"
             component="a"
