@@ -28,7 +28,15 @@ const FEATURES = {
   reservations: { sk: 'reservations', attr: 'reservationsEnabled' },
 }
 
-const JSON_HEADERS = { 'Content-Type': 'application/json' }
+const JSON_HEADERS = {
+  'Content-Type': 'application/json',
+  // CORS: the site is on a different origin than this API, so the browser
+  // needs Access-Control-Allow-Origin on the actual response. SAM's Cors
+  // config on the Api only generates the OPTIONS preflight mock — Lambda-proxy
+  // responses must carry the header themselves. '*' is fine: public config,
+  // no credentials.
+  'Access-Control-Allow-Origin': '*',
+}
 
 async function readFeature(name) {
   const { sk, attr } = FEATURES[name]
