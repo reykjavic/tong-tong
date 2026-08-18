@@ -50,14 +50,33 @@ Parameters:
     Type: String
     Default: ''
     Description: The restaurant's own WhatsApp number (loop guard); empty = rely on the direction field
+  GoogleClientId:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: Google OAuth Web client ID (admin dashboard login)
+  GoogleClientSecret:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: Google OAuth Web client secret — also the HMAC key for the OAuth state
+  AdminEmail:
+    Type: String
+    Default: 247reyk@gmail.com
+    Description: Google account email allowed into /dashboard; any other login is rejected server-side
+  SiteUrl:
+    Type: String
+    Default: https://d22hrnca27jxah.cloudfront.net
+    Description: Origin the OAuth callback redirects back to (the SPA). Single value — staging today, decide at the prod cutover
 
 Resources:
   # Explicit API Gateway REST API (SCOPE.md §12: one API, every function's route
   # under it). Cors is needed by the public site's browser calls (GET /config
-  # now, POST /api/orders in M2); Meta's webhook POST is server-to-server and
-  # unaffected. SAM adds an OPTIONS mock for every path so preflight never
-  # reaches the Lambdas. The Lambdas return no CORS headers themselves — API
-  # Gateway owns them.
+  # now, POST /toggle + /auth/* in M2); Meta's webhook POST is server-to-server
+  # and unaffected. SAM adds an OPTIONS mock for every path so preflight never
+  # reaches the Lambdas — but Lambda-proxy responses MUST still carry
+  # Access-Control-Allow-Origin themselves (the config/auth/toggle lambdas do;
+  # 302 redirects don't need it).
   BackendApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -108,6 +127,12 @@ Resources:
     Properties:
       TableName: RestaurantData
       BillingMode: PAY_PER_REQUEST
+      # Opaque admin sessions (PK='session') expire via TTL. Existing config
+      # items carry no TTL attribute, so they are never expired. In-place update
+      # on the existing table — does not replace it.
+      TimeToLiveSpecification:
+        Enabled: true
+        AttributeName: TTL
       AttributeDefinitions:
         - AttributeName: PK
           AttributeType: S
@@ -161,6 +186,94 @@ Resources:
             Method: get
             RestApiId: !Ref BackendApi
 
+  # Google OAuth for the admin dashboard (SCOPE.md §12: auth chosen over the
+  # shared staff token). GET /auth/login 302s to Google; the callback exchanges
+  # the code, verifies the id_token, gates on AdminEmail, and mints an opaque
+  # session (PK='session', TTL 7d). /auth/me + /auth/logout take the session
+  # token as a Bearer header. Empty Google params -> 503 (auth ships inert).
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/auth/
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      MemorySize: 128
+      Environment:
+        Variables:
+          GOOGLE_CLIENT_ID: !Ref GoogleClientId
+          GOOGLE_CLIENT_SECRET: !Ref GoogleClientSecret
+          ADMIN_EMAIL: !Ref AdminEmail
+          SITE_URL: !Ref SiteUrl
+          TABLE_NAME: !Ref RestaurantData
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:DeleteItem
+              Resource:
+                - !GetAtt RestaurantData.Arn
+      Events:
+        AuthLogin:
+          Type: Api
+          Properties:
+            Path: /auth/login
+            Method: get
+            RestApiId: !Ref BackendApi
+        AuthCallback:
+          Type: Api
+          Properties:
+            Path: /auth/google/callback
+            Method: get
+            RestApiId: !Ref BackendApi
+        AuthMe:
+          Type: Api
+          Properties:
+            Path: /auth/me
+            Method: get
+            RestApiId: !Ref BackendApi
+        AuthLogout:
+          Type: Api
+          Properties:
+            Path: /auth/logout
+            Method: post
+            RestApiId: !Ref BackendApi
+
+  # Admin-only web toggle (replaces the shell-script flip for the dashboard).
+  # Bearer session required; session email must equal AdminEmail. Writes the
+  # same config-item shape as scripts/set-toggle.sh (PK='config').
+  ToggleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/toggle/
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Timeout: 10
+      MemorySize: 128
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref RestaurantData
+          ADMIN_EMAIL: !Ref AdminEmail
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt RestaurantData.Arn
+      Events:
+        TogglePost:
+          Type: Api
+          Properties:
+            Path: /toggle
+            Method: post
+            RestApiId: !Ref BackendApi
+
 Outputs:
   WebhookFunction:
     Description: whatsapp-webhook Lambda ARN
@@ -171,3 +284,9 @@ Outputs:
   ConfigUrl:
     Description: Feature-toggle config endpoint for the site (GET /config)
     Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/config'
+  AuthUrl:
+    Description: Google OAuth login entry point (GET /auth/login)
+    Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/login'
+  ToggleUrl:
+    Description: Admin toggle endpoint (POST /toggle)
+    Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/toggle'

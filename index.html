@@ -5,6 +5,10 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- No Referer on outbound requests: the OAuth callback lands on
+         /?auth_token=…, and pre-render resources (Google Fonts) must not
+         receive the session token. -->
+    <meta name="referrer" content="no-referrer" />
     <title>Tong Tong – Chinesisches Restaurant in Braunfels</title>
     <meta name="description" content="China-Restaurant Tong Tong in Braunfels – über 30 Jahre asiatische Küche, Spezial-Buffet und TeppanYaki-Grill. Europaplatz 2, 35619 Braunfels.">
     <link rel="canonical" href="https://tong-tong.eu/">

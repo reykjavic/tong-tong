@@ -17,6 +17,7 @@ set -euo pipefail
 REGION="${REGION:-eu-central-1}"
 STACK_NAME="${STACK_NAME:-tong-tong-backend}"
 ENV_FILE="backend/.env.whatsapp"
+GOOGLE_ENV_FILE="backend/.env.google"
 # Bucket SAM uses for packaged artifacts (auto-created if missing).
 SAM_BUCKET="${SAM_BUCKET:-tong-tong-sam-artifacts}"
 # AWS profile with deploy rights (long-lived user tong-tong-deploy; no default creds).
@@ -25,26 +26,27 @@ PROFILE="${PROFILE:-tong-tong}"
 # The webhook's Meta secrets are optional in template.yaml — the stack can deploy
 # (config Lambda + RestaurantData table) before Meta setup. When the env file is
 # missing the webhook ships inert; fill it + redeploy to activate (README.md).
+# KEY=VALUE → value from the given env file (trims surrounding whitespace).
+read_env() {
+  local file="$1" key="$2"
+  awk -F= -v k="$key" '$1==k { sub(/^[^=]*=/,""); gsub(/^[ \t]+|[ \t]+$/, ""); print; exit }' "$file"
+}
+
 OVERRIDES=()
 
+# ---- WhatsApp webhook (optional; Meta secrets) ------------------------------
 if [ ! -f "$ENV_FILE" ]; then
   echo "!! $ENV_FILE not found — deploying with template defaults." >&2
   echo "   The WhatsApp webhook deploys inert (empty secrets). Configure Meta" >&2
   echo "   later, fill the file, and redeploy to activate it." >&2
 else
-  # KEY=VALUE → value (trims surrounding whitespace)
-  read_env() {
-    local key="$1"
-    awk -F= -v k="$key" '$1==k { sub(/^[^=]*=/,""); gsub(/^[ \t]+|[ \t]+$/, ""); print; exit }' "$ENV_FILE"
-  }
-
-  verify_token="$(read_env VERIFY_TOKEN)"
-  meta_token="$(read_env META_ACCESS_TOKEN)"
-  phone_id="$(read_env PHONE_NUMBER_ID)"
-  app_secret="$(read_env APP_SECRET)"
-  auto_reply="$(read_env AUTO_REPLY_TEXT)"
-  graph_version="$(read_env GRAPH_API_VERSION)"
-  business_wa_id="$(read_env BUSINESS_WA_ID)"
+  verify_token="$(read_env "$ENV_FILE" VERIFY_TOKEN)"
+  meta_token="$(read_env "$ENV_FILE" META_ACCESS_TOKEN)"
+  phone_id="$(read_env "$ENV_FILE" PHONE_NUMBER_ID)"
+  app_secret="$(read_env "$ENV_FILE" APP_SECRET)"
+  auto_reply="$(read_env "$ENV_FILE" AUTO_REPLY_TEXT)"
+  graph_version="$(read_env "$ENV_FILE" GRAPH_API_VERSION)"
+  business_wa_id="$(read_env "$ENV_FILE" BUSINESS_WA_ID)"
 
   for v in "$verify_token" "$meta_token" "$phone_id" "$app_secret"; do
     if [ -z "$v" ]; then
@@ -71,6 +73,32 @@ else
   [ -n "$auto_reply" ]     && OVERRIDES+=("AutoReplyText=$auto_reply")
   [ -n "$graph_version" ]  && OVERRIDES+=("GraphApiVersion=$graph_version")
   [ -n "$business_wa_id" ] && OVERRIDES+=("BusinessWaId=$business_wa_id")
+fi
+
+# ---- Google OAuth (optional; admin dashboard login) -------------------------
+# Independent of the whatsapp file: missing google file = the auth Lambda
+# deploys inert (login returns 503), never a hard failure.
+if [ ! -f "$GOOGLE_ENV_FILE" ]; then
+  echo "!! $GOOGLE_ENV_FILE not found — the admin dashboard login deploys inert." >&2
+  echo "   Set up the Google OAuth client (backend/README.md), fill the file," >&2
+  echo "   and redeploy to activate it." >&2
+else
+  google_client_id="$(read_env "$GOOGLE_ENV_FILE" GOOGLE_CLIENT_ID)"
+  google_client_secret="$(read_env "$GOOGLE_ENV_FILE" GOOGLE_CLIENT_SECRET)"
+  admin_email="$(read_env "$GOOGLE_ENV_FILE" ADMIN_EMAIL)"
+  site_url="$(read_env "$GOOGLE_ENV_FILE" SITE_URL)"
+
+  for v in "$google_client_id" "$google_client_secret"; do
+    if [ "$v" = "change-me" ]; then
+      echo "!! $GOOGLE_ENV_FILE still contains 'change-me' placeholders — the admin" >&2
+      echo "   login will deploy with bogus Google credentials." >&2
+    fi
+  done
+
+  [ -n "$google_client_id" ]     && OVERRIDES+=("GoogleClientId=$google_client_id")
+  [ -n "$google_client_secret" ] && OVERRIDES+=("GoogleClientSecret=$google_client_secret")
+  [ -n "$admin_email" ]          && OVERRIDES+=("AdminEmail=$admin_email")
+  [ -n "$site_url" ]             && OVERRIDES+=("SiteUrl=$site_url")
 fi
 
 # Artifacts bucket (SAM needs somewhere to upload the packaged function zip).

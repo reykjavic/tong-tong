@@ -12,6 +12,7 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
   '/hours': { title: 'meta.hours.title', description: 'meta.hours.description' },
   '/posts': { title: 'meta.posts.title', description: 'meta.posts.description' },
   '/order': { title: 'meta.order.title', description: 'meta.order.description' },
+  '/dashboard': { title: 'meta.dashboard.title', description: 'meta.dashboard.description' },
   '/impressum': { title: 'meta.impressum.title', description: 'meta.impressum.description' },
   '/datenschutz': { title: 'meta.datenschutz.title', description: 'meta.datenschutz.description' },
   // Fallback for unknown locations (rendered by the 404 route in App.tsx).

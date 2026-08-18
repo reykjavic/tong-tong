@@ -8,7 +8,9 @@
     "news": "News",
     "contact": "Contact & Hours",
     "impressum": "Imprint",
-    "datenschutz": "Privacy Policy"
+    "datenschutz": "Privacy Policy",
+    "login": "Log in",
+    "admin": "Admin"
   },
   "meta": {
     "home": {
@@ -46,6 +48,10 @@
     "datenschutz": {
       "title": "Privacy Policy – China Restaurant Tong Tong",
       "description": "Privacy policy of China Restaurant Tong Tong in accordance with the GDPR."
+    },
+    "dashboard": {
+      "title": "Dashboard – China Restaurant Tong Tong",
+      "description": "Manage the feature settings of Restaurant Tong Tong."
     },
     "notFound": {
       "title": "Page not found – China Restaurant Tong Tong",
@@ -199,7 +205,7 @@
     },
     "localStorage": {
       "title": "Local Storage (localStorage)",
-      "text": "Your language selection (German/English) is stored exclusively locally in your browser (localStorage). This data does not leave your device and is not transmitted to us."
+      "text": "Your language selection (German/English) is stored exclusively locally in your browser (localStorage). This data does not leave your device and is not transmitted to us. When you sign in as an administrator, a login token for the dashboard (tt-auth) is additionally stored locally."
     },
     "contact": {
       "title": "Contact",
@@ -209,6 +215,18 @@
       "title": "Your Rights",
       "text": "Under the GDPR you have the right to access, rectification, erasure, restriction of processing, data portability and objection, as well as the right to lodge a complaint with a data protection supervisory authority."
     }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "loginPrompt": "Sign in with Google to manage the site's feature settings.",
+    "loginButton": "Sign in with Google",
+    "signedInAs": "Signed in as",
+    "logout": "Log out",
+    "ordering": "Online ordering",
+    "orderingDescription": "Shows the order button and order link on the site.",
+    "reservations": "Online reservations",
+    "reservationsDescription": "Allows reservations through the site.",
+    "saveError": "Couldn't save — please try again."
   },
   "common": {
     "languageToggle": "DE",

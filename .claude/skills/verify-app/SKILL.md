@@ -21,7 +21,7 @@ npx tsc --noEmit
 
 ## 2. Route-sync check
 
-The site's routes are mirrored in four files that must agree (`App.tsx`, `PageMeta.tsx`'s `ROUTE_META`, the CloudFront soft-404 function's `SPA_ROUTES`, and `sitemap.xml`). Run the checker:
+The site's routes are mirrored in four files that must agree (`App.tsx`, `PageMeta.tsx`'s `ROUTE_META`, the CloudFront soft-404 function's `SPA_ROUTES`, and `sitemap.xml`). One deliberate asymmetry: routes in the script's `PRIVATE_ROUTES` array (currently `/dashboard`) are expected in the first three but absent from `sitemap.xml`, and the checker asserts exactly that. Run the checker:
 
 ```bash
 .claude/skills/verify-app/scripts/check-route-sync.sh

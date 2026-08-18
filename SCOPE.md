@@ -308,7 +308,7 @@ Rate limiting (API Gateway + Lambda), Meta API retries with exponential backoff 
 
 ## 12. Open Decisions (resolve as we iterate)
 
-1. **Staff auth**: a simple shared token (recommended — family tool, no user management) vs Google OAuth against `ALLOWED_EMAILS` (more setup, nicer if staff grows). Affects M2.
+1. **Staff auth (resolved 2026-08-18):** **Google OAuth** against a single `ADMIN_EMAIL` (not the shared token) — the owner wanted a real login to identify users and protect web feature-toggles on `/dashboard`. Implemented: `auth` Lambda (OAuth code flow, id_token JWKS verification, opaque 7-day sessions in the table with TTL, `ADMIN_EMAIL` gate at mint and at write) + `toggle` Lambda (`POST /toggle`, Bearer session). "Staff grows" later → extend the email allowlist to a list rather than switching mechanisms.
 2. **Order item model**: structured products selected from the menu (decided direction) — but whether items come from a hardcoded list, a config file, or the existing menu PDF is open. Affects the order form.
 3. **SES from-address**: `bestellung@tong-tong.eu` vs a subdomain — trivial, pick during M2 SES setup.
 4. **Single HTTP API vs one per function**: M0/M2 use SAM's implicit REST API with per-path integrations (preferred — one URL, one auth layer).

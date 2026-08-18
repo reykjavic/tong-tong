@@ -8,7 +8,9 @@
     "news": "Aktuelles",
     "contact": "Kontakt & Öffnungszeiten",
     "impressum": "Impressum",
-    "datenschutz": "Datenschutz"
+    "datenschutz": "Datenschutz",
+    "login": "Anmelden",
+    "admin": "Admin"
   },
   "meta": {
     "home": {
@@ -46,6 +48,10 @@
     "datenschutz": {
       "title": "Datenschutzerklärung – China-Restaurant Tong Tong",
       "description": "Datenschutzerklärung von China-Restaurant Tong Tong gemäß DSGVO."
+    },
+    "dashboard": {
+      "title": "Dashboard – China-Restaurant Tong Tong",
+      "description": "Verwaltung der Feature-Einstellungen von Restaurant Tong Tong."
     },
     "notFound": {
       "title": "Seite nicht gefunden – China-Restaurant Tong Tong",
@@ -199,7 +205,7 @@
     },
     "localStorage": {
       "title": "Lokale Speicherung (localStorage)",
-      "text": "Ihre Sprachauswahl (Deutsch/Englisch) wird ausschließlich lokal in Ihrem Browser (localStorage) gespeichert. Diese Daten verlassen nicht Ihr Gerät und werden an uns nicht übermittelt."
+      "text": "Ihre Sprachauswahl (Deutsch/Englisch) wird ausschließlich lokal in Ihrem Browser (localStorage) gespeichert. Diese Daten verlassen nicht Ihr Gerät und werden an uns nicht übermittelt. Bei der Anmeldung als Administrator wird zusätzlich ein Anmelde-Token für das Dashboard (tt-auth) lokal gespeichert."
     },
     "contact": {
       "title": "Kontaktaufnahme",
@@ -209,6 +215,18 @@
       "title": "Ihre Rechte",
       "text": "Sie haben nach Maßgabe der DSGVO das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch sowie das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren."
     }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "loginPrompt": "Melden Sie sich mit Google an, um die Feature-Einstellungen der Website zu verwalten.",
+    "loginButton": "Mit Google anmelden",
+    "signedInAs": "Angemeldet als",
+    "logout": "Abmelden",
+    "ordering": "Online-Bestellung",
+    "orderingDescription": "Zeigt die Bestellschaltfläche und den Bestell-Link auf der Website.",
+    "reservations": "Online-Reservierung",
+    "reservationsDescription": "Erlaubt Reservierungen über die Website.",
+    "saveError": "Änderung fehlgeschlagen – bitte erneut versuchen."
   },
   "common": {
     "languageToggle": "EN",

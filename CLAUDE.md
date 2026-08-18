@@ -66,6 +66,7 @@ Specialized subagents live under `.claude/agents/` (delegation layer — Claude 
 - Wouter for routing — never Next.js.
 - German (`de`) is the default language; `en` is a full mirror.
 - Impressum and Datenschutz pages are legally required for this German business site.
+- **Branch workflow:** feature work happens on `dev` and is pushed there; **never merge to `main` unless the user explicitly asks** (merging to `main` triggers the production deploy).
 - Keep `src/` flat at the top level: `src/pages/`, `src/locales/`, `src/hooks/` (custom hooks / data-access modules, e.g. `src/hooks/posts.ts`), and single files at the `src/` root (user preference). The exception is `src/components/`, which is organized into `layout/`, `ui/`, and `features/` subfolders (see "Component structure" above).
 
 ## Decap CMS (implemented)

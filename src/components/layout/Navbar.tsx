@@ -19,6 +19,7 @@ import { Check, ExpandMore, Close as CloseIcon, Menu as MenuIcon } from '@mui/ic
 import { Link, useLocation } from 'wouter'
 import { useI18n } from '../../i18n'
 import { useConfig } from '../../hooks/config'
+import { login, useAuth } from '../../hooks/auth'
 import deFlag from '../../assets/flags/de.svg'
 import gbFlag from '../../assets/flags/gb.svg'
 
@@ -38,6 +39,10 @@ const LANGUAGES = [
 export default function Navbar() {
   const { language, t, setLanguage } = useI18n()
   const { config } = useConfig()
+  const { status } = useAuth()
+  // A stored session shows the Admin entry even while it's still validating
+  // (status 'loading'); the authoritative check lives in the Dashboard.
+  const showAdmin = status !== 'anonymous'
   const [location] = useLocation()
   const theme = useTheme()
   const visibleLinks = links.filter((link) => !(link.href === '/order' && !config.ordering.enabled))
@@ -189,6 +194,42 @@ export default function Navbar() {
               </IconButton>
             ) : (
               <>
+                {/* Admin / login — outside the links array so the ordering
+                    toggle-gating never hides it. */}
+                {showAdmin ? (
+                  <Button
+                    component={Link}
+                    href="/dashboard"
+                    sx={{
+                      height: 34,
+                      px: 1.5,
+                      borderRadius: '8px',
+                      color: '#fff',
+                      bgcolor: 'rgba(255,255,255,0.15)',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
+                    }}
+                  >
+                    {t('nav.admin')}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => login()}
+                    sx={{
+                      height: 34,
+                      px: 1.5,
+                      borderRadius: '8px',
+                      color: '#fff',
+                      bgcolor: 'rgba(255,255,255,0.15)',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
+                    }}
+                  >
+                    {t('nav.login')}
+                  </Button>
+                )}
                 {/* Language dropdown trigger */}
                 <Button
                   onClick={openLangMenu}
@@ -325,6 +366,43 @@ export default function Navbar() {
               </Button>
             )
           })}
+          {showAdmin ? (
+            <Button
+              component={Link}
+              href="/dashboard"
+              onClick={() => setDrawerOpen(false)}
+              sx={{
+                justifyContent: 'flex-start',
+                px: 1.5,
+                py: 1.2,
+                color: '#fff',
+                fontWeight: 600,
+                textTransform: 'none',
+                fontSize: '1rem',
+                borderRadius: 2,
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
+              }}
+            >
+              {t('nav.admin')}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => login()}
+              sx={{
+                justifyContent: 'flex-start',
+                px: 1.5,
+                py: 1.2,
+                color: '#fff',
+                fontWeight: 600,
+                textTransform: 'none',
+                fontSize: '1rem',
+                borderRadius: 2,
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
+              }}
+            >
+              {t('nav.login')}
+            </Button>
+          )}
           <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.2)' }} />
           <Typography variant="overline" sx={{ px: 1, color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>
             {t('common.language')}

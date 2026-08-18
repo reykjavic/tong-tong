@@ -28,6 +28,7 @@ var SPA_ROUTES = [
   '/posts',
   '/impressum',
   '/datenschutz',
+  '/dashboard',
 ];
 
 function handler(event) {

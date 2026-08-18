@@ -8,13 +8,21 @@ This README is the **Milestone 0 runbook**: Meta setup → deploy → test the
 
 ```
 backend/
-├── template.yaml                 # SAM template — the webhook Lambda + API route
+├── template.yaml                 # SAM template — webhook, config, auth, toggle lambdas
 ├── README.md                     # this runbook
 ├── .env.whatsapp                 # LOCAL secrets (gitignored) — create from .example
 ├── .env.whatsapp.example         # committed template
+├── .env.google                   # LOCAL secrets (gitignored) — create from .example
+├── .env.google.example           # committed template
 └── lambdas/
-    └── whatsapp-webhook/
-        └── index.mjs             # the Lambda handler (verify + auto-reply)
+    ├── whatsapp-webhook/
+    │   └── index.mjs             # webhook (verify + auto-reply)
+    ├── config/
+    │   └── index.mjs             # GET /config — public feature toggles
+    ├── auth/
+    │   └── index.mjs             # Google OAuth login + admin sessions
+    └── toggle/
+        └── index.mjs             # POST /toggle — admin-gated web toggle
 ```
 
 The Lambda is a single self-contained `index.mjs` (zero npm dependencies, Node 18+
@@ -93,6 +101,65 @@ curl -i -X POST 'https://<api-id>.execute-api.eu-central-1.amazonaws.com/Prod/we
 You should get `200 OK` and see a "replying to …" log line in the Lambda's CloudWatch
 log group. A POST without a valid signature must return **403**.
 
+## Admin dashboard — Google OAuth login
+
+The site's `/dashboard` (React admin panel) logs in via Google OAuth. The backend
+runs the flow: `/auth/login` 302s to Google, `/auth/google/callback` exchanges the
+code, verifies the id_token, **gates on `ADMIN_EMAIL`** (default `247reyk@gmail.com`),
+and mints an opaque 7-day session. `/auth/me`, `/auth/logout` and `/toggle` take the
+session as `Authorization: Bearer`. No cookies — the SPA stores the token in
+`localStorage` and sends it in a header, so there is no CSRF surface.
+
+### Google Cloud Console setup (one-time)
+
+1. [console.cloud.google.com](https://console.cloud.google.com) → project → **OAuth
+   consent screen** (External): app name `Tong Tong Admin`, scopes `openid` + `email`,
+   **add the admin email as a test user** (must equal `ADMIN_EMAIL`). Keep in Testing.
+2. **Credentials → Create OAuth client → Web application**. Register:
+   - **Authorized redirect URI**: `https://<api-id>.execute-api.eu-central-1.amazonaws.com/Prod/auth/google/callback`
+     — the *critical* value; re-register it whenever the stack's API id changes
+     (it is stable across redeploys, only changes if the stack is recreated).
+   - **Authorized JavaScript origins**: the SPA origin (e.g. `https://d22hrnca27jxah.cloudfront.net`).
+3. Copy the **Client ID** + **Client secret** into `backend/.env.google`:
+   ```bash
+   cp backend/.env.google.example backend/.env.google   # fill in the two values
+   ```
+4. `./scripts/deploy-whatsapp.sh` — the script passes the google values as
+   CloudFormation params. Missing file → the auth Lambda deploys **inert**
+   (login returns 503), never a deploy failure.
+
+### Smoke tests
+
+```bash
+AUTH=$(aws cloudformation describe-stacks --stack-name tong-tong-backend --profile tong-tong \
+  --region eu-central-1 --query 'Stacks[0].Outputs[?OutputKey==`AuthUrl`].OutputValue' --output text)
+curl -i "$AUTH?next=/dashboard"        # 302 -> accounts.google.com with client_id + state
+curl -i "${AUTH%%login}me"             # 401 (no session)
+curl -i -X POST "${AUTH%%login}toggle" -H 'Content-Type: application/json' -d '{"feature":"ordering","enabled":true}'  # 401
+```
+
+To test a real session without a browser, insert one and call `/toggle` with it
+(replaces the web toggle for a CLI flip):
+
+```bash
+TOKEN=$(openssl rand -base64 32 | tr '/+' '_-' | tr -d '=')
+aws dynamodb put-item --table-name RestaurantData --profile tong-tong --region eu-central-1 \
+  --item "{\"PK\":{\"S\":\"session\"},\"SK\":{\"S\":\"$TOKEN\"},\"email\":{\"S\":\"247reyk@gmail.com\"},\"TTL\":{\"N\":\"$(($(date +%s)+86400))\"}}"
+curl -i -X POST "${AUTH%%login}toggle" -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"feature":"ordering","enabled":false}'
+```
+
+### Security notes (admin dashboard)
+
+- Only `ADMIN_EMAIL` ever gets a session (checked at callback mint **and** again at
+  `/toggle`). Non-admin Google accounts are redirected back without a token.
+- The Google id_token is verified end-to-end: RS256 signature against Google's JWKS,
+  plus `iss` / `aud` / `exp` / `email_verified`. The `access_token` is ignored.
+- Sessions are opaque random tokens with DynamoDB TTL (7 days) — revocable by
+  deleting the item, no JWT library, no cookies.
+- Secrets (`GOOGLE_CLIENT_SECRET`) are `NoEcho` CloudFormation params from the
+  gitignored `.env.google` — same pipeline as the WhatsApp secrets.
+
 ## Troubleshooting
 
 | Symptom | Likely cause / fix |
@@ -115,7 +182,7 @@ log group. A POST without a valid signature must return **403**.
 
 - **M1** — store inbound messages in DynamoDB (idempotent via `message.id`), CI
   deploy (`deploy-lambda.yml`) via GitHub Actions.
-- **M2** — kitchen dashboard + Google OAuth + prep-time buttons that WhatsApp the
-  customer.
+- **M2** — kitchen dashboard (orders list + prep-time buttons that WhatsApp the
+  customer). Google OAuth login + web feature-toggles are already in (see above).
 - **M3** — customer ordering + "Re-Order My Usual".
 - **M4** — hardening (retries/DLQ, rate limits, alarms, budget alert).

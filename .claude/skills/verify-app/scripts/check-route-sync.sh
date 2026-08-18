@@ -5,6 +5,9 @@
 #   ↔  scripts/cloudfront-soft-404-function.js (SPA_ROUTES)
 #   ↔  public/sitemap.xml
 #
+# Routes listed in PRIVATE_ROUTES are expected everywhere EXCEPT the sitemap
+# (authenticated pages aren't public); a dedicated pass asserts that.
+#
 # Part of the verify-app skill. Exit 0 = all in sync, 1 = drift found,
 # 2 = script bug (a surface parsed to nothing).
 
@@ -19,6 +22,10 @@ PAGE_META="src/components/features/PageMeta.tsx"
 SOFT_404="scripts/cloudfront-soft-404-function.js"
 SITEMAP="public/sitemap.xml"
 SITE_DOMAIN="tong-tong.eu"
+
+# Authenticated/private routes: registered in App.tsx, PageMeta and the
+# soft-404 allowlist, but intentionally absent from public/sitemap.xml.
+PRIVATE_ROUTES=(/dashboard)
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
@@ -70,6 +77,11 @@ done
 # Routes known anywhere = union of all surfaces.
 cat "$TMP"/app "$TMP"/meta "$TMP"/soft404 "$TMP"/sitemap | sort -u > "$TMP/union"
 
+# Union minus private routes — the sitemap comparison uses this set, since
+# private routes are expected to be missing from the public sitemap.
+printf '%s\n' "${PRIVATE_ROUTES[@]}" | sort -u > "$TMP/private"
+comm -23 "$TMP/union" "$TMP/private" > "$TMP/union_public"
+
 declare -A LABELS=(
   [app]="App.tsx"
   [meta]="PageMeta.tsx (ROUTE_META)"
@@ -82,9 +94,15 @@ echo
 
 status=0
 
-# Per surface: which known routes are missing there.
+# Per surface: which known routes are missing there. The sitemap comparison
+# uses the public-only union, since private routes are meant to be absent.
 for name in app meta soft404 sitemap; do
-  missing="$(comm -23 "$TMP/union" "$TMP/$name" | grep -v '^$' || true)"
+  if [[ "$name" == "sitemap" ]]; then
+    union_set="$TMP/union_public"
+  else
+    union_set="$TMP/union"
+  fi
+  missing="$(comm -23 "$union_set" "$TMP/$name" | grep -v '^$' || true)"
   if [[ -n "$missing" ]]; then
     status=1
     echo "MISSING from ${LABELS[$name]}:"
@@ -101,6 +119,24 @@ for name in meta soft404 sitemap; do
     echo "$extra" | sed 's/^/  /'
   fi
 done
+
+# Private routes: must be registered everywhere except the sitemap, and must
+# not leak into it. (The union checks above can't demand a route's presence —
+# if it were absent from every surface it would never appear in the union.)
+if [[ "${#PRIVATE_ROUTES[@]}" -gt 0 ]]; then
+  for route in "${PRIVATE_ROUTES[@]}"; do
+    for name in app meta soft404; do
+      if ! grep -qxF "$route" "$TMP/$name"; then
+        status=1
+        echo "PRIVATE route $route MISSING from ${LABELS[$name]}"
+      fi
+    done
+    if grep -qxF "$route" "$TMP/sitemap"; then
+      status=1
+      echo "PRIVATE route $route must NOT appear in sitemap.xml"
+    fi
+  done
+fi
 
 echo
 if [[ "$status" -eq 0 ]]; then
