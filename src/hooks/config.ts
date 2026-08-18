@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 
 export interface FeatureFlag {
   enabled: boolean
@@ -42,41 +42,62 @@ async function fetchConfig(): Promise<SiteConfig> {
   }
 }
 
-// Module-scoped cache: Navbar and Menu share one fetch, and React StrictMode's
-// double effect reuses the same promise instead of fetching twice.
+// Module-scoped promise cache: Navbar, Menu and Dashboard share one fetch, and
+// React StrictMode's double effect reuses the same promise instead of fetching
+// twice. A failed fetch clears it so the next call retries.
 let cache: Promise<SiteConfig> | null = null
 export function getConfig(): Promise<SiteConfig> {
   cache ??= fetchConfig().catch((err) => {
-    // A failed fetch must not poison the cache forever — clear it so the next
-    // call retries instead of reusing a rejected promise.
     cache = null
     throw err
   })
   return cache
 }
 
-export function useConfig() {
-  const [config, setConfig] = useState<SiteConfig>(DEFAULT_CONFIG)
-  const [status, setStatus] = useState<ConfigStatus>('loading')
+// Reactive module store (same idiom as src/hooks/auth.ts). The POST /toggle
+// response in the Dashboard publishes the fresh config via setConfig(), so
+// already-mounted consumers (Navbar, Menu) re-render on the current route
+// instead of waiting for the next full page load.
+type ConfigSnapshot = { status: ConfigStatus; config: SiteConfig }
+
+const LOADING_SNAPSHOT: ConfigSnapshot = { status: 'loading', config: DEFAULT_CONFIG }
+
+let snapshot: ConfigSnapshot = LOADING_SNAPSHOT
+const listeners = new Set<() => void>()
+
+function setSnapshot(next: ConfigSnapshot) {
+  snapshot = next
+  for (const listener of listeners) listener()
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+
+function getSnapshot() {
+  return snapshot
+}
+
+// Publish the authoritative config (e.g. the POST /toggle response) to every
+// live subscriber — the navbar's ordering link flips without a reload.
+export function setConfig(config: SiteConfig) {
+  setSnapshot({ status: 'ready', config })
+}
+
+export function useConfig(): ConfigSnapshot {
+  const snap = useSyncExternalStore(subscribe, getSnapshot)
 
   useEffect(() => {
-    let alive = true
     getConfig()
-      .then((result) => {
-        if (!alive) return
-        setConfig(result)
-        setStatus('ready')
-      })
+      .then((result) => setConfig(result))
       .catch((err) => {
         console.error('Failed to load feature config:', err)
-        if (alive) setStatus('error')
+        setSnapshot({ status: 'error', config: snapshot.config })
       })
-    return () => {
-      alive = false
-    }
   }, [])
 
-  // Consumers just read config.ordering.enabled: the fail-open default covers
-  // loading and error states.
-  return { status, config }
+  return snap
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useI18n } from '../i18n'
-import { useConfig, type SiteConfig } from '../hooks/config'
+import { setConfig, useConfig, type SiteConfig } from '../hooks/config'
 import { apiFetch, login, logout, useAuth } from '../hooks/auth'
 import PageContainer from '../components/layout/PageContainer'
 import ContentCard from '../components/ui/ContentCard'
@@ -91,6 +91,9 @@ export default function Dashboard() {
         ordering: data.ordering.enabled,
         reservations: data.reservations.enabled,
       })
+      // Publish the authoritative config to the shared store so already-mounted
+      // consumers (Navbar, Menu) reflect the flip on the current route — no reload.
+      setConfig(data)
     } catch (err) {
       console.error('Toggle save failed:', err)
       setValues(previous) // revert the optimistic flip
