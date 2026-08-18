@@ -20,7 +20,7 @@
 // the email at write time (belt and suspenders).
 //
 // Empty GOOGLE_CLIENT_ID/SECRET -> 503 "auth not configured" (ships inert until
-// backend/.env.google is filled; see scripts/deploy-whatsapp.sh).
+// backend/.env.google is filled; see scripts/deploy-backend.sh).
 
 import crypto from 'node:crypto'
 import { DynamoDBClient, GetItemCommand, PutItemCommand, DeleteItemCommand } from '@aws-sdk/client-dynamodb'

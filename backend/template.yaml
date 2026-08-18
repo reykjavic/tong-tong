@@ -7,12 +7,12 @@
 # once there are several functions (decap-oauth currently lives outside this
 # stack; it can be onboarded later).
 #
-# Secrets are NOT in this file. scripts/deploy-whatsapp.sh reads the gitignored
-# backend/.env.whatsapp and passes the values as parameters (NoEcho hides them
-# from the console). Optional params fall back to the handler's defaults when
-# left empty.
+# Secrets are NOT in this file. scripts/deploy-backend.sh reads the gitignored
+# backend/.env.whatsapp and backend/.env.google and passes the values as
+# parameters (NoEcho hides them from the console). Optional params fall back
+# to the handler's defaults when left empty.
 #
-# Deploy:  ./scripts/deploy-whatsapp.sh   (runbook: backend/README.md)
+# Deploy:  ./scripts/deploy-backend.sh   (runbook: backend/README.md)
 
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31

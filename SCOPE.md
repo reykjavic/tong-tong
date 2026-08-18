@@ -93,7 +93,7 @@ Most restaurant websites use WordPress on expensive managed hosting, or hand a b
 │       └── (future) notify/        # extracted only if notification triggers multiply
 ├── kitchen/                        # M2  — kitchen dashboard SPA (separate mini Vite app)
 ├── scripts/
-│   ├── deploy-whatsapp.sh          # M0  — sam build + deploy (secrets from .env.whatsapp)
+│   ├── deploy-backend.sh           # M0  — sam build + deploy (secrets from .env.*)
 │   ├── setup-staging.sh            # existing
 │   └── README.md                   # documents both
 ├── .github/workflows/
@@ -186,7 +186,7 @@ Notification copy (German-first): *"Ihre Bestellung ist in ca. X Minuten abholbe
 
 ## 8. Environment Variables & Secrets
 
-**Milestone 0** (SAM template parameters, declared `NoEcho`; [`scripts/deploy-whatsapp.sh`](./scripts/deploy-whatsapp.sh) reads the gitignored `backend/.env.whatsapp` and passes them to `sam deploy`):
+**Milestone 0** (SAM template parameters, declared `NoEcho`; [`scripts/deploy-backend.sh`](./scripts/deploy-backend.sh) reads the gitignored `backend/.env.whatsapp` and `backend/.env.google` and passes them to `sam deploy`):
 
 | Variable | Required | Purpose |
 | :------- | :------- | :------ |
@@ -210,7 +210,7 @@ Notification copy (German-first): *"Ihre Bestellung ist in ca. X Minuten abholbe
 Smallest shippable slice: message a number → it auto-replies.
 1. Add Meta credentials: create a WhatsApp Business app, get `META_ACCESS_TOKEN`, `PHONE_NUMBER_ID`, `APP_SECRET` (console steps in [backend/README.md](./backend/README.md)).
 2. Fill in `backend/.env.whatsapp`.
-3. Install the SAM CLI and run `./scripts/deploy-whatsapp.sh` — builds the Lambda, creates the `tong-tong-backend` stack (role, function, REST API route, env vars), prints the **WebhookUrl**.
+3. Install the SAM CLI and run `./scripts/deploy-backend.sh` — builds the Lambda, creates the `tong-tong-backend` stack (role, function, REST API route, env vars), prints the **WebhookUrl**.
 4. Configure the webhook in the Meta dashboard (Callback URL + verify token, subscribe to `messages`).
 5. Send a WhatsApp message → get the auto-reply. Also test GET verification + curl a synthetic POST.
 

@@ -37,16 +37,18 @@ values to paste into the GitHub `staging` environment (`S3_BUCKET`,
 > This is a *one-time* setup. The actual deploy (`.github/workflows/deploy.yml`)
 > only syncs to the already-created bucket + distribution. It does not run this script.
 
-## `deploy-whatsapp.sh`
+## `deploy-backend.sh`
 
-Builds + deploys the **WhatsApp webhook** backend (Milestone 0 of
-[SCOPE.md](../SCOPE.md)) as an **AWS SAM** app. It reads secrets from the gitignored
-`backend/.env.whatsapp`, runs `sam build` + `sam deploy`, and prints the webhook
-**callback URL** to paste into the Meta App Dashboard. Requires the **SAM CLI**.
+Builds + deploys the **serverless backend** (Milestone 0 of
+[SCOPE.md](../SCOPE.md)) as an **AWS SAM** app: the WhatsApp webhook, the config
+feature-toggle endpoint, and the Google OAuth auth + toggle lambdas. It reads secrets
+from the gitignored `backend/.env.whatsapp` and `backend/.env.google`, runs
+`sam build` + `sam deploy`, and prints the webhook **callback URL** to paste into the
+Meta App Dashboard. Requires the **SAM CLI**.
 
 ```bash
 cp backend/.env.whatsapp.example backend/.env.whatsapp   # then fill in Meta values
-./scripts/deploy-whatsapp.sh
+./scripts/deploy-backend.sh
 ```
 
 Rerun after any change to `backend/lambdas/*` or `backend/template.yaml` — SAM

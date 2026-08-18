@@ -60,7 +60,7 @@ route, env vars and stage, and the deploy script does `sam build` + `sam deploy`
 cp backend/.env.whatsapp.example backend/.env.whatsapp
 # ... fill in the four required values ...
 
-./scripts/deploy-whatsapp.sh
+./scripts/deploy-backend.sh
 ```
 
 The script reads `backend/.env.whatsapp`, builds the SAM app, and deploys it as
@@ -124,7 +124,7 @@ session as `Authorization: Bearer`. No cookies — the SPA stores the token in
    ```bash
    cp backend/.env.google.example backend/.env.google   # fill in the two values
    ```
-4. `./scripts/deploy-whatsapp.sh` — the script passes the google values as
+4. `./scripts/deploy-backend.sh` — the script passes the google values as
    CloudFormation params. Missing file → the auth Lambda deploys **inert**
    (login returns 503), never a deploy failure.
 
@@ -164,7 +164,7 @@ curl -i -X POST "${AUTH%%login}toggle" -H "Authorization: Bearer $TOKEN" \
 
 | Symptom | Likely cause / fix |
 | :------ | :----------------- |
-| Webhook "verify" fails in Meta | `VERIFY_TOKEN` mismatch, or you changed the env file but didn't redeploy (`./scripts/deploy-whatsapp.sh`) |
+| Webhook "verify" fails in Meta | `VERIFY_TOKEN` mismatch, or you changed the env file but didn't redeploy (`./scripts/deploy-backend.sh`) |
 | No reply arrives | Webhook not subscribed to `messages`; or the number is a test number the sender can't reach; check Lambda logs |
 | Reply never lands but logs say 200 | `META_ACCESS_TOKEN` expired or lacks permissions; check the "Meta send failed" log line |
 | Bot replies to its own messages / loop | Set `BUSINESS_WA_ID`; confirm the handler's `direction === "outbound"` guard |

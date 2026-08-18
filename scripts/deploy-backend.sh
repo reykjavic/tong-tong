@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
-# Build + deploy the Tong Tong serverless WhatsApp backend (SAM, Milestone 0).
+# Build + deploy the Tong Tong serverless backend (SAM, Milestone 0): the
+# WhatsApp webhook, the config feature-toggle endpoint, and the Google OAuth
+# auth + toggle lambdas.
 #
-# Reads secrets from the gitignored backend/.env.whatsapp and passes them to
-# `sam deploy` as CloudFormation parameters (NoEcho in the template), so no
-# secret ever lands in the repo, in samconfig.toml, or in a shell history file.
+# Reads secrets from the gitignored backend/.env.whatsapp and backend/.env.google
+# and passes them to `sam deploy` as CloudFormation parameters (NoEcho in the
+# template), so no secret ever lands in the repo, in samconfig.toml, or in a
+# shell history file.
 #
 # Prerequisites:
 #   - SAM CLI installed  (https://aws.amazon.com/serverless/sam/ or `pipx install aws-sam-cli`)
 #   - AWS CLI authenticated with rights to deploy Lambda + API Gateway + create
 #     an S3 artifacts bucket (region eu-central-1)
-# Run from the repo root:  ./scripts/deploy-whatsapp.sh
+# Run from the repo root:  ./scripts/deploy-backend.sh
 # Rerun anytime after editing backend/lambdas/* or backend/template.yaml.
 
 set -euo pipefail
