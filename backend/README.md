@@ -116,9 +116,10 @@ session as `Authorization: Bearer`. No cookies — the SPA stores the token in
    consent screen** (External): app name `Tong Tong Admin`, scopes `openid` + `email`,
    **add the admin email as a test user** (must equal `ADMIN_EMAIL`). Keep in Testing.
 2. **Credentials → Create OAuth client → Web application**. Register:
-   - **Authorized redirect URI**: `https://<api-id>.execute-api.eu-central-1.amazonaws.com/Prod/auth/google/callback`
-     — the *critical* value; re-register it whenever the stack's API id changes
-     (it is stable across redeploys, only changes if the stack is recreated).
+   - **Authorized redirect URI**: `https://api.tong-tong.eu/Prod/auth/google/callback`
+     — the *critical* value, byte-matched by the Lambda's callback (built from
+     `requestContext.domainName` + stage). The custom domain `api.tong-tong.eu`
+     (API Gateway regional + Route 53 alias) is stable across stack redeploys.
    - **Authorized JavaScript origins**: the SPA origin (e.g. `https://d22hrnca27jxah.cloudfront.net`).
 3. Copy the **Client ID** + **Client secret** into `backend/.env.google`:
    ```bash
