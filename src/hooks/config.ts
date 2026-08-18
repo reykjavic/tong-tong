@@ -11,13 +11,13 @@ export interface SiteConfig {
 
 export type ConfigStatus = 'loading' | 'ready' | 'error'
 
-// GET /config on the SAM API Gateway (eu-central-1, Prod stage). The API id is
-// assigned by CloudFormation on the first deploy of the tong-tong-backend stack;
-// it persists across redeploys but changes if the stack is ever deleted and
-// recreated (fail-open masks that silently — see below). When the backend gets
-// a stable URL (tong-tong.eu cutover work in TODO.md), swap this for it.
+// GET /config on the SAM API Gateway (eu-central-1, Prod stage), reached via the
+// stable custom domain api.tong-tong.eu (API Gateway regional + Route 53 alias)
+// instead of the CloudFormation-assigned execute-api id — that id persists across
+// redeploys but changes if the stack is ever deleted and recreated, which would
+// have silently broken fail-open config fetches (see below).
 export const CONFIG_API_URL =
-  'https://9i8zsjxhgj.execute-api.eu-central-1.amazonaws.com/Prod/config'
+  'https://api.tong-tong.eu/Prod/config'
 
 // Fail-open defaults: preserve today's UI (ordering visible, no reservation UI)
 // while loading and on fetch failure. Only a definitive `false` from the API
