@@ -274,6 +274,72 @@ Resources:
             Method: post
             RestApiId: !Ref BackendApi
 
+  # Public order intake (M2) — POST /orders writes a Pending order to
+  # RestaurantData. The authoritative ordering gate lives HERE (SCOPE.md §12):
+  # when the ordering toggle is OFF a request is rejected 403 before any write,
+  # independent of what the browser UI shows. Orders carry a short TTL so
+  # mockup/test data doesn't accumulate.
+  OrdersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/orders/
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Timeout: 10
+      MemorySize: 128
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref RestaurantData
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt RestaurantData.Arn
+      Events:
+        OrdersPost:
+          Type: Api
+          Properties:
+            Path: /orders
+            Method: post
+            RestApiId: !Ref BackendApi
+
+  # Staff order read (M2) — GET /staff/orders lists open orders (Pending +
+  # Notified) for the admin dashboard. Same Google-session gate as ToggleFunction.
+  # Querying GSI1 needs dynamodb:Query on BOTH the table and the index ARN.
+  StaffFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/staff/
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Timeout: 10
+      MemorySize: 128
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref RestaurantData
+          ADMIN_EMAIL: !Ref AdminEmail
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:Query
+              Resource:
+                - !GetAtt RestaurantData.Arn
+                - !Sub '${RestaurantData.Arn}/index/GSI1'
+      Events:
+        StaffOrdersGet:
+          Type: Api
+          Properties:
+            Path: /staff/orders
+            Method: get
+            RestApiId: !Ref BackendApi
+
 Outputs:
   WebhookFunction:
     Description: whatsapp-webhook Lambda ARN
@@ -290,3 +356,9 @@ Outputs:
   ToggleUrl:
     Description: Admin toggle endpoint (POST /toggle)
     Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/toggle'
+  OrdersUrl:
+    Description: Public order intake endpoint (POST /orders)
+    Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/orders'
+  StaffOrdersUrl:
+    Description: Staff order list endpoint (GET /staff/orders)
+    Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/staff/orders'

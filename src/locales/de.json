@@ -152,7 +152,11 @@
     "title": "Online bestellen",
     "comingSoon": "Online-Bestellung ist bald verfügbar",
     "message": "Wir arbeiten gerade an der Online-Bestellung. Besuchen Sie uns einfach vor Ort oder rufen Sie uns an – wir freuen uns auf Sie!",
-    "backToMenu": "Zurück zur Speisekarte"
+    "backToMenu": "Zurück zur Speisekarte",
+    "mockAdd": "Mockup-Bestellung hinzufügen",
+    "mockPlacing": "Wird gespeichert…",
+    "mockSuccess": "Mockup-Bestellung gespeichert:",
+    "mockError": "Speichern fehlgeschlagen – ist die Online-Bestellung aktiviert?"
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -226,7 +230,15 @@
     "orderingDescription": "Zeigt die Bestellschaltfläche und den Bestell-Link auf der Website.",
     "reservations": "Online-Reservierung",
     "reservationsDescription": "Erlaubt Reservierungen über die Website.",
-    "saveError": "Änderung fehlgeschlagen – bitte erneut versuchen."
+    "saveError": "Änderung fehlgeschlagen – bitte erneut versuchen.",
+    "orders": {
+      "title": "Bestellungen",
+      "empty": "Noch keine Bestellungen.",
+      "error": "Bestellungen konnten nicht geladen werden.",
+      "retry": "Erneut versuchen",
+      "refresh": "Aktualisieren",
+      "refreshing": "Wird geladen…"
+    }
   },
   "common": {
     "languageToggle": "EN",

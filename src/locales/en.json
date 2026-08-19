@@ -152,7 +152,11 @@
     "title": "Order Online",
     "comingSoon": "Online ordering is coming soon",
     "message": "We're working on online ordering. In the meantime, feel free to visit us in person or give us a call – we look forward to seeing you!",
-    "backToMenu": "Back to the menu"
+    "backToMenu": "Back to the menu",
+    "mockAdd": "Add mockup order",
+    "mockPlacing": "Saving…",
+    "mockSuccess": "Mockup order saved:",
+    "mockError": "Couldn't save order – is online ordering enabled?"
   },
   "notFound": {
     "title": "Page not found",
@@ -226,7 +230,15 @@
     "orderingDescription": "Shows the order button and order link on the site.",
     "reservations": "Online reservations",
     "reservationsDescription": "Allows reservations through the site.",
-    "saveError": "Couldn't save — please try again."
+    "saveError": "Couldn't save — please try again.",
+    "orders": {
+      "title": "Orders",
+      "empty": "No orders yet.",
+      "error": "Couldn't load orders.",
+      "retry": "Try again",
+      "refresh": "Refresh",
+      "refreshing": "Loading…"
+    }
   },
   "common": {
     "languageToggle": "DE",

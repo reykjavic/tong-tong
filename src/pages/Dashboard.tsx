@@ -1,19 +1,29 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useI18n } from '../i18n'
 import { setConfig, useConfig, type SiteConfig } from '../hooks/config'
 import { apiFetch, login, logout, useAuth } from '../hooks/auth'
+import { fetchOrders, type Order } from '../hooks/orders'
 import PageContainer from '../components/layout/PageContainer'
 import ContentCard from '../components/ui/ContentCard'
 import { Title, BodyText } from '../components/ui/typography'
 import {
   Box,
   Button,
+  Chip,
   CircularProgress,
   Divider,
   FormControlLabel,
+  Stack,
   Switch,
   Typography,
 } from '@mui/material'
+
+function formatTimestamp(iso: string | null): string {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  return d.toLocaleString()
+}
 
 type FeatureKey = 'ordering' | 'reservations'
 type FeatureValues = Record<FeatureKey, boolean>
@@ -31,11 +41,35 @@ export default function Dashboard() {
   const [values, setValues] = useState<FeatureValues | null>(null)
   const [saving, setSaving] = useState<FeatureKey | null>(null)
   const [error, setError] = useState(false)
+  const [orders, setOrders] = useState<Order[] | null>(null)
+  const [ordersError, setOrdersError] = useState(false)
+  const [refreshingOrders, setRefreshingOrders] = useState(false)
 
   const current: FeatureValues = values ?? {
     ordering: config.ordering.enabled,
     reservations: config.reservations.enabled,
   }
+
+  // Load open orders once the Google session is confirmed. Hooks must stay
+  // above the early returns, so the gate lives on auth.status here rather than
+  // in the JSX below.
+  useEffect(() => {
+    if (auth.status !== 'authenticated') return
+    let cancelled = false
+    fetchOrders()
+      .then((list) => {
+        if (cancelled) return
+        setOrders(list)
+        setOrdersError(false)
+      })
+      .catch((err) => {
+        console.error('Failed to load orders:', err)
+        if (!cancelled) setOrdersError(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [auth.status])
 
   if (auth.status === 'loading') {
     return (
@@ -103,6 +137,19 @@ export default function Dashboard() {
     }
   }
 
+  const handleRefreshOrders = async () => {
+    setRefreshingOrders(true)
+    setOrdersError(false)
+    try {
+      setOrders(await fetchOrders())
+    } catch (err) {
+      console.error('Failed to refresh orders:', err)
+      setOrdersError(true)
+    } finally {
+      setRefreshingOrders(false)
+    }
+  }
+
   const featureSwitch = (feature: FeatureKey, labelKey: string, descKey: string) => (
     <Box>
       <FormControlLabel
@@ -160,6 +207,75 @@ export default function Dashboard() {
                 </Typography>
               )}
             </Box>
+          )}
+
+          <Divider />
+
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+            <Title variant="h6">{t('dashboard.orders.title')}</Title>
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={refreshingOrders}
+              onClick={() => void handleRefreshOrders()}
+              sx={{ fontWeight: 600, textTransform: 'none' }}
+            >
+              {refreshingOrders ? t('dashboard.orders.refreshing') : t('dashboard.orders.refresh')}
+            </Button>
+          </Box>
+
+          {ordersError ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-start' }}>
+              <Typography variant="body2" sx={{ color: 'error.main' }}>
+                {t('dashboard.orders.error')}
+              </Typography>
+              <Button size="small" color="primary" onClick={() => void handleRefreshOrders()} sx={{ fontWeight: 600, textTransform: 'none' }}>
+                {t('dashboard.orders.retry')}
+              </Button>
+            </Box>
+          ) : orders === null ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={28} />
+            </Box>
+          ) : orders.length === 0 ? (
+            <BodyText>{t('dashboard.orders.empty')}</BodyText>
+          ) : (
+            <Stack spacing={1.5}>
+              {orders.map((order) => (
+                <Box key={order.orderId} sx={{ border: 1, borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                    <Typography variant="body2" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
+                      {order.orderId.slice(0, 8)}
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {formatTimestamp(order.createdAt)}
+                      </Typography>
+                      <Chip
+                        size="small"
+                        label={order.status ?? '—'}
+                        color={order.status === 'Pending' ? 'warning' : order.status === 'Notified' ? 'info' : 'default'}
+                      />
+                    </Box>
+                  </Box>
+                  <Box sx={{ mt: 0.5 }}>
+                    {order.items.map((item, i) => (
+                      <Typography key={i} variant="body2">
+                        {item.name} × {item.qty}
+                      </Typography>
+                    ))}
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {order.channel}: {order.contact}
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {order.total.toFixed(2)} €
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Stack>
           )}
         </Box>
       </ContentCard>
