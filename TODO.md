@@ -44,7 +44,7 @@ A **staging** env (dev branch) separate from public **production** (main branch)
 Planned but **not being implemented right now**. The `dev` branch carries a `/order` placeholder page + "Online bestellen" button/nav entry; it was deliberately **excluded** from the `fix/social-image-and-tsconfig` merge to `main`. When building it: hosted checkout (no backend) was the chosen direction; see earlier planning in git history.
 
 ## ⚙️ CI maintenance
-- [ ] **Bump GitHub Actions off Node 20** (deprecation): `actions/checkout@v4`, `actions/setup-node@v4`, `actions/upload-artifact@v4` are being force-run on Node 24 — pin newer major versions (first seen in deploy run `32051443916`, 2026-08-17)
+- [x] **Bump GitHub Actions off Node 20** (deprecation): `actions/checkout@v4`, `actions/setup-node@v4`, `actions/upload-artifact@v4` are being force-run on Node 24 — pin newer major versions (first seen in deploy run `32051443916`, 2026-08-17) — done 2026-08-19: `node-version: 24`, all actions `@v5`
 
 ## 💡 Ideas / optional
 - [ ] **DynamoDB MCP server** when Milestone 2 has a live `RestaurantData` table — lets Claude inspect the table directly during dev. MCP deliberately deferred (2026-08-17): `gh` + `aws` CLIs already cover GitHub/AWS, so `.claude/agents/` was added instead of MCP wiring.

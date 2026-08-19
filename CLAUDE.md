@@ -23,7 +23,7 @@ Recurring workflows are packaged as composable skills under `.claude/skills/` (a
 - **add-page** — add a new page/route across all six sync surfaces (App.tsx, page, locales, PageMeta, soft-404 fn, sitemap).
 - **i18n-add-strings** — add/change user-visible text in both `de.json` and `en.json`.
 - **add-post** — publish a Decap CMS news post (`content/posts/`).
-- **verify-app** — build + route-sync check + both-languages eyeball; runs `scripts/check-route-sync.sh`.
+- **verify-app** — build + route-sync check + both-languages eyeball; runs `.claude/skills/verify-app/scripts/check-route-sync.sh`.
 - **refactor-readability** — zero-behavior-change readability refactors (patterns P1–P5).
 - **github-cli** — GitHub operations via `gh` (PRs, CI runs, API).
 - **aws-cli** — S3 / CloudFront operations via `aws` (deploys, invalidations, infra scripts).
