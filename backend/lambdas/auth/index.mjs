@@ -10,7 +10,7 @@
 //                                 (JWKS RS256 + iss/aud/exp/email_verified), gate on
 //                                 ADMIN_EMAIL, mint an opaque session, 302 back to
 //                                 SITE_URL/?auth_token=<t>&next=<n>
-//   GET /auth/me               -> Authorization: Bearer <session> -> { email } | 401
+//   GET /auth/me               -> Authorization: Bearer <session> -> { email, name, picture } | 401
 //   POST /auth/logout          -> Authorization: Bearer <session> -> 204
 //
 // Sessions are opaque random tokens stored in the RestaurantData single-table
@@ -79,7 +79,7 @@ function handleLogin(event) {
     client_id: GOOGLE_CLIENT_ID,
     redirect_uri: callbackUrl(event),
     response_type: 'code',
-    scope: 'openid email',
+    scope: 'openid email profile',
     state: makeState(),
     prompt: 'select_account',
   })
@@ -129,6 +129,10 @@ async function handleCallback(event) {
         PK: { S: 'session' },
         SK: { S: token },
         email: { S: payload.email.toLowerCase() },
+        // The `profile` scope makes Google include name/picture in the id_token;
+        // stored so /auth/me can serve them without a second Google round-trip.
+        ...(payload.name ? { name: { S: String(payload.name) } } : {}),
+        ...(payload.picture ? { picture: { S: String(payload.picture) } } : {}),
         createdAt: { S: new Date().toISOString() },
         TTL: { N: String(Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS) },
       },
@@ -153,7 +157,12 @@ async function handleMe(event) {
   return {
     statusCode: 200,
     headers: JSON_HEADERS,
-    body: JSON.stringify({ email: session.email.S }),
+    body: JSON.stringify({
+      email: session.email.S,
+      // Older sessions (minted before profile scope) have no name/picture attrs.
+      name: session.name?.S ?? null,
+      picture: session.picture?.S ?? null,
+    }),
   }
 }
 

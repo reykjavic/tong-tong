@@ -10,6 +10,8 @@
     "impressum": "Impressum",
     "datenschutz": "Datenschutz",
     "login": "Anmelden",
+    "logout": "Abmelden",
+    "loggedInAs": "Angemeldet als",
     "admin": "Admin"
   },
   "meta": {

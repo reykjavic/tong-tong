@@ -10,6 +10,8 @@
     "impressum": "Imprint",
     "datenschutz": "Privacy Policy",
     "login": "Log in",
+    "logout": "Log out",
+    "loggedInAs": "Logged in as",
     "admin": "Admin"
   },
   "meta": {

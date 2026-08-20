@@ -12,14 +12,22 @@ import {
   IconButton,
   Drawer,
   Divider,
+  Avatar,
   useTheme,
   useMediaQuery,
 } from '@mui/material'
-import { Check, ExpandMore, Close as CloseIcon, Menu as MenuIcon } from '@mui/icons-material'
+import {
+  Check,
+  ExpandMore,
+  Close as CloseIcon,
+  Menu as MenuIcon,
+  Logout as LogoutIcon,
+  Person as PersonIcon,
+} from '@mui/icons-material'
 import { Link, useLocation } from 'wouter'
 import { useI18n } from '../../i18n'
 import { useConfig } from '../../hooks/config'
-import { login, useAuth } from '../../hooks/auth'
+import { login, logout, useAuth } from '../../hooks/auth'
 import deFlag from '../../assets/flags/de.svg'
 import gbFlag from '../../assets/flags/gb.svg'
 
@@ -39,10 +47,12 @@ const LANGUAGES = [
 export default function Navbar() {
   const { language, t, setLanguage } = useI18n()
   const { config } = useConfig()
-  const { status } = useAuth()
-  // A stored session shows the Admin entry even while it's still validating
+  const auth = useAuth()
+  // A stored session shows the user chip even while it's still validating
   // (status 'loading'); the authoritative check lives in the Dashboard.
-  const showAdmin = status !== 'anonymous'
+  const isAuthed = auth.status !== 'anonymous'
+  const displayName = auth.name || auth.email
+  const avatarInitial = (displayName?.[0] ?? '').toUpperCase()
   const [location] = useLocation()
   const theme = useTheme()
   const visibleLinks = links.filter((link) => !(link.href === '/order' && !config.ordering.enabled))
@@ -179,7 +189,7 @@ export default function Navbar() {
               ))}
             </Box>
           )}
-          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: 0.75 }}>
             {isMobile ? (
               <IconButton
                 edge="end"
@@ -194,25 +204,78 @@ export default function Navbar() {
               </IconButton>
             ) : (
               <>
-                {/* Admin / login — outside the links array so the ordering
-                    toggle-gating never hides it. */}
-                {showAdmin ? (
-                  <Button
-                    component={Link}
-                    href="/dashboard"
-                    sx={{
-                      height: 34,
-                      px: 1.5,
-                      borderRadius: '8px',
-                      color: '#fff',
-                      bgcolor: 'rgba(255,255,255,0.15)',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
-                    }}
-                  >
-                    {t('nav.admin')}
-                  </Button>
+                {/* Auth / user — outside the links array so the ordering
+                    toggle-gating never hides it. Signed-in users see their
+                    profile (avatar + name, linking to the dashboard) and a
+                    logout button; anonymous visitors get the login button. */}
+                {isAuthed ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Button
+                      component={Link}
+                      href="/dashboard"
+                      title={t('nav.admin')}
+                      sx={{
+                        height: 38,
+                        px: 1,
+                        borderRadius: '8px',
+                        color: '#fff',
+                        bgcolor: 'rgba(255,255,255,0.15)',
+                        textTransform: 'none',
+                        '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
+                      }}
+                    >
+                      <Avatar
+                        src={auth.picture ?? undefined}
+                        alt={displayName ?? t('nav.admin')}
+                        sx={{
+                          width: 26,
+                          height: 26,
+                          fontSize: 13,
+                          bgcolor: 'rgba(255,255,255,0.25)',
+                        }}
+                      >
+                        {avatarInitial || <PersonIcon sx={{ fontSize: 16 }} />}
+                      </Avatar>
+                      {displayName && (
+                        <Box sx={{ ml: 1, lineHeight: 1.1, textAlign: 'left' }}>
+                          <Typography sx={{ fontSize: '0.58rem', opacity: 0.85, lineHeight: 1.2 }}>
+                            {t('nav.loggedInAs')}
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontSize: '0.8rem',
+                              fontWeight: 700,
+                              lineHeight: 1.2,
+                              maxWidth: 140,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {displayName}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Button>
+                    {auth.status === 'authenticated' && (
+                      <Button
+                        onClick={() => void logout()}
+                        startIcon={<LogoutIcon sx={{ fontSize: 18 }} />}
+                        sx={{
+                          height: 34,
+                          px: 1.25,
+                          borderRadius: '8px',
+                          color: '#fff',
+                          bgcolor: 'rgba(255,255,255,0.15)',
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
+                        }}
+                      >
+                        {t('nav.logout')}
+                      </Button>
+                    )}
+                  </Box>
                 ) : (
                   <Button
                     onClick={() => login()}
@@ -366,25 +429,78 @@ export default function Navbar() {
               </Button>
             )
           })}
-          {showAdmin ? (
-            <Button
-              component={Link}
-              href="/dashboard"
-              onClick={() => setDrawerOpen(false)}
-              sx={{
-                justifyContent: 'flex-start',
-                px: 1.5,
-                py: 1.2,
-                color: '#fff',
-                fontWeight: 600,
-                textTransform: 'none',
-                fontSize: '1rem',
-                borderRadius: 2,
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
-              }}
-            >
-              {t('nav.admin')}
-            </Button>
+          {isAuthed ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+              <Button
+                component={Link}
+                href="/dashboard"
+                onClick={() => setDrawerOpen(false)}
+                sx={{
+                  justifyContent: 'flex-start',
+                  px: 1.5,
+                  py: 1.2,
+                  color: '#fff',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  borderRadius: 2,
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
+                }}
+              >
+                <Avatar
+                  src={auth.picture ?? undefined}
+                  alt={displayName ?? t('nav.admin')}
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    mr: 1.5,
+                    fontSize: 15,
+                    bgcolor: 'rgba(255,255,255,0.25)',
+                  }}
+                >
+                  {avatarInitial || <PersonIcon sx={{ fontSize: 20 }} />}
+                </Avatar>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{ fontSize: '0.7rem', opacity: 0.7, lineHeight: 1.2 }}>
+                    {t('nav.loggedInAs')}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: '0.95rem',
+                      fontWeight: 700,
+                      lineHeight: 1.2,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {displayName ?? auth.email ?? '…'}
+                  </Typography>
+                </Box>
+              </Button>
+              {auth.status === 'authenticated' && (
+                <Button
+                  onClick={() => {
+                    setDrawerOpen(false)
+                    void logout()
+                  }}
+                  startIcon={<LogoutIcon sx={{ fontSize: 20 }} />}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    px: 1.5,
+                    py: 1.2,
+                    color: '#fff',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    fontSize: '1rem',
+                    borderRadius: 2,
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
+                  }}
+                >
+                  {t('nav.logout')}
+                </Button>
+              )}
+            </Box>
           ) : (
             <Button
               onClick={() => login()}
