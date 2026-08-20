@@ -27,3 +27,6 @@ vite.config.d.ts
 
 # OS
 Thumbs.db
+
+# DSH agent harness rollback state (session snapshots, not project source)
+.dsh/
