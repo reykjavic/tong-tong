@@ -53,6 +53,18 @@ tmux split-window -v
 # Even out the four panes.
 tmux select-layout -t "$SESSION" tiled 2>/dev/null || true
 
+# Resolve `claude` even when the active nvm node isn't the one it's installed
+# under (e.g. the binary only exists in an older node version's bin dir, which
+# `command -v claude` misses when the nvm default points elsewhere).
+CLAUDE_CMD="${CLAUDE_CMD:-$(command -v claude || true)}"
+if [ -z "$CLAUDE_CMD" ]; then
+  for d in "$NVM_DIR"/versions/node/*/bin; do
+    if [ -x "$d/claude" ]; then
+      CLAUDE_CMD="$d/claude"
+      break
+    fi
+  done
+fi
 CLAUDE_CMD="${CLAUDE_CMD:-claude}"
 
 # Target panes as session:window.pane (pane indices alone are ambiguous
