@@ -7,8 +7,8 @@ import deFlag from '../../../assets/flags/de.svg'
 import gbFlag from '../../../assets/flags/gb.svg'
 
 // --- Language data + flag icon. The desktop dropdown below is their main
-// consumer; the mobile drawer (mobile/DrawerLanguageRow) also imports them
-// from here, so all language UI stays in this one file.
+// consumer; the mobile nav menu in Navbar.tsx also imports them from here, so
+// all language UI stays in this one file.
 
 export interface LanguageOption {
   code: 'de' | 'en'

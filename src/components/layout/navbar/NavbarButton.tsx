@@ -1,16 +1,15 @@
 import { Button } from '@mui/material'
 import { Link } from 'wouter'
-import { useI18n } from '../../../../i18n'
-import type { NavbarLink } from '../shared'
+import { useI18n } from '../../../i18n'
+import type { NavbarLink } from './shared'
 
 interface NavbarButtonProps {
   link: NavbarLink
 }
 
-// Desktop nav-link pill. The mobile drawer has its own full-width rows
-// (mobile/DrawerLink); this one is a compact pill for the horizontal toolbar
-// row. Extracted from Navbar.tsx — `Link` and `t` belong inside the component
-// (import + hook), so the only prop is `link`.
+// Desktop nav-link button in the toolbar row (docs demo's page buttons).
+// Keeps each pill on one line at any width — the toolbar cuts off instead of
+// wrapping when space runs out.
 export default function NavbarButton({ link }: NavbarButtonProps) {
   const { t } = useI18n()
 
@@ -24,6 +23,8 @@ export default function NavbarButton({ link }: NavbarButtonProps) {
         fontWeight: 600,
         textTransform: 'none',
         fontSize: '0.95rem',
+        whiteSpace: 'nowrap',
+        flexShrink: 0,
         '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' },
         '&[data-wouter-link-active]': {
           borderBottom: '2px solid white',

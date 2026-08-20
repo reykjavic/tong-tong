@@ -3,11 +3,16 @@ import { Link } from 'wouter'
 
 // The restaurant brand mark: the neon-green box with the "Tong Tong" script
 // name over the Chinese "冬冬饭店". Always links back to the homepage. The
-// surrounding flex wrapper takes the left column of the toolbar so the brand
-// stays left-aligned no matter what sits to its right.
+// wrapper follows the boilerplate's dual-flexGrow trick: on mobile it grows
+// together with the hamburger's wrapper, balancing the row so the brand sits
+// centered; on desktop it keeps its natural width so the page buttons sit
+// right next to it (like the demo's logo + pages). It never shrinks below the
+// brand's own width, so on a too-narrow viewport the toolbar overflows and
+// the AppBar clips it instead of the brand bleeding into the neighbouring
+// controls.
 export default function Brand() {
   return (
-    <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-start', minWidth: 0 }}>
+    <Box sx={{ flex: { xs: '1 1 auto', md: '0 0 auto' }, display: 'flex', justifyContent: 'flex-start' }}>
       <Box
         component={Link}
         href="/"
