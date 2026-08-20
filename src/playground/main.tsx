@@ -28,6 +28,7 @@ import Contact from '../pages/Contact'
 import Hours from '../pages/Hours'
 import Posts from '../pages/Posts'
 import Order from '../pages/Order'
+import Dashboard from '../pages/Dashboard'
 import Impressum from '../pages/Impressum'
 import Datenschutz from '../pages/Datenschutz'
 import { BodyText, Title } from '../components/ui/typography'
@@ -121,6 +122,7 @@ function DevToolbar() {
     setDevPinnedConfig(ORDERING_CONFIG.on)
     return 'on'
   })
+  const [location] = useLocation()
 
   const selectAuth = (key: AuthKey) => {
     setAuthKey(key)
@@ -185,6 +187,45 @@ function DevToolbar() {
                   sx={{ borderRadius: '6px', px: 1 }}
                 >
                   Aus
+                </ToggleButton>
+              </Box>
+            </Box>
+            <Box>
+              <Typography variant="overline" sx={{ display: 'block', mb: 0.5 }}>
+                Seiten
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                <ToggleButton
+                  size="small"
+                  value="/"
+                  selected={location === '/'}
+                  onClick={() => navigateMemory('/')}
+                  sx={{ borderRadius: '6px', px: 1 }}
+                >
+                  Startseite
+                </ToggleButton>
+                <ToggleButton
+                  size="small"
+                  value="/order"
+                  selected={location === '/order'}
+                  onClick={() => navigateMemory('/order')}
+                  sx={{ borderRadius: '6px', px: 1 }}
+                >
+                  Bestellen
+                </ToggleButton>
+                {/* Jumping to the admin page also switches to the admin login
+                    state so the Dashboard renders its real content immediately. */}
+                <ToggleButton
+                  size="small"
+                  value="/dashboard"
+                  selected={location === '/dashboard'}
+                  onClick={() => {
+                    selectAuth('admin')
+                    navigateMemory('/dashboard')
+                  }}
+                  sx={{ borderRadius: '6px', px: 1 }}
+                >
+                  Admin (Dashboard)
                 </ToggleButton>
               </Box>
             </Box>
@@ -266,6 +307,7 @@ function Playground() {
               <Route path="/hours" component={Hours} />
               <Route path="/posts" component={Posts} />
               <Route path="/order" component={Order} />
+              <Route path="/dashboard" component={Dashboard} />
               <Route path="/impressum" component={Impressum} />
               <Route path="/datenschutz" component={Datenschutz} />
               <Route component={PlaygroundFallback} />

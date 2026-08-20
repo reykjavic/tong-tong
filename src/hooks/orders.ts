@@ -51,6 +51,54 @@ export interface PlacedOrder {
   total: number
 }
 
+// Dev-only fixture for the component playground (src/playground): served by
+// the dev API mock (src/hooks/devApi.ts) for GET /staff/orders, so the
+// Dashboard's orders view renders real-looking data locally. Timestamps are
+// relative to load time so the list always looks fresh. Production builds
+// never touch this (the mock is only reachable from apiFetch in DEV).
+export const MOCK_ORDERS: Order[] = [
+  {
+    orderId: 'd4f1a2b3-8c1e-4f2a-9b3c-1e2d3f4a5b6c',
+    status: 'Pending',
+    createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    items: [
+      { name: 'Frühlingsrollen (2 Stk)', qty: 2, price: 3.9 },
+      { name: 'Ente süß-sauer', qty: 1, price: 12.8 },
+      { name: 'Gebackener Reis mit Huhn', qty: 2, price: 8.5 },
+    ],
+    total: 37.6,
+    channel: 'whatsapp',
+    contact: '+49 160 9876543',
+    notifiedAt: null,
+  },
+  {
+    orderId: '9c2e8f41-5b7d-4a0c-9f3e-8a1b2c3d4e5f',
+    status: 'Notified',
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    items: [
+      { name: 'Peking-Suppe', qty: 1, price: 4.9 },
+      { name: 'Hähnchen süß-sauer', qty: 1, price: 11.9 },
+    ],
+    total: 16.8,
+    channel: 'email',
+    contact: 'karla@example.de',
+    notifiedAt: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
+  },
+  {
+    orderId: '6b7d9a03-2c4e-4f8a-9b1d-7c5e6f7a8b9c',
+    status: 'Completed',
+    createdAt: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
+    items: [
+      { name: 'Gemüsepfanne mit Reis', qty: 1, price: 9.9 },
+      { name: 'Kokosmilch (0,3 l)', qty: 2, price: 2.5 },
+    ],
+    total: 14.9,
+    channel: 'whatsapp',
+    contact: '+49 171 5551234',
+    notifiedAt: new Date(Date.now() - 23 * 60 * 60 * 1000).toISOString(),
+  },
+]
+
 export async function placeMockOrder(): Promise<PlacedOrder> {
   const res = await fetch(ORDERS_API_URL, {
     method: 'POST',

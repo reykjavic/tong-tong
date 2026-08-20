@@ -23,7 +23,9 @@ export const CONFIG_API_URL =
 // while loading and on fetch failure. Only a definitive `false` from the API
 // hides the ordering UI. The server side is the authoritative gate (SCOPE.md
 // §12) — it fail-closes on a missing item, which is the deliberate asymmetry.
-const DEFAULT_CONFIG: SiteConfig = {
+// Exported so the dev API mock (devApi.ts) can fall back to it when no
+// playground config is pinned.
+export const DEFAULT_CONFIG: SiteConfig = {
   ordering: { enabled: true },
   reservations: { enabled: false },
 }
@@ -95,6 +97,12 @@ export function setDevPinnedConfig(config: SiteConfig | null) {
   if (!import.meta.env.DEV) return
   devPinnedConfig = config
   if (config) setConfig(config)
+}
+
+// Read the pinned config — the dev API mock (devApi.ts) uses it as the base
+// state for POST /toggle so the playground stays the single source of truth.
+export function getDevPinnedConfig(): SiteConfig | null {
+  return devPinnedConfig
 }
 
 export function useConfig(): ConfigSnapshot {

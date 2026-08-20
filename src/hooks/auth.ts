@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { CONFIG_API_URL } from './config'
+import { devApiFetch } from './devApi'
 
 // Auth state for the admin dashboard (Google OAuth, backend/lambdas/auth).
 //
@@ -71,11 +72,18 @@ export function clearToken() {
   window.localStorage.removeItem(TOKEN_KEY)
 }
 
-// fetch() wrapper that attaches the session as a Bearer header.
+// fetch() wrapper that attaches the session as a Bearer header. In dev builds
+// the Dashboard's endpoints (toggles, orders) are answered by a local mock
+// (devApi.ts) because the real backend only exists on staging — production
+// builds skip the mock entirely.
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers)
   const token = getToken()
   if (token) headers.set('Authorization', `Bearer ${token}`)
+  if (import.meta.env.DEV) {
+    const mock = devApiFetch(path, init)
+    if (mock) return mock
+  }
   return fetch(`${AUTH_API_URL}${path}`, { ...init, headers, cache: 'no-store' })
 }
 
