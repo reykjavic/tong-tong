@@ -211,7 +211,7 @@
     },
     "localStorage": {
       "title": "Lokale Speicherung (localStorage)",
-      "text": "Ihre Sprachauswahl (Deutsch/Englisch) wird ausschließlich lokal in Ihrem Browser (localStorage) gespeichert. Diese Daten verlassen nicht Ihr Gerät und werden an uns nicht übermittelt. Bei der Anmeldung als Administrator wird zusätzlich ein Anmelde-Token für das Dashboard (tt-auth) lokal gespeichert."
+      "text": "Ihre Sprachauswahl (Deutsch/Englisch) wird ausschließlich lokal in Ihrem Browser (localStorage) gespeichert. Diese Daten verlassen nicht Ihr Gerät und werden an uns nicht übermittelt. Bei der Anmeldung mit einem Google-Konto wird zusätzlich ein Anmelde-Token (tt-auth) lokal gespeichert."
     },
     "contact": {
       "title": "Kontaktaufnahme",
@@ -226,6 +226,7 @@
     "title": "Dashboard",
     "loginPrompt": "Melden Sie sich mit Google an, um die Feature-Einstellungen der Website zu verwalten.",
     "loginButton": "Mit Google anmelden",
+    "noAccess": "Nur Administratoren haben Zugriff auf das Dashboard.",
     "signedInAs": "Angemeldet als",
     "logout": "Abmelden",
     "ordering": "Online-Bestellung",

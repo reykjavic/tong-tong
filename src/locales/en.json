@@ -211,7 +211,7 @@
     },
     "localStorage": {
       "title": "Local Storage (localStorage)",
-      "text": "Your language selection (German/English) is stored exclusively locally in your browser (localStorage). This data does not leave your device and is not transmitted to us. When you sign in as an administrator, a login token for the dashboard (tt-auth) is additionally stored locally."
+      "text": "Your language selection (German/English) is stored exclusively locally in your browser (localStorage). This data does not leave your device and is not transmitted to us. When you sign in with a Google account, a login token (tt-auth) is additionally stored locally."
     },
     "contact": {
       "title": "Contact",
@@ -226,6 +226,7 @@
     "title": "Dashboard",
     "loginPrompt": "Sign in with Google to manage the site's feature settings.",
     "loginButton": "Sign in with Google",
+    "noAccess": "Only administrators have access to the dashboard.",
     "signedInAs": "Signed in as",
     "logout": "Log out",
     "ordering": "Online ordering",

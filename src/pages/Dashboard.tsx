@@ -108,6 +108,23 @@ export default function Dashboard() {
     )
   }
 
+  // Signed in with a non-admin Google account: no access. The server also
+  // rejects /toggle and /staff for this session, so this is purely cosmetic.
+  if (!auth.isAdmin) {
+    return (
+      <PageContainer title={t('dashboard.title')}>
+        <ContentCard>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, textAlign: 'center', py: 6 }}>
+            <Title variant="h4">{t('dashboard.title')}</Title>
+            <Box sx={{ maxWidth: 460 }}>
+              <BodyText>{t('dashboard.noAccess')}</BodyText>
+            </Box>
+          </Box>
+        </ContentCard>
+      </PageContainer>
+    )
+  }
+
   const handleToggle = async (feature: FeatureKey, enabled: boolean) => {
     const previous = current
     setValues({ ...previous, [feature]: enabled })

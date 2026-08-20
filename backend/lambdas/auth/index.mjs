@@ -7,17 +7,18 @@
 // Routes:
 //   GET /auth/login            -> 302 to Google's authorize URL (HMAC-signed state)
 //   GET /auth/google/callback  -> verify state, exchange code, verify the id_token
-//                                 (JWKS RS256 + iss/aud/exp/email_verified), gate on
-//                                 ADMIN_EMAIL, mint an opaque session, 302 back to
-//                                 SITE_URL/?auth_token=<t>&next=<n>
-//   GET /auth/me               -> Authorization: Bearer <session> -> { email, name, picture } | 401
+//                                 (JWKS RS256 + iss/aud/exp/email_verified), mint an
+//                                 opaque session for ANY verified Google account, 302
+//                                 back to SITE_URL/?auth_token=<t>&next=<n>
+//   GET /auth/me               -> Authorization: Bearer <session> -> { email, name, picture, isAdmin } | 401
 //   POST /auth/logout          -> Authorization: Bearer <session> -> 204
 //
 // Sessions are opaque random tokens stored in the RestaurantData single-table
 // (PK='session', TTL 7 days) — revocable, no JWT library, no cookies (the API
 // and site are on different origins; a bearer header also means no CSRF surface).
-// Only the ADMIN_EMAIL Google account ever receives a session; /toggle re-checks
-// the email at write time (belt and suspenders).
+// ANY verified Google account can sign in (the navbar shows who is logged in);
+// ADMIN_EMAIL only gates the admin endpoints — /toggle and /staff re-check the
+// session email at write time (belt and suspenders).
 //
 // Empty GOOGLE_CLIENT_ID/SECRET -> 503 "auth not configured" (ships inert until
 // backend/.env.google is filled; see scripts/deploy-backend.sh).
@@ -102,7 +103,7 @@ async function handleCallback(event) {
 
   // User cancelled / Google reported an error: no session, back to the SPA.
   if (q.error) {
-    return redirect(`${SITE_URL}/?auth=denied`)
+    return redirect(SITE_URL)
   }
   if (!q.code) {
     return redirect(SITE_URL)
@@ -115,12 +116,9 @@ async function handleCallback(event) {
   const payload = await exchangeAndVerify(event, q.code)
   if (payload instanceof Response) return payload // already an HTTP response
 
-  // The admin gate: only the configured email ever gets a session.
-  if (!(payload.email || '').toLowerCase() || payload.email.toLowerCase() !== ADMIN_EMAIL) {
-    console.warn(`OAuth callback denied for email=${payload.email}`)
-    return redirect(`${SITE_URL}/?auth=denied`)
-  }
-
+  // No admin gate here: every verified Google account gets a session so the
+  // navbar can show who is signed in (name, picture, logout). Admin-only
+  // endpoints (/toggle, /staff) re-check the session email themselves.
   const token = crypto.randomBytes(32).toString('base64url')
   await client.send(
     new PutItemCommand({
@@ -162,6 +160,9 @@ async function handleMe(event) {
       // Older sessions (minted before profile scope) have no name/picture attrs.
       name: session.name?.S ?? null,
       picture: session.picture?.S ?? null,
+      // The frontend uses this to show/hide the dashboard entry; the server
+      // still re-checks the email on /toggle and /staff.
+      isAdmin: session.email.S === ADMIN_EMAIL,
     }),
   }
 }

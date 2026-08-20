@@ -5,11 +5,13 @@ import { CONFIG_API_URL } from './config'
 //
 // The session is an opaque bearer token in localStorage['tt-auth'] — no cookies
 // (the API and the site are on different origins, and a bearer header also means
-// no CSRF surface). The token is minted server-side only for ADMIN_EMAIL and
-// expires in 7 days (DynamoDB TTL). Login is a full-page redirect to
+// no CSRF surface). The token is minted server-side for ANY verified Google
+// account and expires in 7 days (DynamoDB TTL); ADMIN_EMAIL only gates the admin
+// endpoints (/toggle, /staff), not login. Login is a full-page redirect to
 // AUTH_API_URL/auth/login; the callback lands back on ?auth_token=…&next=… which
 // consumeAuthToken() strips and stores (see src/main.tsx). /auth/me also returns
-// the Google profile (name, picture) so the navbar can show who is signed in.
+// the Google profile (name, picture) and an isAdmin flag so the navbar can show
+// who is signed in and whether the dashboard is available.
 //
 // Module-level store + useSyncExternalStore: same idiom as the config/posts
 // module caches. getSnapshot must return a STABLE object reference (it does —
@@ -26,6 +28,7 @@ export interface AuthState {
   email: string | null
   name: string | null
   picture: string | null
+  isAdmin: boolean
 }
 
 // Initial state from token presence: a token means "validating" (loading), none
@@ -33,8 +36,8 @@ export interface AuthState {
 // button for someone who is actually signed in.
 const INITIAL: AuthState =
   typeof window !== 'undefined' && window.localStorage.getItem(TOKEN_KEY)
-    ? { status: 'loading', email: null, name: null, picture: null }
-    : { status: 'anonymous', email: null, name: null, picture: null }
+    ? { status: 'loading', email: null, name: null, picture: null, isAdmin: false }
+    : { status: 'anonymous', email: null, name: null, picture: null, isAdmin: false }
 
 let state: AuthState = INITIAL
 const listeners = new Set<() => void>()
@@ -82,7 +85,7 @@ export function refreshAuth(): Promise<void> {
   meCache ??= (async () => {
     const token = getToken()
     if (!token) {
-      setState({ status: 'anonymous', email: null, name: null, picture: null })
+      setState({ status: 'anonymous', email: null, name: null, picture: null, isAdmin: false })
       return
     }
     try {
@@ -92,18 +95,20 @@ export function refreshAuth(): Promise<void> {
         email?: string
         name?: string | null
         picture?: string | null
+        isAdmin?: boolean
       }
       setState({
         status: 'authenticated',
         email: data.email ?? null,
         name: data.name ?? null,
         picture: data.picture ?? null,
+        isAdmin: data.isAdmin ?? false,
       })
     } catch (err) {
       // Expired/invalid session — clear it; the dashboard will show the prompt.
       console.error('Failed to validate session:', err)
       clearToken()
-      setState({ status: 'anonymous', email: null, name: null, picture: null })
+      setState({ status: 'anonymous', email: null, name: null, picture: null, isAdmin: false })
     }
   })()
   return meCache
@@ -124,7 +129,7 @@ export async function logout(): Promise<void> {
     // Best effort — clear locally regardless.
   }
   clearToken()
-  setState({ status: 'anonymous', email: null, name: null, picture: null })
+  setState({ status: 'anonymous', email: null, name: null, picture: null, isAdmin: false })
 }
 
 // Consume the OAuth callback parameters (?auth_token=…&next=…): store the token,
@@ -138,7 +143,7 @@ export function consumeAuthToken(): void {
   if (!token && !next) return
   if (token) {
     setToken(token)
-    setState({ status: 'loading', email: null, name: null, picture: null })
+    setState({ status: 'loading', email: null, name: null, picture: null, isAdmin: false })
   }
   window.history.replaceState({}, '', sanitizeNext(next))
 }
