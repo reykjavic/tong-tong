@@ -44,7 +44,7 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 │   │   └── NotFound.tsx       # 404 catch-all route
 │   └── components/            # Reusable MUI components
 │       ├── layout/            # Page chrome & structure (where things go)
-│       │   ├── Navbar.tsx     #   Navigation bar
+│       │   ├── navbar/        #   Navigation bar (index barrel + subcomponents)
 │       │   ├── Footer.tsx     #   Footer component
 │       │   ├── PageLayout.tsx #   App-wide shell (main > Container > Paper)
 │       │   └── PageContainer.tsx # Per-page wrapper: vertical padding + sr-only <h1>
