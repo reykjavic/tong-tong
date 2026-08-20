@@ -157,3 +157,12 @@ function sanitizeNext(next: string | null): string {
 export function useAuth(): AuthState {
   return useSyncExternalStore(subscribe, getSnapshot)
 }
+
+// Dev-only helper for the component playground (src/playground): real Google
+// OAuth only works on staging (the auth Lambda redirects the callback to
+// SITE_URL), so the playground simulates signed-in states locally. No-op in
+// production builds.
+export function setDevAuthState(next: Partial<AuthState>): void {
+  if (!import.meta.env.DEV) return
+  setState({ ...state, ...next })
+}

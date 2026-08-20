@@ -36,6 +36,27 @@ npm run build
 npm run preview
 ```
 
+## Component Playground (dev only)
+
+Real Google OAuth only works on staging — the auth Lambda redirects the callback
+to `SITE_URL`, so local login is not possible. Instead, a dev-only playground
+page simulates component states, including the navbar's logged-in variants:
+
+```bash
+npm run dev
+# open http://localhost:5173/playground.html
+```
+
+It renders the real app shell — Navbar, every public page (the home hero
+carousel included) and Footer — wrapped in the real providers and an in-memory
+router, so navbar links navigate inside the playground instead of leaving it. A
+small DEV button (bottom right) opens the state switcher for the login state
+(anonymous / session checking / non-admin / admin) and the ordering feature
+flag. States are simulated via dev-only seams (`setDevAuthState`,
+`setDevPinnedConfig` in `src/hooks/`), which are no-ops in production builds.
+`playground.html` is not part of the production build — Vite only bundles
+`index.html`, so the playground never reaches `dist/` or the S3 bucket.
+
 ## Project Structure
 
 ```

@@ -87,10 +87,24 @@ export function setConfig(config: SiteConfig) {
   setSnapshot({ status: 'ready', config })
 }
 
+// Dev-only pin for the component playground (src/playground): pins a config
+// locally so states like "ordering hidden" can be tested without the staging
+// API overwriting it the moment the fetch resolves. No-op in production.
+let devPinnedConfig: SiteConfig | null = null
+export function setDevPinnedConfig(config: SiteConfig | null) {
+  if (!import.meta.env.DEV) return
+  devPinnedConfig = config
+  if (config) setConfig(config)
+}
+
 export function useConfig(): ConfigSnapshot {
   const snap = useSyncExternalStore(subscribe, getSnapshot)
 
   useEffect(() => {
+    if (devPinnedConfig) {
+      setConfig(devPinnedConfig)
+      return
+    }
     getConfig()
       .then((result) => setConfig(result))
       .catch((err) => {
