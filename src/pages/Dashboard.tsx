@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n'
 import { setConfig, useConfig, type SiteConfig } from '../hooks/config'
 import { apiFetch, login, logout, useAuth } from '../hooks/auth'
-import { deleteOrder, fetchOrders, updateOrderStatus, type Order, type OrderStatus } from '../hooks/orders'
+import { useDeleteOrder, useOrdersQuery, useSetOrderStatus, type Order, type OrderStatus } from '../hooks/orders'
 import { isEffectivelyOpen, useHours } from '../hooks/hours'
 import { alpha } from '@mui/material/styles'
 import PageContainer from '../components/layout/PageContainer'
@@ -73,10 +73,11 @@ function statusColor(status: OrderStatus | null): string {
 // special/vacation days, the daily lunch/dinner windows). The 15s pattern
 // applies only inside open hours: outside them (lunch/dinner gaps, Mondays,
 // vacation weeks) no requests are made — polling has a pattern and a limit.
-// Also paused on hidden tabs (visibilitychange catches up on return); the
-// manual refresh button always works. 15s ≈ "new order lands, kitchen sees it
-// almost immediately" at a cost negligible against the free tier.
-const POLL_INTERVAL_MS = 15_000
+// TanStack Query drives it (src/hooks/orders.ts): refetchInterval 15s while
+// open, paused in background tabs by default, refetch-on-window-focus on
+// return; the manual refresh button always works. The gate itself is
+// re-evaluated every OPEN_STATUS_CHECK_MS because open/closed flips on a
+// schedule (pure client-side arithmetic, no network).
 const OPEN_STATUS_CHECK_MS = 60_000
 
 type FeatureKey = 'ordering' | 'reservations'
@@ -95,29 +96,32 @@ export default function Dashboard() {
   const [values, setValues] = useState<FeatureValues | null>(null)
   const [saving, setSaving] = useState<FeatureKey | null>(null)
   const [error, setError] = useState(false)
-  const [orders, setOrders] = useState<Order[] | null>(null)
-  const [ordersError, setOrdersError] = useState(false)
-  const [refreshingOrders, setRefreshingOrders] = useState(false)
-  // Per-row action state: which order has a status/delete request in flight
-  // (all rows' controls disable while one runs — prevents racing mutations),
-  // which order is waiting on the delete confirmation, and whether the last
-  // status/delete action failed.
-  const [busyId, setBusyId] = useState<string | null>(null)
-  const [confirmDelete, setConfirmDelete] = useState<Order | null>(null)
-  const [actionError, setActionError] = useState(false)
   // Polling gate: poll only while the restaurant is actually open per the
   // Google hours (isEffectivelyOpen — business status, special/vacation days,
   // the daily lunch/dinner windows). "Polling has a pattern or a limit": the
-  // 15s pattern applies only inside open hours; outside them (gaps, Mondays,
-  // vacations) no requests are made. Re-evaluated every OPEN_STATUS_CHECK_MS
-  // because the open/closed state flips on a schedule.
+  // 15s pattern applies only inside open hours. Re-evaluated every
+  // OPEN_STATUS_CHECK_MS because the open/closed state flips on a schedule.
   const { hours } = useHours()
   const [isOpenNow, setIsOpenNow] = useState(() => isEffectivelyOpen(new Date(), hours).isOpen)
-  // Order ids that arrived since the last successful fetch — highlighted in
-  // the list so a new order is noticed without any sound/notification.
+
+  // Orders = server state via TanStack Query: baseline load once authenticated,
+  // 15s refetchInterval only while open, paused in background tabs, refetch on
+  // window focus. The status/delete mutations invalidate the query so the list
+  // follows (Completed orders drop out via the server's open-orders query).
+  const ordersQuery = useOrdersQuery(auth.status === 'authenticated', isOpenNow)
+  const statusMutation = useSetOrderStatus()
+  const deleteMutation = useDeleteOrder()
+  const orders = ordersQuery.data ?? null
+  const ordersError = ordersQuery.isError
+  const refreshingOrders = ordersQuery.isFetching
+  const busy = statusMutation.isPending || deleteMutation.isPending
+
+  // Per-row action state: which order is waiting on the delete confirmation,
+  // whether the last status/delete action failed, and which orders arrived
+  // since the last successful fetch (highlighted in the list).
+  const [confirmDelete, setConfirmDelete] = useState<Order | null>(null)
+  const [actionError, setActionError] = useState(false)
   const [newOrderIds, setNewOrderIds] = useState<Set<string>>(new Set())
-  // Ids seen by the last successful fetch; null = no fetch yet (so the first
-  // load never highlights the whole list as "new").
   const seenOrderIdsRef = useRef<Set<string> | null>(null)
 
   const theme = useTheme()
@@ -127,29 +131,22 @@ export default function Dashboard() {
     reservations: config.reservations.enabled,
   }
 
-  // Merge a fetched list into the view: skip the re-render when nothing
-  // changed (keeps the 15s poll silent), and mark orders that appeared since
-  // the last successful fetch so new arrivals stand out.
-  const applyOrders = (list: Order[]) => {
-    setOrdersError(false)
-    const signature = (o: Order) => `${o.orderId}|${o.status}|${o.createdAt}|${o.total}`
-    setOrders((prev) => {
-      if (prev && prev.map(signature).join('\n') === list.map(signature).join('\n')) {
-        return prev // nothing changed — keep the current reference, no re-render
-      }
-      return list
-    })
+  // New-order highlight: only runs when the query data reference actually
+  // changed (TanStack structural sharing keeps the reference when the list is
+  // identical, so this does not fire on unchanged polls). The first load
+  // records the baseline without highlighting everything.
+  useEffect(() => {
+    const list = ordersQuery.data
+    if (!list) return
     const seen = seenOrderIdsRef.current
+    seenOrderIdsRef.current = new Set(list.map((o) => o.orderId))
     if (seen === null) {
-      // First successful load: record the baseline, don't highlight everything.
-      seenOrderIdsRef.current = new Set(list.map((o) => o.orderId))
       setNewOrderIds(new Set())
       return
     }
     const fresh = list.filter((o) => !seen.has(o.orderId)).map((o) => o.orderId)
-    seenOrderIdsRef.current = new Set(list.map((o) => o.orderId))
     setNewOrderIds(fresh.length ? new Set(fresh) : new Set())
-  }
+  }, [ordersQuery.data])
 
   // Keep the open/closed gate current. Purely client-side arithmetic from the
   // cached hours payload — no network. Hooks must stay above the early
@@ -160,38 +157,6 @@ export default function Dashboard() {
     const interval = setInterval(check, OPEN_STATUS_CHECK_MS)
     return () => clearInterval(interval)
   }, [hours])
-
-  // Load orders once the Google session is confirmed, then poll every
-  // POLL_INTERVAL_MS while the restaurant is open. Skipped on a hidden tab
-  // (visibilitychange catches up the moment it becomes visible again). The
-  // manual refresh button stays available even when polling is paused.
-  useEffect(() => {
-    if (auth.status !== 'authenticated') return
-    let cancelled = false
-    const load = async () => {
-      if (document.hidden) return
-      try {
-        const list = await fetchOrders()
-        if (cancelled) return
-        applyOrders(list)
-      } catch (err) {
-        console.error('Failed to refresh orders:', err)
-        if (!cancelled) setOrdersError(true)
-      }
-    }
-    void load()
-    if (!isOpenNow) return () => { cancelled = true }
-    const interval = setInterval(() => void load(), POLL_INTERVAL_MS)
-    const onVisible = () => {
-      if (!document.hidden) void load()
-    }
-    document.addEventListener('visibilitychange', onVisible)
-    return () => {
-      cancelled = true
-      clearInterval(interval)
-      document.removeEventListener('visibilitychange', onVisible)
-    }
-  }, [auth.status, isOpenNow])
 
   if (auth.status === 'loading') {
     return (
@@ -276,62 +241,32 @@ export default function Dashboard() {
     }
   }
 
-  const handleRefreshOrders = async () => {
-    setRefreshingOrders(true)
-    setOrdersError(false)
+  const handleRefreshOrders = () => {
     setActionError(false)
-    try {
-      applyOrders(await fetchOrders())
-    } catch (err) {
-      console.error('Failed to refresh orders:', err)
-      setOrdersError(true)
-    } finally {
-      setRefreshingOrders(false)
-    }
+    void ordersQuery.refetch()
   }
 
   // Move an order through the lifecycle. Not optimistic: the row stays on the
-  // old status until the PATCH resolves, and reverts automatically on failure
-  // (the Select is controlled by order.status). Completed orders leave the
-  // list — the backend only returns open orders, and the owner chose to keep
-  // the dashboard focused on what needs action.
-  const handleStatusChange = async (order: Order, status: OrderStatus) => {
-    if (status === order.status || busyId !== null) return
-    setBusyId(order.orderId)
+  // old status until the PATCH resolves; the mutation invalidates the orders
+  // query so the list follows (Completed orders drop out via the server's
+  // open-orders query). On failure the Select reverts automatically — it is
+  // controlled by order.status from the query.
+  const handleStatusChange = (order: Order, status: OrderStatus) => {
+    if (status === order.status || busy) return
     setActionError(false)
-    try {
-      await updateOrderStatus(order.orderId, status)
-      setOrders((prev) => {
-        if (!prev) return prev
-        if (status === 'Completed') {
-          return prev.filter((o) => o.orderId !== order.orderId)
-        }
-        return prev.map((o) => (o.orderId === order.orderId ? { ...o, status } : o))
-      })
-    } catch (err) {
-      console.error('Status update failed:', err)
-      setActionError(true)
-    } finally {
-      setBusyId(null)
-    }
+    statusMutation.mutate(
+      { orderId: order.orderId, status },
+      { onError: () => setActionError(true) },
+    )
   }
 
   // Deletion is irreversible, so it always goes through the confirm dialog.
-  const handleDelete = async () => {
-    if (!confirmDelete || busyId !== null) return
+  const handleDelete = () => {
+    if (!confirmDelete || busy) return
     const target = confirmDelete
     setConfirmDelete(null)
-    setBusyId(target.orderId)
     setActionError(false)
-    try {
-      await deleteOrder(target.orderId)
-      setOrders((prev) => prev?.filter((o) => o.orderId !== target.orderId) ?? null)
-    } catch (err) {
-      console.error('Order delete failed:', err)
-      setActionError(true)
-    } finally {
-      setBusyId(null)
-    }
+    deleteMutation.mutate(target.orderId, { onError: () => setActionError(true) })
   }
 
   const featureSwitch = (feature: FeatureKey, labelKey: string, descKey: string) => (
@@ -468,7 +403,7 @@ export default function Dashboard() {
                       <Select
                         size="small"
                         value={order.status ?? 'Pending'}
-                        disabled={busyId !== null}
+                        disabled={busy}
                         onChange={(e) => void handleStatusChange(order, e.target.value as OrderStatus)}
                         inputProps={{ 'aria-label': t('dashboard.orders.statusLabel') }}
                         sx={{ minWidth: 150 }}
@@ -487,7 +422,7 @@ export default function Dashboard() {
                           <IconButton
                             size="small"
                             color="error"
-                            disabled={busyId !== null}
+                            disabled={busy}
                             onClick={() => setConfirmDelete(order)}
                             aria-label={t('dashboard.orders.delete')}
                           >
@@ -495,7 +430,8 @@ export default function Dashboard() {
                           </IconButton>
                         </span>
                       </Tooltip>
-                      {busyId === order.orderId && <CircularProgress size={16} />}
+                      {(statusMutation.variables?.orderId === order.orderId ||
+                        deleteMutation.variables === order.orderId) && <CircularProgress size={16} />}
                     </Box>
                   </Box>
                   <Box sx={{ mt: 0.5 }}>

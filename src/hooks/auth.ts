@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react'
+import { create } from 'zustand'
 import { CONFIG_API_URL } from './config'
 import { devApiFetch } from './devApi'
 
@@ -14,9 +14,9 @@ import { devApiFetch } from './devApi'
 // the Google profile (name, picture) and an isAdmin flag so the navbar can show
 // who is signed in and whether the dashboard is available.
 //
-// Module-level store + useSyncExternalStore: same idiom as the config/posts
-// module caches. getSnapshot must return a STABLE object reference (it does —
-// state is replaced, never mutated).
+// Client state via Zustand: the session slice is the store; the actions below
+// (refreshAuth/login/logout/consumeAuthToken) are plain module functions that
+// write to it via useAuthStore.getState(). Token stays in localStorage.
 
 export const AUTH_API_URL = CONFIG_API_URL.replace(/\/config$/, '')
 
@@ -32,32 +32,32 @@ export interface AuthState {
   isAdmin: boolean
 }
 
+const ANONYMOUS: AuthState = { status: 'anonymous', email: null, name: null, picture: null, isAdmin: false }
+const LOADING: AuthState = { status: 'loading', email: null, name: null, picture: null, isAdmin: false }
+
 // Initial state from token presence: a token means "validating" (loading), none
 // means anonymous. Done synchronously so the first render never flashes a login
 // button for someone who is actually signed in.
-const INITIAL: AuthState =
-  typeof window !== 'undefined' && window.localStorage.getItem(TOKEN_KEY)
-    ? { status: 'loading', email: null, name: null, picture: null, isAdmin: false }
-    : { status: 'anonymous', email: null, name: null, picture: null, isAdmin: false }
+const INITIAL_SESSION: AuthState =
+  typeof window !== 'undefined' && window.localStorage.getItem(TOKEN_KEY) ? LOADING : ANONYMOUS
 
-let state: AuthState = INITIAL
-const listeners = new Set<() => void>()
-let meCache: Promise<void> | null = null
-
-function setState(next: AuthState) {
-  state = next
-  for (const listener of listeners) listener()
+interface AuthStore {
+  session: AuthState
+  setSession: (session: AuthState) => void
+  patchSession: (patch: Partial<AuthState>) => void
 }
 
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => {
-    listeners.delete(listener)
-  }
-}
+export const useAuthStore = create<AuthStore>()((set) => ({
+  session: INITIAL_SESSION,
+  setSession: (session) => set({ session }),
+  patchSession: (patch) => set((s) => ({ session: { ...s.session, ...patch } })),
+}))
 
-function getSnapshot() {
-  return state
+// Selector hook — consumers re-render only when the session slice changes
+// (Zustand compares the selected value by reference; the session object is
+// replaced, never mutated).
+export function useAuth(): AuthState {
+  return useAuthStore((s) => s.session)
 }
 
 export function getToken(): string | null {
@@ -89,11 +89,13 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
 
 // Validate the stored token against /auth/me. Module-cached so concurrent
 // callers (main.tsx bootstrap + Dashboard) share one request.
+let meCache: Promise<void> | null = null
+
 export function refreshAuth(): Promise<void> {
   meCache ??= (async () => {
     const token = getToken()
     if (!token) {
-      setState({ status: 'anonymous', email: null, name: null, picture: null, isAdmin: false })
+      useAuthStore.getState().setSession(ANONYMOUS)
       return
     }
     try {
@@ -105,7 +107,7 @@ export function refreshAuth(): Promise<void> {
         picture?: string | null
         isAdmin?: boolean
       }
-      setState({
+      useAuthStore.getState().setSession({
         status: 'authenticated',
         email: data.email ?? null,
         name: data.name ?? null,
@@ -116,7 +118,7 @@ export function refreshAuth(): Promise<void> {
       // Expired/invalid session — clear it; the dashboard will show the prompt.
       console.error('Failed to validate session:', err)
       clearToken()
-      setState({ status: 'anonymous', email: null, name: null, picture: null, isAdmin: false })
+      useAuthStore.getState().setSession(ANONYMOUS)
     }
   })()
   return meCache
@@ -137,7 +139,7 @@ export async function logout(): Promise<void> {
     // Best effort — clear locally regardless.
   }
   clearToken()
-  setState({ status: 'anonymous', email: null, name: null, picture: null, isAdmin: false })
+  useAuthStore.getState().setSession(ANONYMOUS)
 }
 
 // Consume the OAuth callback parameters (?auth_token=…&next=…): store the token,
@@ -151,7 +153,7 @@ export function consumeAuthToken(): void {
   if (!token && !next) return
   if (token) {
     setToken(token)
-    setState({ status: 'loading', email: null, name: null, picture: null, isAdmin: false })
+    useAuthStore.getState().setSession(LOADING)
   }
   window.history.replaceState({}, '', sanitizeNext(next))
 }
@@ -162,15 +164,11 @@ function sanitizeNext(next: string | null): string {
   return next
 }
 
-export function useAuth(): AuthState {
-  return useSyncExternalStore(subscribe, getSnapshot)
-}
-
 // Dev-only helper for the component playground (src/playground): real Google
 // OAuth only works on staging (the auth Lambda redirects the callback to
 // SITE_URL), so the playground simulates signed-in states locally. No-op in
 // production builds.
 export function setDevAuthState(next: Partial<AuthState>): void {
   if (!import.meta.env.DEV) return
-  setState({ ...state, ...next })
+  useAuthStore.getState().patchSession(next)
 }

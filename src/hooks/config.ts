@@ -1,4 +1,5 @@
-import { useEffect, useSyncExternalStore } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { queryClient } from './queryClient'
 
 export interface FeatureFlag {
   enabled: boolean
@@ -30,6 +31,8 @@ export const DEFAULT_CONFIG: SiteConfig = {
   reservations: { enabled: false },
 }
 
+const CONFIG_QUERY_KEY = ['config'] as const
+
 async function fetchConfig(): Promise<SiteConfig> {
   const res = await fetch(CONFIG_API_URL, { cache: 'no-store' })
   if (!res.ok) {
@@ -42,51 +45,6 @@ async function fetchConfig(): Promise<SiteConfig> {
       enabled: data.reservations?.enabled ?? DEFAULT_CONFIG.reservations.enabled,
     },
   }
-}
-
-// Module-scoped promise cache: Navbar, Menu and Dashboard share one fetch, and
-// React StrictMode's double effect reuses the same promise instead of fetching
-// twice. A failed fetch clears it so the next call retries.
-let cache: Promise<SiteConfig> | null = null
-export function getConfig(): Promise<SiteConfig> {
-  cache ??= fetchConfig().catch((err) => {
-    cache = null
-    throw err
-  })
-  return cache
-}
-
-// Reactive module store (same idiom as src/hooks/auth.ts). The POST /toggle
-// response in the Dashboard publishes the fresh config via setConfig(), so
-// already-mounted consumers (Navbar, Menu) re-render on the current route
-// instead of waiting for the next full page load.
-type ConfigSnapshot = { status: ConfigStatus; config: SiteConfig }
-
-const LOADING_SNAPSHOT: ConfigSnapshot = { status: 'loading', config: DEFAULT_CONFIG }
-
-let snapshot: ConfigSnapshot = LOADING_SNAPSHOT
-const listeners = new Set<() => void>()
-
-function setSnapshot(next: ConfigSnapshot) {
-  snapshot = next
-  for (const listener of listeners) listener()
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => {
-    listeners.delete(listener)
-  }
-}
-
-function getSnapshot() {
-  return snapshot
-}
-
-// Publish the authoritative config (e.g. the POST /toggle response) to every
-// live subscriber — the navbar's ordering link flips without a reload.
-export function setConfig(config: SiteConfig) {
-  setSnapshot({ status: 'ready', config })
 }
 
 // Dev-only pin for the component playground (src/playground): pins a config
@@ -105,21 +63,24 @@ export function getDevPinnedConfig(): SiteConfig | null {
   return devPinnedConfig
 }
 
-export function useConfig(): ConfigSnapshot {
-  const snap = useSyncExternalStore(subscribe, getSnapshot)
+// Publish the authoritative config (e.g. the POST /toggle response) into the
+// query cache — already-mounted consumers (Navbar, Menu) re-render on the
+// current route instead of waiting for the next full page load.
+export function setConfig(config: SiteConfig) {
+  queryClient.setQueryData(CONFIG_QUERY_KEY, config)
+}
 
-  useEffect(() => {
-    if (devPinnedConfig) {
-      setConfig(devPinnedConfig)
-      return
-    }
-    getConfig()
-      .then((result) => setConfig(result))
-      .catch((err) => {
-        console.error('Failed to load feature config:', err)
-        setSnapshot({ status: 'error', config: snapshot.config })
-      })
-  }, [])
-
-  return snap
+// Server state via TanStack Query; fail-open to DEFAULT_CONFIG while loading
+// or on error (same semantics as the old module store). The dev pin, when
+// set, short-circuits the fetch so the playground controls the value.
+export function useConfig(): { status: ConfigStatus; config: SiteConfig } {
+  const query = useQuery({
+    queryKey: CONFIG_QUERY_KEY,
+    queryFn: async () => getDevPinnedConfig() ?? (await fetchConfig()),
+    staleTime: 5 * 60 * 1000,
+  })
+  return {
+    status: query.isPending ? 'loading' : query.isError ? 'error' : 'ready',
+    config: query.data ?? DEFAULT_CONFIG,
+  }
 }

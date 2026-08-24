@@ -1,3 +1,4 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CONFIG_API_URL } from './config'
 import { apiFetch } from './auth'
 
@@ -146,4 +147,43 @@ export async function deleteOrder(orderId: string): Promise<void> {
   if (!res.ok) {
     throw new Error(`order delete failed: ${res.status}`)
   }
+}
+
+// ---------------------------------------------------------------------------
+// TanStack Query hooks (server state). The dashboard's order list + the
+// status/delete mutations live here; plain fetch functions above stay the
+// transport.
+// ---------------------------------------------------------------------------
+
+export const ORDERS_QUERY_KEY = ['orders'] as const
+
+// The kitchen's open-orders list. `enabled` = session confirmed (baseline load
+// always happens once), `poll` = only while the restaurant is open — the 15s
+// refetchInterval is skipped otherwise, and TanStack pauses interval refetches
+// in background tabs by default (refetchOnWindowFocus catches up on return).
+export function useOrdersQuery(enabled: boolean, poll: boolean) {
+  return useQuery({
+    queryKey: ORDERS_QUERY_KEY,
+    queryFn: fetchOrders,
+    enabled,
+    refetchInterval: poll ? 15_000 : false,
+  })
+}
+
+export function useSetOrderStatus() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ orderId, status }: { orderId: string; status: OrderStatus }) =>
+      updateOrderStatus(orderId, status),
+    // Refetch so Completed orders drop out and the list reflects the change.
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY }),
+  })
+}
+
+export function useDeleteOrder() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (orderId: string) => deleteOrder(orderId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY }),
+  })
 }

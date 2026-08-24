@@ -114,12 +114,13 @@ Decisions reached with the owner (2026-08) — do not silently re-litigate.
 
 ### Order lifecycle & dashboard
 - Order status: `Pending → Notified → Completed` (SCOPE §6). The dashboard lists open orders (Pending + Notified); **Completed orders drop out of the list** (owner's choice).
-- Order auto-refresh: polls `GET /staff/orders` every 15s **only while the restaurant is open** (`isEffectivelyOpen`), paused on hidden tabs; the manual refresh button always works. "Polling has a pattern or a limit" — no unbounded/24-7 polling, no websocket/stream planned.
+- Order auto-refresh: **TanStack Query** `refetchInterval` 15s on `GET /staff/orders`, enabled **only while the restaurant is open** (`isEffectivelyOpen`); interval refetches pause in background tabs by default and refetch-on-window-focus catches up on return; the manual refresh button always works. "Polling has a pattern or a limit" — no unbounded/24-7 polling, no websocket/stream planned.
 
 ### Deployment reality (frontend ≠ backend)
 - Frontend: push to `dev` → GitHub Actions deploys the SPA to staging. Backend: `./scripts/deploy-backend.sh` (sam build + deploy) — **separate, manual, and required for any Lambda/template change**. A feature touching both needs both.
 
 ### Engineering standards (project-wide)
+- **Data layer:** server state via **TanStack Query** (`useQuery`/`useMutation` in `config.ts`, `hours.ts`, `orders.ts`; `refetchInterval` for the 15s order poll; structural sharing keeps unchanged responses from re-rendering); client state via **Zustand** (auth session in `auth.ts`; the future shopping cart). The old `useSyncExternalStore` module stores are retired.
 - **Fail-open defaults:** when upstream data is unavailable the UI shows its fallback (default schedule), never a wrong "closed" or an empty table; the server side may fail closed (e.g. orders 403 when the ordering toggle is off).
 - **Cache at the right layer:** browser traffic must never multiply upstream calls (24h DynamoDB cache; the client fetches `/hours` on load + when the tab becomes visible, no timers).
 - **Render-from-data = auto-update:** don't build checksum/change-detection machinery for data that is re-rendered fresh from the source on every load.

@@ -30,3 +30,5 @@ Thumbs.db
 
 # DSH agent harness rollback state (session snapshots, not project source)
 .dsh/
+# npm cache when the sandbox has no ~/.npm (install with --cache "$PWD/.npm-cache")
+.npm-cache/

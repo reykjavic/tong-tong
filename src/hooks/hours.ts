@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { CONFIG_API_URL } from './config'
 
 // Opening-hours module — Google Business Profile is the single source of
@@ -81,32 +81,11 @@ export const HOURS_API_URL = CONFIG_API_URL.replace(/\/config$/, '/hours')
 
 // No periodic client refresh: the hours Lambda caches the payload for 24h, so
 // a timer would only re-read the same cached data. Freshness comes from each
-// page load, plus a visibilitychange catch-up (a tab left open catches up the
-// moment it becomes visible again). The open/closed STATUS still flips daily
-// from the cached payload — that re-check is client-side and fetch-free.
+// page load, plus TanStack's refetchOnWindowFocus (a tab left open catches up
+// when the user returns). The open/closed STATUS still flips daily from the
+// cached payload — that re-check is client-side and fetch-free.
 
-// Module store + promise cache (same idiom as config.ts/auth.ts).
-const LOADING_SNAPSHOT: HoursSnapshot = { status: 'loading', hours: null }
-
-let snapshot: HoursSnapshot = LOADING_SNAPSHOT
-const listeners = new Set<() => void>()
-let cache: Promise<HoursPayload> | null = null
-
-function setSnapshot(next: HoursSnapshot) {
-  snapshot = next
-  for (const listener of listeners) listener()
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => {
-    listeners.delete(listener)
-  }
-}
-
-function getSnapshot() {
-  return snapshot
-}
+const HOURS_QUERY_KEY = ['hours'] as const
 
 async function fetchHours(): Promise<HoursPayload> {
   const res = await fetch(HOURS_API_URL, { cache: 'no-store' })
@@ -116,40 +95,18 @@ async function fetchHours(): Promise<HoursPayload> {
   return (await res.json()) as HoursPayload
 }
 
-// Fetch (deduped while one is in flight). force=true busts the module cache so
-// the periodic refresh actually re-fetches. On failure the previous payload is
-// kept — the site falls back to its default schedule only when there is none.
-export function refreshHours(force = false): void {
-  if (force) cache = null
-  cache ??= fetchHours()
-    .then((hours) => {
-      setSnapshot({ status: 'ready', hours })
-      return hours
-    })
-    .catch((err) => {
-      cache = null
-      console.error('Failed to load opening hours:', err)
-      setSnapshot({ status: 'error', hours: snapshot.hours })
-      throw err
-    })
-}
-
+// Server state via TanStack Query; fail-open to `hours: null` on error so
+// consumers fall back to the default schedule.
 export function useHours(): HoursSnapshot {
-  const snap = useSyncExternalStore(subscribe, getSnapshot)
-
-  useEffect(() => {
-    refreshHours()
-    // Catch up when the user returns to a tab that was open for a long time
-    // (e.g. overnight): bust the module cache so the server's current cache
-    // (up to 24h fresh) is re-read.
-    const onVisible = () => {
-      if (!document.hidden) refreshHours(true)
-    }
-    document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [])
-
-  return snap
+  const query = useQuery({
+    queryKey: HOURS_QUERY_KEY,
+    queryFn: fetchHours,
+    staleTime: 5 * 60 * 1000,
+  })
+  return {
+    status: query.isPending ? 'loading' : query.isError ? 'error' : 'ready',
+    hours: query.data ?? null,
+  }
 }
 
 // ---------------------------------------------------------------------------

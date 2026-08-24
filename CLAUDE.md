@@ -60,6 +60,7 @@ Specialized subagents live under `.claude/agents/` (delegation layer — Claude 
 - **We only message customers inside the 24h WhatsApp conversation window their inbound message opened. No template messages, no proactive/out-of-window sends — deliberate product decision.**
 - Orders are **public** (no login); staff routes need a token. Notify idempotency: set `NotifiedAt` only after the send succeeds.
 - **Opening hours = Google Business (Places API, New):** `backend/lambdas/hours` → `GET /hours` → DynamoDB cache (`PK="hours"`, TTL 24h → ~1 Google call/day). The SPA derives the homepage weekly table (`regularOpeningHours`), the live chip and the order-polling gate (`currentOpeningHours` + `businessStatus`, via `isEffectivelyOpen` in `src/hooks/hours.ts`). Never maintain a hardcoded schedule copy — the `HOURS_SCHEDULE` fallback is fail-open only. API key in gitignored `backend/.env.places` (enable "Places API (New)" + add it to the key restrictions). Places quirks (day 0=Sunday, no `specialOpeningHours` field, date-keyed periods) are documented in AGENTS.md.
+- **Data layer:** server state via **TanStack Query** (`useQuery`/`useMutation` in `config.ts`, `hours.ts`, `orders.ts`; `QueryClientProvider` wraps both entry points via `src/hooks/queryClient.ts`); client state via **Zustand** (auth session in `auth.ts`; the future cart). Server-state consumers keep a small wrapper (e.g. `useConfig()` → `{ status, config }`) so pages don't touch query details.
 
 ## Conventions & constraints
 

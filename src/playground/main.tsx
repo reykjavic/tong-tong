@@ -1,11 +1,13 @@
 import { useSyncExternalStore } from 'react'
 import { createRoot } from 'react-dom/client'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { CssBaseline, Paper, Stack, ThemeProvider, Typography } from '@mui/material'
 import { Route, Router, Switch, useLocation, type BaseLocationHook } from 'wouter'
 import theme from '../theme'
 import { I18nProvider } from '../i18n'
 import { setDevAuthState } from '../hooks/auth'
 import { setDevPinnedConfig } from '../hooks/config'
+import { queryClient } from '../hooks/queryClient'
 import DevToolbar, { AUTH_STATES, ORDERING_CONFIG } from '../components/features/DevToolbar'
 import Navbar from '../components/layout/navbar'
 import Footer from '../components/layout/Footer'
@@ -125,31 +127,33 @@ function PlaygroundFallback() {
 
 function Playground() {
   return (
-    <Router hook={useMemoryLocation}>
-      <ThemeProvider theme={theme}>
-        <I18nProvider>
-          <CssBaseline />
-          <DevToolbar />
-          <Navbar />
-          <PageLayout>
-            <Switch>
-              <Route path="/" component={HomePage} />
-              <Route path="/about" component={About} />
-              <Route path="/menu" component={Menu} />
-              <Route path="/contact" component={Contact} />
-              <Route path="/hours" component={Hours} />
-              <Route path="/posts" component={Posts} />
-              <Route path="/order" component={Order} />
-              <Route path="/dashboard" component={Dashboard} />
-              <Route path="/impressum" component={Impressum} />
-              <Route path="/datenschutz" component={Datenschutz} />
-              <Route component={PlaygroundFallback} />
-            </Switch>
-          </PageLayout>
-          <Footer />
-        </I18nProvider>
-      </ThemeProvider>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router hook={useMemoryLocation}>
+        <ThemeProvider theme={theme}>
+          <I18nProvider>
+            <CssBaseline />
+            <DevToolbar />
+            <Navbar />
+            <PageLayout>
+              <Switch>
+                <Route path="/" component={HomePage} />
+                <Route path="/about" component={About} />
+                <Route path="/menu" component={Menu} />
+                <Route path="/contact" component={Contact} />
+                <Route path="/hours" component={Hours} />
+                <Route path="/posts" component={Posts} />
+                <Route path="/order" component={Order} />
+                <Route path="/dashboard" component={Dashboard} />
+                <Route path="/impressum" component={Impressum} />
+                <Route path="/datenschutz" component={Datenschutz} />
+                <Route component={PlaygroundFallback} />
+              </Switch>
+            </PageLayout>
+            <Footer />
+          </I18nProvider>
+        </ThemeProvider>
+      </Router>
+    </QueryClientProvider>
   )
 }
 
