@@ -6,12 +6,16 @@ import { CONFIG_API_URL } from './config'
 // 1. Default schedule: pure client-side fallback (closed Mondays; lunch
 //    11:30–14:30, dinner 17:30–22:30 in the browser's local time).
 // 2. Real hours from the Google Business Profile: GET /hours (backend/hours
-//    Lambda) relays businessStatus + regularHours + specialHours from the
-//    Places API (New) — the same data the owner maintains on Google (vacation
-//    days, special closures, temporary closures). isEffectivelyOpen() is the
-//    single check the chip and the dashboard's order-polling gate use; when
-//    the payload is missing or the fetch fails it fails open to the default
-//    schedule (same pattern as /config).
+//    Lambda) relays businessStatus + currentOpeningHours from the Places API
+//    (New). currentHours is the effective next-7-days view — the ONLY new
+//    information the API adds: vacation days show up as missing periods for
+//    those dates, holiday openings as adjusted periods. The regular week is
+//    deliberately NOT fetched: it matches the hardcoded schedule above (the
+//    owner only changes special hours), so the "vacation closure vs. normal
+//    day off" reason is derived by comparing currentHours against it.
+//    isEffectivelyOpen() is the single check the chip and the dashboard's
+//    order-polling gate use; when the payload is missing or the fetch fails
+//    it fails open to the default schedule (same pattern as /config).
 //
 // Timezone note: Places hours are in the location's timezone, and all
 // comparisons here use the browser's local clock — correct for the staff and
@@ -64,7 +68,6 @@ export interface PlaceHours {
 export interface HoursPayload {
   source?: string | null
   businessStatus?: string | null // 'OPERATIONAL' | 'CLOSED_TEMPORARILY' | ...
-  regularHours?: PlaceHours | null // standard week (day-based periods)
   currentHours?: PlaceHours | null // effective next-7-days, periods carry dates
   fetchedAt?: string | null
 }
@@ -177,24 +180,17 @@ export function isEffectivelyOpen(
         ? { isOpen: true, reason: 'open' }
         : { isOpen: false, reason: 'closed' }
     }
-    // Closed today per Google. If the regular week would normally be open on
-    // this weekday, the closure is a vacation/special override.
-    const regularOpenToday = payload.regularHours?.periods?.some(
-      (p) => p.open?.day === now.getDay(),
-    )
-    return regularOpenToday
-      ? { isOpen: false, reason: 'closedSpecial' }
-      : { isOpen: false, reason: 'closed' }
+    // No period for today = closed. Distinguish a vacation/special closure
+    // from a normal day off via the site's own schedule: the owner only
+    // changes special hours on Google (the regular week matches the hardcoded
+    // schedule), so a missing period on a normal operating weekday (Tue-Sun)
+    // is a special closure; on Monday it's just the regular closed day.
+    return now.getDay() === 1
+      ? { isOpen: false, reason: 'closed' }
+      : { isOpen: false, reason: 'closedSpecial' }
   }
 
-  // No current view (data gap) -> the plain weekly hours from Google.
-  if (payload.regularHours?.periods && payload.regularHours.periods.length > 0) {
-    return openInPeriods(now, payload.regularHours.periods)
-      ? { isOpen: true, reason: 'open' }
-      : { isOpen: false, reason: 'closed' }
-  }
-
-  // Nothing at all -> the site's default schedule (fail-open).
+  // No effective view (data gap) -> the site's default schedule (fail-open).
   return isRestaurantOpen(now) ? { isOpen: true, reason: 'open' } : { isOpen: false, reason: 'closed' }
 }
 
@@ -227,27 +223,6 @@ function openInDatePeriods(now: Date, periods: PlacePeriod[]): boolean {
     }
     if (periodDateKey(close.date) === todayKey && periodDateKey(open.date) !== todayKey) {
       return nowMinutes < closeMinutes // overnight tail: closes today
-    }
-    return false
-  })
-}
-
-// Weekday-based check for regularHours periods (day 0 = Sunday, same as
-// Date.getDay()). Overnight periods (close.day > open.day) wrap past midnight,
-// so a period also applies on the close day before the close time.
-function openInPeriods(now: Date, periods: PlacePeriod[]): boolean {
-  const today = now.getDay()
-  const nowMinutes = now.getHours() * 60 + now.getMinutes()
-  return periods.some(({ open, close }) => {
-    if (!open || !close) return false
-    const openMinutes = open.hour * 60 + open.minute
-    const closeMinutes = close.hour * 60 + close.minute
-    if (open.day === today) {
-      if (close.day === today) return nowMinutes >= openMinutes && nowMinutes < closeMinutes
-      return nowMinutes >= openMinutes // overnight: open since X today, wraps at midnight
-    }
-    if (close.day === today && close.day !== open.day) {
-      return nowMinutes < closeMinutes // overnight tail: closes today at X
     }
     return false
   })

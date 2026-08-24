@@ -2,20 +2,22 @@
 //
 //   GET /hours
 //     -> 200 { source: "google"|"cache"|"cache_stale", businessStatus,
-//              regularHours, currentHours, fetchedAt }
+//              currentHours, fetchedAt }
 //     -> 503 unconfigured (empty PLACES_API_KEY) or no cache + Places down
 //
 // Reads the restaurant's REAL hours from the public Places API — the same
-// data the owner maintains on the Google Business Profile. Two fields are
-// relayed:
-//   regularHours  the standard week (day-based periods)
-//   currentHours  the effective hours for the next 7 days, where every
-//                 period carries an explicit date — this is the
-//                 special/vacation-adjusted view (a vacation day entered on
-//                 Google shows up as a missing/adjusted period for that date)
-// plus businessStatus for temporary/permanent closures. The SPA computes
-// open/closed from this; when the payload is missing it falls back to the
-// site's default schedule (fail-open, same pattern as /config).
+// data the owner maintains on the Google Business Profile. Only the fields
+// that add information over the site's hardcoded schedule are relayed:
+//   businessStatus  temporary/permanent closure state
+//   currentHours    the effective hours for the next 7 days, where every
+//                   period carries an explicit date — the special/vacation-
+//                   adjusted view (a vacation day entered on Google shows up
+//                   as a missing/adjusted period for that date)
+// The regular week is deliberately NOT fetched: it matches the site's default
+// schedule (the owner only changes special hours), and the SPA derives the
+// "vacation closure vs. normal day off" reason by comparing currentHours
+// against its own schedule. When the payload is missing the SPA falls back to
+// that default schedule (fail-open, same pattern as /config).
 //
 // Caching: the payload (and the resolved placeId) lives in RestaurantData for
 // CACHE_TTL_SECONDS (default 24h — opening hours change only a few times a
@@ -79,7 +81,6 @@ export const handler = async (event) => {
       const payload = {
         placeId,
         businessStatus: data.businessStatus ?? null,
-        regularHours: data.regularOpeningHours ?? null,
         currentHours: data.currentOpeningHours ?? null,
         fetchedAt: new Date().toISOString(),
       }
@@ -124,10 +125,10 @@ async function fetchPlace(placeId) {
   const res = await fetch(`${PLACES_BASE}/places/${encodeURIComponent(placeId)}`, {
     headers: {
       'X-Goog-Api-Key': PLACES_API_KEY,
-      // currentOpeningHours carries the special/vacation-adjusted view for the
-      // next 7 days (periods with explicit dates); regularOpeningHours is the
-      // plain week the client compares against to explain closures.
-      'X-Goog-FieldMask': 'businessStatus,regularOpeningHours,currentOpeningHours',
+      // Only the fields that add information over the site's hardcoded
+      // schedule: the special/vacation-adjusted next-7-days view and the
+      // closure state. The regular week is redundant (it matches the site).
+      'X-Goog-FieldMask': 'businessStatus,currentOpeningHours',
     },
   })
   if (!res.ok) throw new Error(`places details ${res.status}`)
