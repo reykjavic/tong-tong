@@ -77,10 +77,11 @@ export type HoursSnapshot = { status: 'loading' | 'ready' | 'error'; hours: Hour
 // Same URL derivation as AUTH_API_URL in auth.ts: strip the /config suffix.
 export const HOURS_API_URL = CONFIG_API_URL.replace(/\/config$/, '/hours')
 
-// Client refresh cadence: re-read /hours every 5 minutes. The Lambda caches
-// Places for 15 min, so this mostly hits the cache — cheap, and vacation-day
-// changes propagate within ~15–20 min.
-const HOURS_REFRESH_MS = 5 * 60 * 1000
+// No periodic client refresh: the hours Lambda caches the payload for 24h, so
+// a timer would only re-read the same cached data. Freshness comes from each
+// page load, plus a visibilitychange catch-up (a tab left open catches up the
+// moment it becomes visible again). The open/closed STATUS still flips daily
+// from the cached payload — that re-check is client-side and fetch-free.
 
 // Module store + promise cache (same idiom as config.ts/auth.ts).
 const LOADING_SNAPSHOT: HoursSnapshot = { status: 'loading', hours: null }
@@ -136,8 +137,14 @@ export function useHours(): HoursSnapshot {
 
   useEffect(() => {
     refreshHours()
-    const interval = setInterval(() => refreshHours(true), HOURS_REFRESH_MS)
-    return () => clearInterval(interval)
+    // Catch up when the user returns to a tab that was open for a long time
+    // (e.g. overnight): bust the module cache so the server's current cache
+    // (up to 24h fresh) is re-read.
+    const onVisible = () => {
+      if (!document.hidden) refreshHours(true)
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])
 
   return snap
