@@ -99,3 +99,30 @@ This is a new project for **China Restaurant Tong Tong** in Braunfels, Germany. 
 - **Theme change**: Edit `src/theme.ts`
 - **New translation**: Add to both `/src/locales/de.json` and `/src/locales/en.json`
 - **New post content**: Update `public/admin/config.yml` for Decap CMS
+
+## Key Architectural Decisions & Standards
+Decisions reached with the owner (2026-08) — do not silently re-litigate.
+
+### Opening hours: Google Business is the single source of truth
+- The site **never keeps a hardcoded copy of the opening schedule**. Everything derives from the Google Business Profile via the Places API (New):
+  - `backend/lambdas/hours` → `GET /hours` → cached in DynamoDB (`PK="hours"`, `SK="effective"`, `HOURS_CACHE_TTL_SECONDS` default 24h) → **~1 Google call/day**, independent of visitor count.
+  - Weekly table (homepage) ← `regularOpeningHours`, via `weekRowsFromRegularHours` + `buildOpeningRows` in `src/hooks/hours.ts`.
+  - Live chip + order-polling gate ← `currentOpeningHours` + `businessStatus`, via `isEffectivelyOpen` (same function).
+- **Places API quirks** (do not re-learn the hard way): `periods[].day` is **0 = Sunday** (same as `Date.getDay()`); `weekdayDescriptions` is **Mon-first** (never parse it positionally); `currentOpeningHours` is the special/vacation-adjusted next-7-days view whose periods carry explicit `date` objects — **there is no `specialOpeningHours` field**; the `periods` array is **not chronologically ordered** (key off `date`, never array position).
+- The hardcoded `HOURS_SCHEDULE` in `src/hooks/hours.ts` is only the **fail-open fallback** while `/hours` is unavailable.
+- The homepage table's merchandising rows (Mittagstisch, buffet) keep static day rules — Google can't express them — and the buffet-evening time (18:00–22:00) is the only static time; everything else derives.
+
+### Order lifecycle & dashboard
+- Order status: `Pending → Notified → Completed` (SCOPE §6). The dashboard lists open orders (Pending + Notified); **Completed orders drop out of the list** (owner's choice).
+- Order auto-refresh: polls `GET /staff/orders` every 15s **only while the restaurant is open** (`isEffectivelyOpen`), paused on hidden tabs; the manual refresh button always works. "Polling has a pattern or a limit" — no unbounded/24-7 polling, no websocket/stream planned.
+
+### Deployment reality (frontend ≠ backend)
+- Frontend: push to `dev` → GitHub Actions deploys the SPA to staging. Backend: `./scripts/deploy-backend.sh` (sam build + deploy) — **separate, manual, and required for any Lambda/template change**. A feature touching both needs both.
+
+### Engineering standards (project-wide)
+- **Fail-open defaults:** when upstream data is unavailable the UI shows its fallback (default schedule), never a wrong "closed" or an empty table; the server side may fail closed (e.g. orders 403 when the ordering toggle is off).
+- **Cache at the right layer:** browser traffic must never multiply upstream calls (24h DynamoDB cache; the client fetches `/hours` on load + when the tab becomes visible, no timers).
+- **Render-from-data = auto-update:** don't build checksum/change-detection machinery for data that is re-rendered fresh from the source on every load.
+- **Mapping seam:** keep raw-API-data → site-markup mapping in pure functions (`buildOpeningRows`); static values only where the source cannot express them.
+- **Secrets:** gitignored `backend/.env.*` files → NoEcho CloudFormation params via the deploy script. `backend/.env.places` = Places API key (enable **"Places API (New)"** AND add it to the key's API restrictions — the legacy "Places API" is not enough).
+- **CloudFormation gotcha:** changing a template parameter default does NOT update an existing stack — pass explicit `--parameter-overrides` (the deploy script does this for `HoursCacheTtlSeconds`).

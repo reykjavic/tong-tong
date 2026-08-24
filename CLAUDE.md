@@ -59,6 +59,7 @@ Specialized subagents live under `.claude/agents/` (delegation layer — Claude 
 - Meta webhook POSTs must be verified via `X-Hub-Signature-256` HMAC before processing.
 - **We only message customers inside the 24h WhatsApp conversation window their inbound message opened. No template messages, no proactive/out-of-window sends — deliberate product decision.**
 - Orders are **public** (no login); staff routes need a token. Notify idempotency: set `NotifiedAt` only after the send succeeds.
+- **Opening hours = Google Business (Places API, New):** `backend/lambdas/hours` → `GET /hours` → DynamoDB cache (`PK="hours"`, TTL 24h → ~1 Google call/day). The SPA derives the homepage weekly table (`regularOpeningHours`), the live chip and the order-polling gate (`currentOpeningHours` + `businessStatus`, via `isEffectivelyOpen` in `src/hooks/hours.ts`). Never maintain a hardcoded schedule copy — the `HOURS_SCHEDULE` fallback is fail-open only. API key in gitignored `backend/.env.places` (enable "Places API (New)" + add it to the key restrictions). Places quirks (day 0=Sunday, no `specialOpeningHours` field, date-keyed periods) are documented in AGENTS.md.
 
 ## Conventions & constraints
 
@@ -78,3 +79,5 @@ Decap CMS manages news posts as Markdown in `content/posts/`, edited via `public
 GitHub Actions workflow `.github/workflows/deploy.yml` deploys on push/merge to `main`: `npm ci` → `npm run build` → `aws s3 sync dist/ s3://tong-tong-homepage --delete` (region `eu-central-1`) → CloudFront invalidation. The live site is served over HTTPS via CloudFront in front of the S3 bucket. A viewer-request CloudFront Function (`scripts/cloudfront-soft-404-function.js`) serves `index.html` **only** for the real SPA routes (so deep links like `/menu` work); the distribution's 403/404 error responses serve `public/404.html` with a real HTTP 404, so unknown URLs are genuine 404s, not soft 404s. Adding a page touches six surfaces that must stay in sync — see the **add-page** skill (which closes with the **verify-app** route-sync check). See `TODO.md` for the pending `tong-tong.eu` domain cutover, staging env, and Decap CMS OAuth hardening.
 
 `scripts/tmux-work.sh` / `.bat` is a dev helper that launches a 2×2 tmux grid of Claude Code sessions against this repo — not part of the app.
+
+**Backend deploys separately from the SPA:** pushing to `dev` deploys the frontend to staging via Actions, but Lambda/template changes require `./scripts/deploy-backend.sh` (SAM) — a feature touching both needs both. See AGENTS.md "Key Architectural Decisions & Standards" for the project-wide standards (fail-open defaults, cache layering, render-from-data, mapping seams, CloudFormation parameter gotchas).

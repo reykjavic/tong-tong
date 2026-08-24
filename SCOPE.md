@@ -131,6 +131,7 @@ Every Lambda is a **self-contained single `index.mjs`** (zero npm dependencies, 
 **Notes**
 - Order intake is **public** — no login; contact info travels with the order.
 - Staff auth: a shared token (recommended for a family tool) or Google OAuth against `ALLOWED_EMAILS` — decision in §12.
+- `GET /api/hours` relays the Places API (New) fields `businessStatus` + `regularOpeningHours` + `currentOpeningHours` (the special/vacation-adjusted next-7-days view — **there is no `specialOpeningHours` field**), cached in the table (`PK="hours"`) for 24h → ~1 Google call/day, stale-served on failure, SPA falls back to its default schedule (fail-open). Places `day` is 0 = Sunday and `periods` are date-keyed and not chronologically ordered — the client keys off the explicit `date` objects.
 - *(Deferred: no customer `GET /api/orders` history, no favorites, no OTP routes — see Non-Goals.)*
 
 ---

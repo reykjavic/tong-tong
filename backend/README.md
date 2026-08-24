@@ -8,21 +8,22 @@ This README is the **Milestone 0 runbook**: Meta setup → deploy → test the
 
 ```
 backend/
-├── template.yaml                 # SAM template — webhook, config, auth, toggle lambdas
+├── template.yaml                 # SAM template — webhook, config, auth, toggle, orders, staff, hours lambdas
 ├── README.md                     # this runbook
 ├── .env.whatsapp                 # LOCAL secrets (gitignored) — create from .example
 ├── .env.whatsapp.example         # committed template
 ├── .env.google                   # LOCAL secrets (gitignored) — create from .example
 ├── .env.google.example           # committed template
+├── .env.places                   # LOCAL secrets (gitignored) — Places API key, create from .example
+├── .env.places.example           # committed template
 └── lambdas/
-    ├── whatsapp-webhook/
-    │   └── index.mjs             # webhook (verify + auto-reply)
-    ├── config/
-    │   └── index.mjs             # GET /config — public feature toggles
-    ├── auth/
-    │   └── index.mjs             # Google OAuth login + admin sessions
-    └── toggle/
-        └── index.mjs             # POST /toggle — admin-gated web toggle
+    ├── whatsapp-webhook/         # webhook (verify + auto-reply)
+    ├── config/                   # GET /config — public feature toggles
+    ├── auth/                     # Google OAuth login + admin sessions
+    ├── toggle/                   # POST /toggle — admin-gated web toggle
+    ├── orders/                   # POST /orders — public order intake (Status: Pending)
+    ├── staff/                    # GET/PATCH/DELETE /staff/orders — kitchen list, status, delete
+    └── hours/                    # GET /hours — real opening hours from Google (Places API)
 ```
 
 The Lambda is a single self-contained `index.mjs` (zero npm dependencies, Node 18+
@@ -160,6 +161,30 @@ curl -i -X POST "${AUTH%%login}toggle" -H "Authorization: Bearer $TOKEN" \
   deleting the item, no JWT library, no cookies.
 - Secrets (`GOOGLE_CLIENT_SECRET`) are `NoEcho` CloudFormation params from the
   gitignored `.env.google` — same pipeline as the WhatsApp secrets.
+
+### Opening hours endpoint (`GET /hours`)
+
+Real opening hours from the Google Business Profile via the **Places API (New)** — the
+site never keeps a hardcoded schedule copy; the SPA derives the weekly table, the
+live open/closed chip and the order-polling gate from this one payload (see AGENTS.md).
+
+Setup:
+1. Google Cloud Console → enable **"Places API (New)"** (the legacy "Places API" is not enough).
+2. Create an **API key** and add "Places API (New)" to its API restrictions.
+3. `cp backend/.env.places.example backend/.env.places` → paste the key. `PLACE_ID` is
+   optional — the Lambda resolves it once via Text Search from `PLACE_QUERY` and caches it.
+4. Redeploy (`./scripts/deploy-backend.sh`). Until configured, `GET /hours` returns 503
+   and the site falls back to its default schedule (fail-open).
+
+Behavior:
+- Returns `businessStatus` + `regularHours` + `currentHours` (the special/vacation-adjusted
+  next-7-days view, periods carry explicit `date` objects).
+- Cached in DynamoDB (`PK="hours"`, `SK="effective"`) for `HOURS_CACHE_TTL_SECONDS`
+  (default 86400 = 24h) → **~1 Google call/day**, independent of visitor count. A stale
+  cache is served if Places is unreachable (fail-open); 503 only when nothing is cached.
+- Places quirks (day 0 = Sunday, `weekdayDescriptions` is Mon-first, no
+  `specialOpeningHours` field, periods are date-keyed and not chronologically ordered)
+  are documented in AGENTS.md — read them before touching this code.
 
 ## Troubleshooting
 
