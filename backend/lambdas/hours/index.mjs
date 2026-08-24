@@ -18,9 +18,11 @@
 // site's default schedule (fail-open, same pattern as /config).
 //
 // Caching: the payload (and the resolved placeId) lives in RestaurantData for
-// CACHE_TTL_SECONDS (default 15 min), so Places is only called on cache
-// expiry. When Places is unreachable, a stale cache is served (source:
-// "cache_stale") — a 503 is only returned when there is nothing at all.
+// CACHE_TTL_SECONDS (default 24h — opening hours change only a few times a
+// year, so this is ~1 Google call/day; a same-day edit lands within a day),
+// so Places is only called on cache expiry. When Places is unreachable, a
+// stale cache is served (source: "cache_stale") — a 503 is only returned when
+// there is nothing at all.
 // The placeId is resolved once via Text Search from PLACE_QUERY and cached,
 // so no manual resolution step is needed (PLACE_ID short-circuits it).
 //
@@ -33,7 +35,7 @@ const TABLE_NAME = process.env.TABLE_NAME
 const PLACES_API_KEY = process.env.PLACES_API_KEY || ''
 const PLACE_ID = process.env.PLACE_ID || ''
 const PLACE_QUERY = process.env.PLACE_QUERY || ''
-const CACHE_TTL_SECONDS = Number(process.env.HOURS_CACHE_TTL_SECONDS || 900)
+const CACHE_TTL_SECONDS = Number(process.env.HOURS_CACHE_TTL_SECONDS || 86400)
 
 const client = new DynamoDBClient({ region: process.env.AWS_REGION })
 

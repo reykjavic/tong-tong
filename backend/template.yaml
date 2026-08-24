@@ -83,8 +83,8 @@ Parameters:
     Description: Text-search query used to resolve the placeId on first run (e.g. "China Restaurant Tong Tong Europaplatz 2 Braunfels")
   HoursCacheTtlSeconds:
     Type: String
-    Default: '900'
-    Description: How long GET /hours caches the Places payload before re-fetching (default 15 min)
+    Default: '86400'
+    Description: How long GET /hours caches the Places payload before re-fetching (default 24h — hours change only a few times a year; ~1 Google call/day)
 
 Resources:
   # Explicit API Gateway REST API (SCOPE.md §12: one API, every function's route

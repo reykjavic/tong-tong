@@ -113,9 +113,13 @@ if [ -f "$PLACES_ENV_FILE" ]; then
   places_key="$(read_env "$PLACES_ENV_FILE" PLACES_API_KEY)"
   place_id="$(read_env "$PLACES_ENV_FILE" PLACE_ID)"
   place_query="$(read_env "$PLACES_ENV_FILE" PLACE_QUERY)"
-  [ -n "$places_key" ]  && OVERRIDES+=("PlacesApiKey=$places_key")
-  [ -n "$place_id" ]    && OVERRIDES+=("PlaceId=$place_id")
-  [ -n "$place_query" ] && OVERRIDES+=("PlaceQuery=$place_query")
+  hours_cache_ttl="$(read_env "$PLACES_ENV_FILE" HOURS_CACHE_TTL_SECONDS)"
+  [ -n "$places_key" ]       && OVERRIDES+=("PlacesApiKey=$places_key")
+  [ -n "$place_id" ]         && OVERRIDES+=("PlaceId=$place_id")
+  [ -n "$place_query" ]      && OVERRIDES+=("PlaceQuery=$place_query")
+  # Explicit override: CFN keeps the current value if a param isn't passed,
+  # so a changed template default alone would not update an existing stack.
+  [ -n "$hours_cache_ttl" ]  && OVERRIDES+=("HoursCacheTtlSeconds=$hours_cache_ttl")
 fi
 
 # Artifacts bucket (SAM needs somewhere to upload the packaged function zip).
