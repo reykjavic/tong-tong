@@ -250,7 +250,10 @@
       "deleteConfirmText": "Diese Bestellung wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
       "deleteConfirmCancel": "Abbrechen",
       "deleteConfirmOk": "Löschen",
-      "actionError": "Änderung fehlgeschlagen – bitte erneut versuchen."
+      "actionError": "Änderung fehlgeschlagen – bitte erneut versuchen.",
+      "closedNote": "Automatische Aktualisierung pausiert – die Küche ist gerade geschlossen.",
+      "newOrder": "neue Bestellung",
+      "newOrders": "neue Bestellungen"
     }
   },
   "dev": {

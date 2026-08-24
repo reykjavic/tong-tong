@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n'
 import { setConfig, useConfig, type SiteConfig } from '../hooks/config'
 import { apiFetch, login, logout, useAuth } from '../hooks/auth'
 import { deleteOrder, fetchOrders, updateOrderStatus, type Order, type OrderStatus } from '../hooks/orders'
+import { isRestaurantOpen } from '../hooks/hours'
+import { alpha } from '@mui/material/styles'
 import PageContainer from '../components/layout/PageContainer'
 import ContentCard from '../components/ui/ContentCard'
 import { Title, BodyText } from '../components/ui/typography'
@@ -24,6 +26,7 @@ import {
   Switch,
   Tooltip,
   Typography,
+  useTheme,
 } from '@mui/material'
 
 function formatTimestamp(iso: string | null): string {
@@ -65,6 +68,15 @@ function statusColor(status: OrderStatus | null): string {
   }
 }
 
+// Orders auto-refresh: poll only while the kitchen is actually operating
+// (same schedule as the OpeningHours chip — closed Mondays, lunch 11:30–14:30,
+// dinner 17:30–22:30). The open/closed gate is a pure client-side check
+// (src/hooks/hours.ts), so no requests are burned on closed hours or on a
+// background tab. 15s ≈ "new order lands, kitchen sees it almost immediately"
+// at a cost that is negligible against the free tier.
+const POLL_INTERVAL_MS = 15_000
+const OPEN_STATUS_CHECK_MS = 60_000
+
 type FeatureKey = 'ordering' | 'reservations'
 type FeatureValues = Record<FeatureKey, boolean>
 
@@ -91,32 +103,88 @@ export default function Dashboard() {
   const [busyId, setBusyId] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<Order | null>(null)
   const [actionError, setActionError] = useState(false)
+  // Polling gate: whether the kitchen is currently open (client-side check,
+  // re-evaluated every OPEN_STATUS_CHECK_MS). When closed, no auto-refresh.
+  const [isOpenNow, setIsOpenNow] = useState(() => isRestaurantOpen())
+  // Order ids that arrived since the last successful fetch — highlighted in
+  // the list so a new order is noticed without any sound/notification.
+  const [newOrderIds, setNewOrderIds] = useState<Set<string>>(new Set())
+  // Ids seen by the last successful fetch; null = no fetch yet (so the first
+  // load never highlights the whole list as "new").
+  const seenOrderIdsRef = useRef<Set<string> | null>(null)
+
+  const theme = useTheme()
 
   const current: FeatureValues = values ?? {
     ordering: config.ordering.enabled,
     reservations: config.reservations.enabled,
   }
 
-  // Load open orders once the Google session is confirmed. Hooks must stay
-  // above the early returns, so the gate lives on auth.status here rather than
-  // in the JSX below.
+  // Merge a fetched list into the view: skip the re-render when nothing
+  // changed (keeps the 15s poll silent), and mark orders that appeared since
+  // the last successful fetch so new arrivals stand out.
+  const applyOrders = (list: Order[]) => {
+    setOrdersError(false)
+    const signature = (o: Order) => `${o.orderId}|${o.status}|${o.createdAt}|${o.total}`
+    setOrders((prev) => {
+      if (prev && prev.map(signature).join('\n') === list.map(signature).join('\n')) {
+        return prev // nothing changed — keep the current reference, no re-render
+      }
+      return list
+    })
+    const seen = seenOrderIdsRef.current
+    if (seen === null) {
+      // First successful load: record the baseline, don't highlight everything.
+      seenOrderIdsRef.current = new Set(list.map((o) => o.orderId))
+      setNewOrderIds(new Set())
+      return
+    }
+    const fresh = list.filter((o) => !seen.has(o.orderId)).map((o) => o.orderId)
+    seenOrderIdsRef.current = new Set(list.map((o) => o.orderId))
+    setNewOrderIds(fresh.length ? new Set(fresh) : new Set())
+  }
+
+  // Keep the open/closed gate current. Purely client-side arithmetic — no
+  // network. Hooks must stay above the early returns, so all gating lives
+  // here on state rather than in the JSX below.
+  useEffect(() => {
+    const check = () => setIsOpenNow(isRestaurantOpen())
+    check()
+    const interval = setInterval(check, OPEN_STATUS_CHECK_MS)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Load orders once the Google session is confirmed, then poll every
+  // POLL_INTERVAL_MS while the kitchen is open. Skipped on a hidden tab
+  // (visibilitychange catches up the moment it becomes visible again). The
+  // manual refresh button stays available even when polling is paused.
   useEffect(() => {
     if (auth.status !== 'authenticated') return
     let cancelled = false
-    fetchOrders()
-      .then((list) => {
+    const load = async () => {
+      if (document.hidden) return
+      try {
+        const list = await fetchOrders()
         if (cancelled) return
-        setOrders(list)
-        setOrdersError(false)
-      })
-      .catch((err) => {
-        console.error('Failed to load orders:', err)
+        applyOrders(list)
+      } catch (err) {
+        console.error('Failed to refresh orders:', err)
         if (!cancelled) setOrdersError(true)
-      })
+      }
+    }
+    void load()
+    if (!isOpenNow) return () => { cancelled = true }
+    const interval = setInterval(() => void load(), POLL_INTERVAL_MS)
+    const onVisible = () => {
+      if (!document.hidden) void load()
+    }
+    document.addEventListener('visibilitychange', onVisible)
     return () => {
       cancelled = true
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [auth.status])
+  }, [auth.status, isOpenNow])
 
   if (auth.status === 'loading') {
     return (
@@ -206,7 +274,7 @@ export default function Dashboard() {
     setOrdersError(false)
     setActionError(false)
     try {
-      setOrders(await fetchOrders())
+      applyOrders(await fetchOrders())
     } catch (err) {
       console.error('Failed to refresh orders:', err)
       setOrdersError(true)
@@ -333,6 +401,18 @@ export default function Dashboard() {
             </Button>
           </Box>
 
+          {!isOpenNow && (
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              {t('dashboard.orders.closedNote')}
+            </Typography>
+          )}
+          {newOrderIds.size > 0 && (
+            <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 600 }}>
+              {newOrderIds.size}{' '}
+              {t(newOrderIds.size === 1 ? 'dashboard.orders.newOrder' : 'dashboard.orders.newOrders')}
+            </Typography>
+          )}
+
           {actionError && (
             <Typography variant="body2" sx={{ color: 'error.main' }}>
               {t('dashboard.orders.actionError')}
@@ -356,8 +436,20 @@ export default function Dashboard() {
             <BodyText>{t('dashboard.orders.empty')}</BodyText>
           ) : (
             <Stack spacing={1.5}>
-              {orders.map((order) => (
-                <Box key={order.orderId} sx={{ border: 1, borderColor: 'divider', borderRadius: 1, p: 1.5 }}>
+              {orders.map((order) => {
+                const isNew = newOrderIds.has(order.orderId)
+                return (
+                <Box
+                  key={order.orderId}
+                  sx={{
+                    border: 1,
+                    borderColor: isNew ? 'primary.main' : 'divider',
+                    borderRadius: 1,
+                    p: 1.5,
+                    transition: 'background-color 0.6s ease, border-color 0.6s ease',
+                    ...(isNew ? { bgcolor: alpha(theme.palette.primary.main, 0.06) } : {}),
+                  }}
+                >
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
                     <Typography variant="body2" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
                       {order.orderId.slice(0, 8)}
@@ -415,7 +507,8 @@ export default function Dashboard() {
                     </Typography>
                   </Box>
                 </Box>
-              ))}
+                )
+              })}
             </Stack>
           )}
 

@@ -2,26 +2,20 @@ import { useI18n } from '../../i18n'
 import { Box, Typography, Chip, useTheme, useMediaQuery, Divider } from '@mui/material'
 import { AccessTime, Star } from '@mui/icons-material'
 import { Fragment, useState, useEffect } from 'react'
+import { HOURS_SCHEDULE, isRestaurantOpen } from '../../hooks/hours'
 import ContentCard from '../ui/ContentCard'
 
-// ---- Schedule: one source of truth for both the table and the live chip. ----
+// ---- Schedule: display windows for the table rows. The open/closed gate
+// (lunch + dinner) lives in src/hooks/hours.ts — the shared source of truth. ----
 type Window = { start: string; end: string }
 const SCHEDULE = {
-  lunch:         { start: '11:30', end: '14:30' },
-  dinner:        { start: '17:30', end: '22:30' },
+  ...HOURS_SCHEDULE,
   lunchSpecial:  { start: '11:30', end: '14:30' },
   buffetNoon:    { start: '11:30', end: '14:30' },
   buffetEvening: { start: '18:00', end: '22:00' },
 } as const
 
-// Time helpers: minute-of-day arithmetic for the open check, and the display
-// range (NBSP around the en dash — matches the existing strings exactly).
-const toMinutes = (time: string) => {
-  const [hours, minutes] = time.split(':').map(Number)
-  return hours * 60 + minutes
-}
-const inWindow = (minutes: number, { start, end }: Window) =>
-  minutes >= toMinutes(start) && minutes < toMinutes(end)
+// Display range (NBSP around the en dash — matches the existing strings exactly).
 const range = ({ start, end }: Window) => `${start} – ${end}`
 
 // ---- Day columns: the table's column order, Mon … Sun, then the holiday star.
@@ -30,10 +24,6 @@ type DayColumn = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun' | 'holida
 const DAY_COLUMNS: DayColumn[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'holiday']
 const onDays = (...days: DayColumn[]) => DAY_COLUMNS.map((d) => days.includes(d))
 
-// Date.prototype.getDay() numbers (0 = Sunday) — the JS weekday convention
-// differs from the table's Mon-first columns above, so it gets its own names.
-const DOW = { SUN: 0, MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6 } as const
-
 export default function OpeningHours() {
   const { t } = useI18n()
   const theme = useTheme()
@@ -41,15 +31,7 @@ export default function OpeningHours() {
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
-    const checkStatus = () => {
-      const now = new Date()
-      const day = now.getDay()
-      const minutes = now.getHours() * 60 + now.getMinutes()
-      // Closed Mondays; otherwise open for lunch and dinner.
-      const isClosedDay = day === DOW.MON
-      const isOpenTime = inWindow(minutes, SCHEDULE.lunch) || inWindow(minutes, SCHEDULE.dinner)
-      setIsOpen(!isClosedDay && isOpenTime)
-    }
+    const checkStatus = () => setIsOpen(isRestaurantOpen())
     checkStatus()
     const interval = setInterval(checkStatus, 60000)
     return () => clearInterval(interval)

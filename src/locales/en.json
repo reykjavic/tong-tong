@@ -250,7 +250,10 @@
       "deleteConfirmText": "This order will be permanently deleted. This cannot be undone.",
       "deleteConfirmCancel": "Cancel",
       "deleteConfirmOk": "Delete",
-      "actionError": "Couldn't save the change — please try again."
+      "actionError": "Couldn't save the change — please try again.",
+      "closedNote": "Auto-refresh paused – the kitchen is currently closed.",
+      "newOrder": "new order",
+      "newOrders": "new orders"
     }
   },
   "dev": {
