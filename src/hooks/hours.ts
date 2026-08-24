@@ -194,6 +194,53 @@ export function weekRowsFromDefaultSchedule(): WeekRow[] {
   }))
 }
 
+// ---------------------------------------------------------------------------
+// The table-mapping function: weekly periods -> the homepage table's rows.
+// This is the seam between Google's raw data and the site's labeled markup.
+//
+// Positional rule: a day's 1st window = Mittag, 2nd = Abend. Day CHECKMARKS
+// are derived from the data (a day change on Google propagates to the table);
+// the merchandising rows (Mittagstisch, buffet) keep static day rules — Google
+// can't express them — intersected with the derived open days. Only the
+// buffet-evening TIME is static: Google models "when are we open", not
+// "buffet until 22:00". The labels themselves are the site's vocabulary and
+// live in the component (i18n), not here.
+// ---------------------------------------------------------------------------
+
+export interface OpeningRow {
+  key: 'noon' | 'evening' | 'lunch' | 'buffet-noon' | 'buffet-evening'
+  time: { start: string; end: string }
+  days: boolean[] // Mon..Sun + holiday (8 columns, matching the table)
+}
+
+const BUFFET_EVENING = { start: '18:00', end: '22:00' }
+
+// Mon-first day masks (index 0 = Monday) for the merchandising rows' day rules.
+const MASK = {
+  tueFri: [false, true, true, true, true, false, false], // Mittagstisch
+  sun: [false, false, false, false, false, false, true], // Buffet Mittags
+  friSun: [false, false, false, false, true, true, true], // Buffet Abends
+} as const
+
+const andMasks = (a: readonly boolean[], b: readonly boolean[]) => a.map((v, i) => v && b[i])
+
+export function buildOpeningRows(week: WeekRow[]): OpeningRow[] {
+  const hasFirst = week.map((w) => w.windows.length >= 1)
+  const hasSecond = week.map((w) => w.windows.length >= 2)
+  // The displayed time for a row = the first day that has that window
+  // (fallback: the default schedule, so a data gap never shows "—").
+  const lunch = week.find((w) => w.windows[0])?.windows[0] ?? HOURS_SCHEDULE.lunch
+  const dinner = week.find((w) => w.windows[1])?.windows[1] ?? HOURS_SCHEDULE.dinner
+
+  return [
+    { key: 'noon', time: lunch, days: [...hasFirst, true] },
+    { key: 'evening', time: dinner, days: [...hasSecond, true] },
+    { key: 'lunch', time: lunch, days: [...andMasks(MASK.tueFri, hasFirst), false] },
+    { key: 'buffet-noon', time: lunch, days: [...andMasks(MASK.sun, hasFirst), true] },
+    { key: 'buffet-evening', time: BUFFET_EVENING, days: [...andMasks(MASK.friSun, hasSecond), true] },
+  ]
+}
+
 function fmt(hour: number, minute: number): string {
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
 }

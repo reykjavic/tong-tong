@@ -3,31 +3,32 @@ import { Box, Typography, Chip, useTheme, useMediaQuery, Divider } from '@mui/ma
 import { AccessTime, Star } from '@mui/icons-material'
 import { Fragment, useState, useEffect } from 'react'
 import {
-  HOURS_SCHEDULE,
+  buildOpeningRows,
   isEffectivelyOpen,
   useHours,
   weekRowsFromDefaultSchedule,
   weekRowsFromRegularHours,
+  type OpeningRow,
   type WeekRow,
 } from '../../hooks/hours'
 import ContentCard from '../ui/ContentCard'
 
-// ---- Row windows. The core lunch/dinner times are DERIVED from Google's
-// regularOpeningHours (single source of truth — change a shift on Google, the
-// table follows within a day); the Mittagstisch/buffet-noon rows reuse the
-// lunch window. Only the buffet-evening times are static: Google only models
-// "when are we open" (17:30–22:30), not "buffet until 22:00". ----
+// ---- Table rendering. The data->rows mapping lives in buildOpeningRows
+// (src/hooks/hours.ts): raw weekly periods -> the 5 labeled rows with derived
+// times and checkmarks. This component only formats them and attaches the
+// site's i18n labels (which Google never provides). ----
 type Window = { start: string; end: string }
-const BUFFET_EVENING: Window = { start: '18:00', end: '22:00' }
 
 // Display range (NBSP around the en dash — matches the existing strings exactly).
 const range = ({ start, end }: Window) => `${start} – ${end}`
 
-// ---- Day columns: the table's column order, Mon … Sun, then the holiday star.
-// onDays spells out the active columns by name instead of a cryptic boolean row. ----
-type DayColumn = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun' | 'holiday'
-const DAY_COLUMNS: DayColumn[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'holiday']
-const onDays = (...days: DayColumn[]) => DAY_COLUMNS.map((d) => days.includes(d))
+const ROW_TITLE_KEYS: Record<OpeningRow['key'], string> = {
+  noon: 'home.hours.noonTitle',
+  evening: 'home.hours.eveningTitle',
+  lunch: 'home.hours.lunchTitle',
+  'buffet-noon': 'home.hours.buffetNoonTitle',
+  'buffet-evening': 'home.hours.buffetEveningTitle',
+}
 
 export default function OpeningHours() {
   const { t } = useI18n()
@@ -55,13 +56,17 @@ export default function OpeningHours() {
           : t('home.hours.closed')
 
   // The weekly table, derived from Google's regular hours (hardcoded schedule
-  // only while /hours has no data). Tuesday's windows give the core
-  // lunch/dinner times the merchandising rows reuse.
+  // only while /hours has no data). buildOpeningRows maps the data onto the
+  // table's rows — times AND checkmarks follow the data.
   const week: WeekRow[] = hours?.regularHours
     ? weekRowsFromRegularHours(hours.regularHours)
     : weekRowsFromDefaultSchedule()
-  const lunchWindow = week[1]?.windows[0] ?? HOURS_SCHEDULE.lunch
-  const dinnerWindow = week[1]?.windows[1] ?? HOURS_SCHEDULE.dinner
+  const rows = buildOpeningRows(week).map((row) => ({
+    key: row.key,
+    title: t(ROW_TITLE_KEYS[row.key]),
+    time: range(row.time),
+    days: row.days,
+  }))
 
   const dayShorts = [
     t('home.hours.mondayShort'),
@@ -72,14 +77,6 @@ export default function OpeningHours() {
     t('home.hours.saturdayShort'),
     t('home.hours.sundayShort'),
     t('home.hours.holidayShort'),
-  ]
-
-  const rows = [
-    { key: 'noon',           title: t('home.hours.noonTitle'),           time: range(lunchWindow),         days: onDays('tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'holiday') },
-    { key: 'evening',        title: t('home.hours.eveningTitle'),        time: range(dinnerWindow),        days: onDays('tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'holiday') },
-    { key: 'lunch',          title: t('home.hours.lunchTitle'),          time: range(lunchWindow),         days: onDays('tue', 'wed', 'thu', 'fri') },
-    { key: 'buffet-noon',    title: t('home.hours.buffetNoonTitle'),     time: range(lunchWindow),         days: onDays('sun', 'holiday') },
-    { key: 'buffet-evening', title: t('home.hours.buffetEveningTitle'),  time: range(BUFFET_EVENING),      days: onDays('fri', 'sat', 'sun', 'holiday') },
   ]
 
   return (
