@@ -122,7 +122,7 @@ Every Lambda is a **self-contained single `index.mjs`** (zero npm dependencies, 
 | Method | Path                           | Auth        | Handler | Purpose |
 | :----- | :----------------------------- | :---------- | :------ | :------ |
 | POST   | `/api/orders`                  | public      | orders  | Place an order: items + contact channel (email/WhatsApp) + pay-at-pickup |
-| GET    | `/api/hours`                   | public      | hours   | Real opening hours from the Google Business Profile (Places API, cached 15 min) — regular + special/vacation + business status; drives the site's open/closed chip and the dashboard's order-polling gate |
+| GET    | `/api/hours`                   | public      | hours   | Real opening hours from the Google Business Profile (Places API, cached 15 min) — business status + regular week + the special/vacation-adjusted next-7-days view; drives the site's open/closed chip and the dashboard's order-polling gate |
 | GET    | `/api/staff/orders`            | staff token | staff   | Open orders for the kitchen (Pending + Notified) |
 | POST   | `/api/staff/orders/:id/notify` | staff token | staff   | Mark notified: send "ready for pickup" via the order's channel (SES or WhatsApp), set `NotifiedAt` + `PickupInMinutes` |
 | PATCH  | `/api/staff/orders/:id/status` | staff token | staff   | Mark an order `Completed` (or other status changes) — *[in progress]* |
