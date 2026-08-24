@@ -149,6 +149,16 @@ export function useHours(): HoursSnapshot {
 
 export type OpenReason = 'open' | 'closed' | 'closedSpecial' | 'closedTemporarily'
 
+// The polling gate's check (dashboard): poll orders while the business is
+// OPERATIONAL. Unknown payload (fetch failed / not configured) fails OPEN to
+// polling — a few cheap requests are preferable to missing an order. Special-
+// hours vacations keep OPERATIONAL, so polling continues there; that's
+// deliberate: the orders API doesn't check hours, and the owner's real
+// vacation kill-switch is the ordering toggle.
+export function isBusinessOperational(payload: HoursPayload | null): boolean {
+  return payload?.businessStatus == null || payload.businessStatus === 'OPERATIONAL'
+}
+
 export function isEffectivelyOpen(
   now: Date,
   payload: HoursPayload | null,
