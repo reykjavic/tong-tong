@@ -1,36 +1,28 @@
 import { useI18n } from '../../i18n'
-import { Box, Typography, Chip, useTheme, useMediaQuery, Divider } from '@mui/material'
-import { AccessTime, Star } from '@mui/icons-material'
+import { Box, Typography, Chip, Divider, useTheme } from '@mui/material'
+import { AccessTime } from '@mui/icons-material'
 import { Fragment, useState, useEffect } from 'react'
-import { HOURS_SCHEDULE, isEffectivelyOpen, useHours } from '../../hooks/hours'
+import {
+  isEffectivelyOpen,
+  useHours,
+  weekRowsFromDefaultSchedule,
+  weekRowsFromRegularHours,
+  type WeekRow,
+} from '../../hooks/hours'
 import ContentCard from '../ui/ContentCard'
 
-// ---- Schedule: display windows for the table rows. The open/closed gate
-// (lunch + dinner) lives in src/hooks/hours.ts — the shared source of truth. ----
-type Window = { start: string; end: string }
-const SCHEDULE = {
-  ...HOURS_SCHEDULE,
-  lunchSpecial:  { start: '11:30', end: '14:30' },
-  buffetNoon:    { start: '11:30', end: '14:30' },
-  buffetEvening: { start: '18:00', end: '22:00' },
-} as const
-
-// Display range (NBSP around the en dash — matches the existing strings exactly).
-const range = ({ start, end }: Window) => `${start} – ${end}`
-
-// ---- Day columns: the table's column order, Mon … Sun, then the holiday star.
-// onDays spells out the active columns by name instead of a cryptic boolean row. ----
-type DayColumn = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun' | 'holiday'
-const DAY_COLUMNS: DayColumn[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'holiday']
-const onDays = (...days: DayColumn[]) => DAY_COLUMNS.map((d) => days.includes(d))
-
+// Opening-hours section (homepage + /hours). Google Business Profile is the
+// single source of truth: the weekly table renders straight from
+// regularOpeningHours (via useHours), and the live chip from the
+// special/vacation-adjusted currentOpeningHours + businessStatus. The
+// hardcoded schedule only shows while /hours has no data (fail-open).
 export default function OpeningHours() {
   const { t } = useI18n()
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const { hours } = useHours()
-  // Effective status: real Google Business hours (regular + special/vacation +
-  // business status) when available, otherwise the default schedule.
+  // Live status: real Google hours when available, otherwise the default
+  // schedule. Re-evaluated every minute — the daily open/closed flips (lunch
+  // ends, dinner starts) come from this client-side re-check, not new fetches.
   const [status, setStatus] = useState(() => isEffectivelyOpen(new Date(), hours))
 
   useEffect(() => {
@@ -39,6 +31,10 @@ export default function OpeningHours() {
     const interval = setInterval(checkStatus, 60000)
     return () => clearInterval(interval)
   }, [hours])
+
+  const week: WeekRow[] = hours?.regularHours
+    ? weekRowsFromRegularHours(hours.regularHours)
+    : weekRowsFromDefaultSchedule()
 
   const chipLabel =
     status.reason === 'closedSpecial'
@@ -49,24 +45,17 @@ export default function OpeningHours() {
           ? t('home.hours.open')
           : t('home.hours.closed')
 
-  const dayShorts = [
-    t('home.hours.mondayShort'),
-    t('home.hours.tuesdayShort'),
-    t('home.hours.wednesdayShort'),
-    t('home.hours.thursdayShort'),
-    t('home.hours.fridayShort'),
-    t('home.hours.saturdayShort'),
-    t('home.hours.sundayShort'),
-    t('home.hours.holidayShort'),
+  const dayLabels = [
+    t('home.hours.monday'),
+    t('home.hours.tuesday'),
+    t('home.hours.wednesday'),
+    t('home.hours.thursday'),
+    t('home.hours.friday'),
+    t('home.hours.saturday'),
+    t('home.hours.sunday'),
   ]
 
-  const rows = [
-    { key: 'noon',           title: t('home.hours.noonTitle'),           time: range(SCHEDULE.lunch),         days: onDays('tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'holiday') },
-    { key: 'evening',        title: t('home.hours.eveningTitle'),        time: range(SCHEDULE.dinner),        days: onDays('tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'holiday') },
-    { key: 'lunch',          title: t('home.hours.lunchTitle'),          time: range(SCHEDULE.lunchSpecial),  days: onDays('tue', 'wed', 'thu', 'fri', 'sat') },
-    { key: 'buffet-noon',    title: t('home.hours.buffetNoonTitle'),     time: range(SCHEDULE.buffetNoon),    days: onDays('sun', 'holiday') },
-    { key: 'buffet-evening', title: t('home.hours.buffetEveningTitle'),  time: range(SCHEDULE.buffetEvening), days: onDays('fri', 'sat', 'sun', 'holiday') },
-  ]
+  const fmtWindow = (w: { start: string; end: string }) => `${w.start} – ${w.end}`
 
   return (
     <ContentCard disablePadding>
@@ -81,7 +70,7 @@ export default function OpeningHours() {
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <AccessTime sx={{ fontSize: 32, color: 'white' }} />
-          <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ color: 'white', fontWeight: 700 }}>
+          <Typography variant="h5" sx={{ color: 'white', fontWeight: 700 }}>
             {t('home.hours.title')}
           </Typography>
         </Box>
@@ -97,116 +86,38 @@ export default function OpeningHours() {
         />
       </Box>
       <Box sx={{ p: { xs: 2, sm: 4 } }}>
-        {isMobile ? (
-          /* Mobile: card-based layout — one card per time slot with day indicators */
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-            {rows.map((row) => (
-              <Box key={row.key}>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, mb: 1 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary', lineHeight: 1.3, fontSize: '0.9rem' }}>
-                    {row.title}
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.3, fontSize: '0.95rem' }}>
-                    {row.time}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 0.3, justifyContent: 'space-between' }}>
-                  {dayShorts.map((label, j) => {
-                    const isHoliday = j === dayShorts.length - 1
-                    return (
-                      <Box key={j} sx={{
-                        textAlign: 'center',
-                        minWidth: 0,
-                        flex: '1 1 0',
-                        px: 0.15,
-                        py: 0.35,
-                        borderRadius: 0.75,
-                        fontSize: '0.68rem',
-                        fontWeight: row.days[j] ? 700 : 400,
-                        color: row.days[j] ? '#fff' : theme.palette.text.disabled,
-                        bgcolor: row.days[j] ? theme.palette.primary.main : 'transparent',
-                        border: row.days[j] ? 'none' : `1px solid ${theme.palette.divider}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                        {isHoliday ? (
-                          <Star sx={{ fontSize: '0.7rem' }} />
-                        ) : (
-                          label
-                        )}
-                      </Box>
-                    )
-                  })}
-                </Box>
-              </Box>
-            ))}
-            <Typography variant="caption" sx={{ color: 'text.disabled', textAlign: 'center', mt: 0.5 }}>
-              {t('home.hours.starHint')}
-            </Typography>
-          </Box>
-        ) : (
-          /* Desktop: grid table with day columns */
-          <Box sx={{ overflowX: 'auto' }}>
-            <Box sx={{
-              display: 'grid',
-              gridTemplateColumns: `120px repeat(${dayShorts.length}, 1fr)`,
-            }}>
-              {/* Header row */}
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          {week.map((row, i) => (
+            <Fragment key={i}>
               <Box sx={{
-                borderBottom: `1px solid ${theme.palette.divider}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
                 py: 1.5,
-              }} />
-              {dayShorts.map((d, i) => (
-                <Box key={i} sx={{
-                  textAlign: 'center',
-                  fontWeight: 700,
-                  color: theme.palette.primary.main,
-                  whiteSpace: 'nowrap',
-                  borderBottom: `1px solid ${theme.palette.divider}`,
-                  fontSize: '0.95rem',
-                  px: 1,
-                  py: 1.5,
-                }}>
-                  {d}
-                </Box>
-              ))}
-
-              {/* Data rows */}
-              {rows.map((row) => (
-                <Fragment key={row.key}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', py: 1.5, pr: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary', lineHeight: 1.3, fontSize: '1rem', whiteSpace: 'nowrap' }}>
-                      {row.title}
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.3, fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
-                      {row.time}
-                    </Typography>
-                  </Box>
-                  {row.days.map((available, j) => (
-                    <Box key={j} sx={{
-                      display: 'flex',
-                      alignItems: 'flex-end',
-                      justifyContent: 'center',
-                      textAlign: 'center',
-                      fontSize: '1.1rem',
-                      py: 1.5,
-                      color: available ? theme.palette.primary.main : theme.palette.text.disabled,
-                      fontWeight: available ? 600 : 400,
-                    }}>
-                      {available ? '✓' : '–'}
-                    </Box>
-                  ))}
-                </Fragment>
-              ))}
-            </Box>
-          </Box>
-        )}
+              }}>
+                <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                  {dayLabels[i]}
+                </Typography>
+                {row.windows.length > 0 ? (
+                  <Typography variant="body1" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                    {row.windows.map(fmtWindow).join(', ')}
+                  </Typography>
+                ) : (
+                  <Typography variant="body1" sx={{ color: 'text.disabled' }}>
+                    {t('home.hours.closed')}
+                  </Typography>
+                )}
+              </Box>
+              {i < week.length - 1 && <Divider />}
+            </Fragment>
+          ))}
+        </Box>
         <Divider sx={{ my: 3 }} />
         <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
           {t('home.hours.reservation')}
         </Typography>
-    </Box>
+      </Box>
     </ContentCard>
   )
 }

@@ -1,21 +1,20 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { CONFIG_API_URL } from './config'
 
-// Opening-hours module — two layers:
+// Opening-hours module — Google Business Profile is the single source of
+// truth (GET /hours, backend/hours Lambda, ~1 call/day cached 24h):
 //
-// 1. Default schedule: pure client-side fallback (closed Mondays; lunch
-//    11:30–14:30, dinner 17:30–22:30 in the browser's local time).
-// 2. Real hours from the Google Business Profile: GET /hours (backend/hours
-//    Lambda) relays businessStatus + currentOpeningHours from the Places API
-//    (New). currentHours is the effective next-7-days view — the ONLY new
-//    information the API adds: vacation days show up as missing periods for
-//    those dates, holiday openings as adjusted periods. The regular week is
-//    deliberately NOT fetched: it matches the hardcoded schedule above (the
-//    owner only changes special hours), so the "vacation closure vs. normal
-//    day off" reason is derived by comparing currentHours against it.
-//    isEffectivelyOpen() is the single check the chip and the dashboard's
-//    order-polling gate use; when the payload is missing or the fetch fails
-//    it fails open to the default schedule (same pattern as /config).
+//   businessStatus + regularHours + currentHours
+//     ├─► weekly table (homepage)   ← regularHours (day-based week), no
+//     │                              hardcoded copy; default schedule is only
+//     │                              the fail-open fallback
+//     ├─► live chip                 ← currentHours (special/vacation-adjusted
+//     │                              next-7-days) + businessStatus
+//     └─► order-polling gate        ← businessStatus only (OPERATIONAL ⇒ poll)
+//
+// isEffectivelyOpen() is the chip's check; isBusinessOperational() the
+// polling gate's. When the payload is missing or the fetch fails everything
+// fails open to the default schedule (same pattern as /config).
 //
 // Timezone note: Places hours are in the location's timezone, and all
 // comparisons here use the browser's local clock — correct for the staff and
@@ -68,7 +67,8 @@ export interface PlaceHours {
 export interface HoursPayload {
   source?: string | null
   businessStatus?: string | null // 'OPERATIONAL' | 'CLOSED_TEMPORARILY' | ...
-  currentHours?: PlaceHours | null // effective next-7-days, periods carry dates
+  regularHours?: PlaceHours | null // standard week (day-based periods) -> weekly table
+  currentHours?: PlaceHours | null // effective next-7-days, periods carry dates -> live chip
   fetchedAt?: string | null
 }
 
@@ -157,6 +157,45 @@ export type OpenReason = 'open' | 'closed' | 'closedSpecial' | 'closedTemporaril
 // vacation kill-switch is the ordering toggle.
 export function isBusinessOperational(payload: HoursPayload | null): boolean {
   return payload?.businessStatus == null || payload.businessStatus === 'OPERATIONAL'
+}
+
+// ---------------------------------------------------------------------------
+// Weekly table (homepage) — rendered from Google's regularHours so the site
+// has no hardcoded copy of the schedule. Falls back to the default schedule
+// only when /hours is unavailable (fail-open).
+// ---------------------------------------------------------------------------
+
+export interface WeekRow {
+  windows: { start: string; end: string }[]
+}
+
+// Mon-first (index 0 = Monday … 6 = Sunday), each row = the day's open
+// windows sorted by start. A day without periods shows as closed.
+export function weekRowsFromRegularHours(regular: PlaceHours | null | undefined): WeekRow[] {
+  const byDay = new Map<number, { start: string; end: string }[]>()
+  for (const { open, close } of regular?.periods ?? []) {
+    if (!open || !close) continue
+    const window = { start: fmt(open.hour, open.minute), end: fmt(close.hour, close.minute) }
+    const list = byDay.get(open.day) ?? []
+    list.push(window)
+    byDay.set(open.day, list)
+  }
+  // Places day 0 = Sunday (same as Date.getDay()); display is Mon-first.
+  return [1, 2, 3, 4, 5, 6, 0].map((day) => ({
+    windows: (byDay.get(day) ?? []).sort((a, b) => a.start.localeCompare(b.start)),
+  }))
+}
+
+// Fallback week from the hardcoded schedule (closed Mondays; lunch + dinner
+// Tue–Sun) — used only while /hours has no data.
+export function weekRowsFromDefaultSchedule(): WeekRow[] {
+  return [1, 2, 3, 4, 5, 6, 0].map((day) => ({
+    windows: day === 1 ? [] : [HOURS_SCHEDULE.lunch, HOURS_SCHEDULE.dinner],
+  }))
+}
+
+function fmt(hour: number, minute: number): string {
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
 }
 
 export function isEffectivelyOpen(
