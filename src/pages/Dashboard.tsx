@@ -3,7 +3,7 @@ import { useI18n } from '../i18n'
 import { setConfig, useConfig, type SiteConfig } from '../hooks/config'
 import { apiFetch, login, logout, useAuth } from '../hooks/auth'
 import { deleteOrder, fetchOrders, updateOrderStatus, type Order, type OrderStatus } from '../hooks/orders'
-import { isBusinessOperational, useHours } from '../hooks/hours'
+import { isEffectivelyOpen, useHours } from '../hooks/hours'
 import { alpha } from '@mui/material/styles'
 import PageContainer from '../components/layout/PageContainer'
 import ContentCard from '../components/ui/ContentCard'
@@ -68,15 +68,16 @@ function statusColor(status: OrderStatus | null): string {
   }
 }
 
-// Orders auto-refresh: poll while the business is OPERATIONAL (its status on
-// the Google Business Profile via src/hooks/hours.ts). Deliberately keyed to
-// the operational status, not the opening hours: the orders API doesn't check
-// hours (only the ordering toggle), so polling through lunch/dinner gaps also
-// catches off-hours pre-orders, while a temporary closure stops it cleanly.
-// Pauses on hidden tabs (visibilitychange catches up on return); the manual
-// refresh button always works. 15s ≈ "new order lands, kitchen sees it almost
-// immediately" at a cost negligible against the free tier.
+// Orders auto-refresh: poll only while the restaurant is actually open, per
+// the real Google Business hours (src/hooks/hours.ts — business status,
+// special/vacation days, the daily lunch/dinner windows). The 15s pattern
+// applies only inside open hours: outside them (lunch/dinner gaps, Mondays,
+// vacation weeks) no requests are made — polling has a pattern and a limit.
+// Also paused on hidden tabs (visibilitychange catches up on return); the
+// manual refresh button always works. 15s ≈ "new order lands, kitchen sees it
+// almost immediately" at a cost negligible against the free tier.
 const POLL_INTERVAL_MS = 15_000
+const OPEN_STATUS_CHECK_MS = 60_000
 
 type FeatureKey = 'ordering' | 'reservations'
 type FeatureValues = Record<FeatureKey, boolean>
@@ -104,12 +105,14 @@ export default function Dashboard() {
   const [busyId, setBusyId] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<Order | null>(null)
   const [actionError, setActionError] = useState(false)
-  // Polling gate: the business's operational status from Google (via useHours).
-  // Poll while OPERATIONAL — the orders API doesn't check hours, and the real
-  // vacation kill-switch is the ordering toggle. Refreshes with the hours
-  // snapshot (every 5 min); no separate time-check interval needed.
+  // Polling gate: poll only while the restaurant is actually open per the
+  // Google hours (isEffectivelyOpen — business status, special/vacation days,
+  // the daily lunch/dinner windows). "Polling has a pattern or a limit": the
+  // 15s pattern applies only inside open hours; outside them (gaps, Mondays,
+  // vacations) no requests are made. Re-evaluated every OPEN_STATUS_CHECK_MS
+  // because the open/closed state flips on a schedule.
   const { hours } = useHours()
-  const isOperational = isBusinessOperational(hours)
+  const [isOpenNow, setIsOpenNow] = useState(() => isEffectivelyOpen(new Date(), hours).isOpen)
   // Order ids that arrived since the last successful fetch — highlighted in
   // the list so a new order is noticed without any sound/notification.
   const [newOrderIds, setNewOrderIds] = useState<Set<string>>(new Set())
@@ -148,9 +151,19 @@ export default function Dashboard() {
     setNewOrderIds(fresh.length ? new Set(fresh) : new Set())
   }
 
+  // Keep the open/closed gate current. Purely client-side arithmetic from the
+  // cached hours payload — no network. Hooks must stay above the early
+  // returns, so the gate lives here on state rather than in the JSX below.
+  useEffect(() => {
+    const check = () => setIsOpenNow(isEffectivelyOpen(new Date(), hours).isOpen)
+    check()
+    const interval = setInterval(check, OPEN_STATUS_CHECK_MS)
+    return () => clearInterval(interval)
+  }, [hours])
+
   // Load orders once the Google session is confirmed, then poll every
-  // POLL_INTERVAL_MS while the business is OPERATIONAL. Skipped on a hidden
-  // tab (visibilitychange catches up the moment it becomes visible again). The
+  // POLL_INTERVAL_MS while the restaurant is open. Skipped on a hidden tab
+  // (visibilitychange catches up the moment it becomes visible again). The
   // manual refresh button stays available even when polling is paused.
   useEffect(() => {
     if (auth.status !== 'authenticated') return
@@ -167,7 +180,7 @@ export default function Dashboard() {
       }
     }
     void load()
-    if (!isOperational) return () => { cancelled = true }
+    if (!isOpenNow) return () => { cancelled = true }
     const interval = setInterval(() => void load(), POLL_INTERVAL_MS)
     const onVisible = () => {
       if (!document.hidden) void load()
@@ -178,7 +191,7 @@ export default function Dashboard() {
       clearInterval(interval)
       document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [auth.status, isOperational])
+  }, [auth.status, isOpenNow])
 
   if (auth.status === 'loading') {
     return (
@@ -395,7 +408,7 @@ export default function Dashboard() {
             </Button>
           </Box>
 
-          {!isOperational && (
+          {!isOpenNow && (
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               {t('dashboard.orders.closedNote')}
             </Typography>

@@ -10,11 +10,13 @@ import { CONFIG_API_URL } from './config'
 //     │                              the fail-open fallback
 //     ├─► live chip                 ← currentHours (special/vacation-adjusted
 //     │                              next-7-days) + businessStatus
-//     └─► order-polling gate        ← businessStatus only (OPERATIONAL ⇒ poll)
+//     └─► order-polling gate        ← isEffectivelyOpen(): the 15s order poll
+//                                    only runs while the restaurant is open
+//                                    (gaps, Mondays, vacations = no requests)
 //
-// isEffectivelyOpen() is the chip's check; isBusinessOperational() the
-// polling gate's. When the payload is missing or the fetch fails everything
-// fails open to the default schedule (same pattern as /config).
+// isEffectivelyOpen() is the single check both the chip and the polling gate
+// use. When the payload is missing or the fetch fails everything fails open
+// to the default schedule (same pattern as /config).
 //
 // Timezone note: Places hours are in the location's timezone, and all
 // comparisons here use the browser's local clock — correct for the staff and
@@ -155,16 +157,6 @@ export function useHours(): HoursSnapshot {
 // ---------------------------------------------------------------------------
 
 export type OpenReason = 'open' | 'closed' | 'closedSpecial' | 'closedTemporarily'
-
-// The polling gate's check (dashboard): poll orders while the business is
-// OPERATIONAL. Unknown payload (fetch failed / not configured) fails OPEN to
-// polling — a few cheap requests are preferable to missing an order. Special-
-// hours vacations keep OPERATIONAL, so polling continues there; that's
-// deliberate: the orders API doesn't check hours, and the owner's real
-// vacation kill-switch is the ordering toggle.
-export function isBusinessOperational(payload: HoursPayload | null): boolean {
-  return payload?.businessStatus == null || payload.businessStatus === 'OPERATIONAL'
-}
 
 // ---------------------------------------------------------------------------
 // Weekly table (homepage) — rendered from Google's regularHours so the site
