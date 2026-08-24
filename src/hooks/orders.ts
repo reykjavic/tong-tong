@@ -3,12 +3,16 @@ import { apiFetch } from './auth'
 
 // Order data-access for the online-ordering pipeline (mockup stage).
 //
-//   placeMockOrder()  -> POST /orders         (public; gated server-side by the
-//                                              ordering feature toggle)
-//   fetchOrders()     -> GET  /staff/orders   (Google-session Bearer via apiFetch)
+//   placeMockOrder()    -> POST /orders                        (public; gated
+//                                                            server-side by the
+//                                                            ordering toggle)
+//   fetchOrders()       -> GET  /staff/orders                  (Google-session
+//                                                            Bearer via apiFetch)
+//   updateOrderStatus() -> PATCH /staff/orders/:id/status      (same session)
+//   deleteOrder()       -> DELETE /staff/orders/:id            (same session)
 //
 // Same idioms as posts.ts/config.ts: module constants, cache: 'no-store',
-// apiFetch for the authed call.
+// apiFetch for the authed calls.
 
 export interface OrderItem {
   name: string
@@ -119,4 +123,27 @@ export async function fetchOrders(): Promise<Order[]> {
   }
   const data = (await res.json()) as { orders: Order[] }
   return data.orders ?? []
+}
+
+// Move an order through the lifecycle (Pending -> Notified -> Completed).
+// The dashboard dropdown is the only caller; the staff Lambda validates the
+// status and 404s on unknown orders.
+export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
+  const res = await apiFetch(`/staff/orders/${orderId}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  })
+  if (!res.ok) {
+    throw new Error(`status update failed: ${res.status}`)
+  }
+}
+
+// Hard-delete an order (GDPR erasure / mockup cleanup). The UI asks for
+// confirmation before calling this — deletion is irreversible.
+export async function deleteOrder(orderId: string): Promise<void> {
+  const res = await apiFetch(`/staff/orders/${orderId}`, { method: 'DELETE' })
+  if (!res.ok) {
+    throw new Error(`order delete failed: ${res.status}`)
+  }
 }

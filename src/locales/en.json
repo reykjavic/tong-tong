@@ -240,8 +240,43 @@
       "error": "Couldn't load orders.",
       "retry": "Try again",
       "refresh": "Refresh",
-      "refreshing": "Loading…"
+      "refreshing": "Loading…",
+      "statusLabel": "Status",
+      "statusPending": "Pending",
+      "statusNotified": "Notified",
+      "statusCompleted": "Completed",
+      "delete": "Delete",
+      "deleteConfirmTitle": "Delete order?",
+      "deleteConfirmText": "This order will be permanently deleted. This cannot be undone.",
+      "deleteConfirmCancel": "Cancel",
+      "deleteConfirmOk": "Delete",
+      "actionError": "Couldn't save the change — please try again."
     }
+  },
+  "dev": {
+    "badge": "DEV",
+    "title": "DEV Tools",
+    "collapse": "Hide DEV tools",
+    "expand": "Show DEV tools",
+    "authSection": "Login state",
+    "auth": {
+      "anonymous": "Anonymous",
+      "loading": "Checking session…",
+      "user": "Non-admin",
+      "admin": "Admin"
+    },
+    "orderingSection": "Online ordering",
+    "ordering": {
+      "on": "On",
+      "off": "Off"
+    },
+    "pagesSection": "Pages",
+    "pages": {
+      "home": "Home",
+      "order": "Order",
+      "dashboard": "Admin (Dashboard)"
+    },
+    "caption": "Simulated — real OAuth only works on staging."
   },
   "common": {
     "languageToggle": "DE",

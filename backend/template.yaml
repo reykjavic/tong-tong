@@ -82,7 +82,7 @@ Resources:
     Properties:
       StageName: Prod
       Cors:
-        AllowMethods: "'GET,OPTIONS,POST'"
+        AllowMethods: "'GET,OPTIONS,POST,PATCH,DELETE'"
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
 
@@ -307,8 +307,11 @@ Resources:
             Method: post
             RestApiId: !Ref BackendApi
 
-  # Staff order read (M2) — GET /staff/orders lists open orders (Pending +
-  # Notified) for the admin dashboard. Same Google-session gate as ToggleFunction.
+  # Staff orders API (M2) — GET /staff/orders lists open orders (Pending +
+  # Notified) for the admin dashboard; PATCH /staff/orders/{id}/status moves an
+  # order through the lifecycle (Pending -> Notified -> Completed); DELETE
+  # /staff/orders/{id} hard-deletes an order (GDPR erasure / mockup cleanup).
+  # Same Google-session gate as ToggleFunction.
   # Querying GSI1 needs dynamodb:Query on BOTH the table and the index ARN.
   StaffFunction:
     Type: AWS::Serverless::Function
@@ -329,6 +332,8 @@ Resources:
               Action:
                 - dynamodb:GetItem
                 - dynamodb:Query
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
               Resource:
                 - !GetAtt RestaurantData.Arn
                 - !Sub '${RestaurantData.Arn}/index/GSI1'
@@ -338,6 +343,18 @@ Resources:
           Properties:
             Path: /staff/orders
             Method: get
+            RestApiId: !Ref BackendApi
+        StaffOrderStatusPatch:
+          Type: Api
+          Properties:
+            Path: /staff/orders/{id}/status
+            Method: patch
+            RestApiId: !Ref BackendApi
+        StaffOrderDelete:
+          Type: Api
+          Properties:
+            Path: /staff/orders/{id}
+            Method: delete
             RestApiId: !Ref BackendApi
 
 Outputs:
@@ -362,3 +379,9 @@ Outputs:
   StaffOrdersUrl:
     Description: Staff order list endpoint (GET /staff/orders)
     Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/staff/orders'
+  StaffOrderStatusUrl:
+    Description: Staff order status endpoint (PATCH /staff/orders/{id}/status)
+    Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/staff/orders/{id}/status'
+  StaffOrderDeleteUrl:
+    Description: Staff order delete endpoint (DELETE /staff/orders/{id})
+    Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/staff/orders/{id}'

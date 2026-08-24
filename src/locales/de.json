@@ -240,8 +240,43 @@
       "error": "Bestellungen konnten nicht geladen werden.",
       "retry": "Erneut versuchen",
       "refresh": "Aktualisieren",
-      "refreshing": "Wird geladen…"
+      "refreshing": "Wird geladen…",
+      "statusLabel": "Status",
+      "statusPending": "Ausstehend",
+      "statusNotified": "Benachrichtigt",
+      "statusCompleted": "Fertig",
+      "delete": "Löschen",
+      "deleteConfirmTitle": "Bestellung löschen?",
+      "deleteConfirmText": "Diese Bestellung wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+      "deleteConfirmCancel": "Abbrechen",
+      "deleteConfirmOk": "Löschen",
+      "actionError": "Änderung fehlgeschlagen – bitte erneut versuchen."
     }
+  },
+  "dev": {
+    "badge": "DEV",
+    "title": "DEV-Werkzeuge",
+    "collapse": "DEV-Werkzeuge ausblenden",
+    "expand": "DEV-Werkzeuge anzeigen",
+    "authSection": "Login-Zustand",
+    "auth": {
+      "anonymous": "Anonym",
+      "loading": "Session prüft…",
+      "user": "Nicht-Admin",
+      "admin": "Admin"
+    },
+    "orderingSection": "Online-Bestellung",
+    "ordering": {
+      "on": "Ein",
+      "off": "Aus"
+    },
+    "pagesSection": "Seiten",
+    "pages": {
+      "home": "Startseite",
+      "order": "Bestellen",
+      "dashboard": "Admin (Dashboard)"
+    },
+    "caption": "Simuliert — echtes OAuth läuft nur auf Staging."
   },
   "common": {
     "languageToggle": "EN",

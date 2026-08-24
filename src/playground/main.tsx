@@ -1,22 +1,12 @@
-import { useSyncExternalStore, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import { createRoot } from 'react-dom/client'
-import {
-  Box,
-  CssBaseline,
-  Fab,
-  IconButton,
-  Paper,
-  Stack,
-  ThemeProvider,
-  ToggleButton,
-  Typography,
-} from '@mui/material'
-import { Close as CloseIcon } from '@mui/icons-material'
+import { CssBaseline, Paper, Stack, ThemeProvider, Typography } from '@mui/material'
 import { Route, Router, Switch, useLocation, type BaseLocationHook } from 'wouter'
 import theme from '../theme'
 import { I18nProvider } from '../i18n'
-import { setDevAuthState, type AuthState } from '../hooks/auth'
-import { setDevPinnedConfig, type SiteConfig } from '../hooks/config'
+import { setDevAuthState } from '../hooks/auth'
+import { setDevPinnedConfig } from '../hooks/config'
+import DevToolbar, { AUTH_STATES, ORDERING_CONFIG } from '../components/features/DevToolbar'
 import Navbar from '../components/layout/navbar'
 import Footer from '../components/layout/Footer'
 import PageLayout from '../components/layout/PageLayout'
@@ -45,7 +35,16 @@ import ContentCard from '../components/ui/ContentCard'
 // renders the real app shell (Navbar + every public page + Footer) inside an
 // in-memory router, so navbar links navigate in place instead of leaving the
 // playground — the home page with its hero carousel renders exactly like prod.
+//
+// The floating DEV toolbar is the shared DevToolbar component (also mounted on
+// the main app in dev builds); the playground seeds its simulated states here
+// so the preview opens with a logged-in (non-admin) user and ordering enabled.
 // ---------------------------------------------------------------------------
+
+// Seed the simulated states the DEV toolbar controls. Runs at module load,
+// before React renders; the toolbar derives its selection from the live stores.
+setDevAuthState(AUTH_STATES.user)
+setDevPinnedConfig(ORDERING_CONFIG.on)
 
 // In-memory router: navbar/CTA links update this store instead of the browser
 // URL, so the playground never navigates away from /playground.html. The
@@ -76,172 +75,6 @@ const useMemoryLocation: BaseLocationHook = () => [
   useSyncExternalStore(subscribeLocation, getLocationSnapshot),
   navigateMemory,
 ]
-
-type AuthKey = 'anonymous' | 'loading' | 'user' | 'admin'
-
-const AUTH_STATES: Record<AuthKey, AuthState> = {
-  anonymous: { status: 'anonymous', email: null, name: null, picture: null, isAdmin: false },
-  loading: { status: 'loading', email: null, name: null, picture: null, isAdmin: false },
-  user: {
-    status: 'authenticated',
-    email: 'gast@example.com',
-    name: 'Max Mustermann',
-    picture: null,
-    isAdmin: false,
-  },
-  admin: {
-    status: 'authenticated',
-    email: 'admin@tong-tong.eu',
-    name: 'Thomas Mohr',
-    picture: null,
-    isAdmin: true,
-  },
-}
-
-const AUTH_LABELS: Record<AuthKey, string> = {
-  anonymous: 'Anonym',
-  loading: 'Session prüft…',
-  user: 'Nicht-Admin',
-  admin: 'Admin',
-}
-
-const ORDERING_CONFIG: Record<'on' | 'off', SiteConfig> = {
-  on: { ordering: { enabled: true }, reservations: { enabled: false } },
-  off: { ordering: { enabled: false }, reservations: { enabled: false } },
-}
-
-// Floating DEV panel (bottom right) with the state switchers. Collapsed to a
-// small FAB by default so the page preview looks exactly like prod.
-function DevToolbar() {
-  const [open, setOpen] = useState(false)
-  const [authKey, setAuthKey] = useState<AuthKey>(() => {
-    setDevAuthState(AUTH_STATES.user)
-    return 'user'
-  })
-  const [ordering, setOrdering] = useState<'on' | 'off'>(() => {
-    setDevPinnedConfig(ORDERING_CONFIG.on)
-    return 'on'
-  })
-  const [location] = useLocation()
-
-  const selectAuth = (key: AuthKey) => {
-    setAuthKey(key)
-    setDevAuthState(AUTH_STATES[key])
-  }
-  const selectOrdering = (key: 'on' | 'off') => {
-    setOrdering(key)
-    setDevPinnedConfig(ORDERING_CONFIG[key])
-  }
-
-  return (
-    <Box sx={{ position: 'fixed', bottom: 16, right: 16, zIndex: 1300 }}>
-      {open ? (
-        <Paper elevation={8} sx={{ p: 1.5, width: 300 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: '0.1em' }}>
-              DEV Playground
-            </Typography>
-            <IconButton size="small" onClick={() => setOpen(false)} aria-label="Playground-Steuerung ausblenden">
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </Box>
-          <Stack spacing={1.5}>
-            <Box>
-              <Typography variant="overline" sx={{ display: 'block', mb: 0.5 }}>
-                Login-Zustand
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {(Object.keys(AUTH_LABELS) as AuthKey[]).map((key) => (
-                  <ToggleButton
-                    key={key}
-                    value={key}
-                    size="small"
-                    selected={authKey === key}
-                    onClick={() => selectAuth(key)}
-                    sx={{ borderRadius: '6px', px: 1 }}
-                  >
-                    {AUTH_LABELS[key]}
-                  </ToggleButton>
-                ))}
-              </Box>
-            </Box>
-            <Box>
-              <Typography variant="overline" sx={{ display: 'block', mb: 0.5 }}>
-                Online-Bestellung
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 0.5 }}>
-                <ToggleButton
-                  size="small"
-                  selected={ordering === 'on'}
-                    value="on"
-                  onClick={() => selectOrdering('on')}
-                  sx={{ borderRadius: '6px', px: 1 }}
-                >
-                  Ein
-                </ToggleButton>
-                <ToggleButton
-                  size="small"
-                  selected={ordering === 'off'}
-                    value="off"
-                  onClick={() => selectOrdering('off')}
-                  sx={{ borderRadius: '6px', px: 1 }}
-                >
-                  Aus
-                </ToggleButton>
-              </Box>
-            </Box>
-            <Box>
-              <Typography variant="overline" sx={{ display: 'block', mb: 0.5 }}>
-                Seiten
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                <ToggleButton
-                  size="small"
-                  value="/"
-                  selected={location === '/'}
-                  onClick={() => navigateMemory('/')}
-                  sx={{ borderRadius: '6px', px: 1 }}
-                >
-                  Startseite
-                </ToggleButton>
-                <ToggleButton
-                  size="small"
-                  value="/order"
-                  selected={location === '/order'}
-                  onClick={() => navigateMemory('/order')}
-                  sx={{ borderRadius: '6px', px: 1 }}
-                >
-                  Bestellen
-                </ToggleButton>
-                {/* Jumping to the admin page also switches to the admin login
-                    state so the Dashboard renders its real content immediately. */}
-                <ToggleButton
-                  size="small"
-                  value="/dashboard"
-                  selected={location === '/dashboard'}
-                  onClick={() => {
-                    selectAuth('admin')
-                    navigateMemory('/dashboard')
-                  }}
-                  sx={{ borderRadius: '6px', px: 1 }}
-                >
-                  Admin (Dashboard)
-                </ToggleButton>
-              </Box>
-            </Box>
-          </Stack>
-          <Typography variant="caption" sx={{ display: 'block', mt: 1.5, color: 'text.secondary' }}>
-            Simuliert — echtes OAuth läuft nur auf Staging.
-          </Typography>
-        </Paper>
-      ) : (
-        <Fab size="small" color="primary" onClick={() => setOpen(true)} aria-label="Playground-Steuerung anzeigen">
-          <Typography sx={{ fontSize: '0.65rem', fontWeight: 700 }}>DEV</Typography>
-        </Fab>
-      )}
-    </Box>
-  )
-}
 
 function PrimitivesDemo() {
   return (

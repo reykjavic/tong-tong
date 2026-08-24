@@ -5,6 +5,7 @@ import theme from './theme'
 import { I18nProvider } from './i18n'
 import Navbar from './components/layout/navbar'
 import PageMeta from './components/features/PageMeta'
+import DevToolbar from './components/features/DevToolbar'
 import Footer from './components/layout/Footer'
 import PageLayout from './components/layout/PageLayout'
 
@@ -64,6 +65,10 @@ function RouterContent() {
         </Suspense>
       </PageLayout>
       <Footer />
+      {/* DEV-only floating toolbar (login-state / ordering / page shortcuts).
+          Statically eliminated from production builds via import.meta.env.DEV —
+          the same tooling the component playground (src/playground) uses. */}
+      {import.meta.env.DEV && <DevToolbar />}
     </>
   )
 }

@@ -2,19 +2,27 @@ import { useEffect, useState } from 'react'
 import { useI18n } from '../i18n'
 import { setConfig, useConfig, type SiteConfig } from '../hooks/config'
 import { apiFetch, login, logout, useAuth } from '../hooks/auth'
-import { fetchOrders, type Order } from '../hooks/orders'
+import { deleteOrder, fetchOrders, updateOrderStatus, type Order, type OrderStatus } from '../hooks/orders'
 import PageContainer from '../components/layout/PageContainer'
 import ContentCard from '../components/ui/ContentCard'
 import { Title, BodyText } from '../components/ui/typography'
+import DeleteIcon from '@mui/icons-material/Delete'
 import {
   Box,
   Button,
-  Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   FormControlLabel,
+  IconButton,
+  MenuItem,
+  Select,
   Stack,
   Switch,
+  Tooltip,
   Typography,
 } from '@mui/material'
 
@@ -23,6 +31,38 @@ function formatTimestamp(iso: string | null): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso
   return d.toLocaleString()
+}
+
+// The documented order lifecycle (SCOPE §6): Pending -> Notified -> Completed.
+// The dropdown lets staff move an order either way as an override.
+const ORDER_STATUSES: OrderStatus[] = ['Pending', 'Notified', 'Completed']
+
+function statusLabelKey(status: OrderStatus | null): string {
+  switch (status) {
+    case 'Pending':
+      return 'dashboard.orders.statusPending'
+    case 'Notified':
+      return 'dashboard.orders.statusNotified'
+    case 'Completed':
+      return 'dashboard.orders.statusCompleted'
+    default:
+      return '—'
+  }
+}
+
+// Colored dot per status — same semantics as the old status chip, but compact
+// enough to live inside the dropdown rows.
+function statusColor(status: OrderStatus | null): string {
+  switch (status) {
+    case 'Pending':
+      return 'warning.main'
+    case 'Notified':
+      return 'info.main'
+    case 'Completed':
+      return 'success.main'
+    default:
+      return 'text.disabled'
+  }
 }
 
 type FeatureKey = 'ordering' | 'reservations'
@@ -44,6 +84,13 @@ export default function Dashboard() {
   const [orders, setOrders] = useState<Order[] | null>(null)
   const [ordersError, setOrdersError] = useState(false)
   const [refreshingOrders, setRefreshingOrders] = useState(false)
+  // Per-row action state: which order has a status/delete request in flight
+  // (all rows' controls disable while one runs — prevents racing mutations),
+  // which order is waiting on the delete confirmation, and whether the last
+  // status/delete action failed.
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<Order | null>(null)
+  const [actionError, setActionError] = useState(false)
 
   const current: FeatureValues = values ?? {
     ordering: config.ordering.enabled,
@@ -157,6 +204,7 @@ export default function Dashboard() {
   const handleRefreshOrders = async () => {
     setRefreshingOrders(true)
     setOrdersError(false)
+    setActionError(false)
     try {
       setOrders(await fetchOrders())
     } catch (err) {
@@ -164,6 +212,50 @@ export default function Dashboard() {
       setOrdersError(true)
     } finally {
       setRefreshingOrders(false)
+    }
+  }
+
+  // Move an order through the lifecycle. Not optimistic: the row stays on the
+  // old status until the PATCH resolves, and reverts automatically on failure
+  // (the Select is controlled by order.status). Completed orders leave the
+  // list — the backend only returns open orders, and the owner chose to keep
+  // the dashboard focused on what needs action.
+  const handleStatusChange = async (order: Order, status: OrderStatus) => {
+    if (status === order.status || busyId !== null) return
+    setBusyId(order.orderId)
+    setActionError(false)
+    try {
+      await updateOrderStatus(order.orderId, status)
+      setOrders((prev) => {
+        if (!prev) return prev
+        if (status === 'Completed') {
+          return prev.filter((o) => o.orderId !== order.orderId)
+        }
+        return prev.map((o) => (o.orderId === order.orderId ? { ...o, status } : o))
+      })
+    } catch (err) {
+      console.error('Status update failed:', err)
+      setActionError(true)
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  // Deletion is irreversible, so it always goes through the confirm dialog.
+  const handleDelete = async () => {
+    if (!confirmDelete || busyId !== null) return
+    const target = confirmDelete
+    setConfirmDelete(null)
+    setBusyId(target.orderId)
+    setActionError(false)
+    try {
+      await deleteOrder(target.orderId)
+      setOrders((prev) => prev?.filter((o) => o.orderId !== target.orderId) ?? null)
+    } catch (err) {
+      console.error('Order delete failed:', err)
+      setActionError(true)
+    } finally {
+      setBusyId(null)
     }
   }
 
@@ -241,6 +333,12 @@ export default function Dashboard() {
             </Button>
           </Box>
 
+          {actionError && (
+            <Typography variant="body2" sx={{ color: 'error.main' }}>
+              {t('dashboard.orders.actionError')}
+            </Typography>
+          )}
+
           {ordersError ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-start' }}>
               <Typography variant="body2" sx={{ color: 'error.main' }}>
@@ -268,11 +366,37 @@ export default function Dashboard() {
                       <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                         {formatTimestamp(order.createdAt)}
                       </Typography>
-                      <Chip
+                      <Select
                         size="small"
-                        label={order.status ?? '—'}
-                        color={order.status === 'Pending' ? 'warning' : order.status === 'Notified' ? 'info' : 'default'}
-                      />
+                        value={order.status ?? 'Pending'}
+                        disabled={busyId !== null}
+                        onChange={(e) => void handleStatusChange(order, e.target.value as OrderStatus)}
+                        inputProps={{ 'aria-label': t('dashboard.orders.statusLabel') }}
+                        sx={{ minWidth: 150 }}
+                      >
+                        {ORDER_STATUSES.map((status) => (
+                          <MenuItem key={status} value={status}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: statusColor(status) }} />
+                              {t(statusLabelKey(status))}
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      <Tooltip title={t('dashboard.orders.delete')}>
+                        <span>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            disabled={busyId !== null}
+                            onClick={() => setConfirmDelete(order)}
+                            aria-label={t('dashboard.orders.delete')}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      {busyId === order.orderId && <CircularProgress size={16} />}
                     </Box>
                   </Box>
                   <Box sx={{ mt: 0.5 }}>
@@ -294,6 +418,36 @@ export default function Dashboard() {
               ))}
             </Stack>
           )}
+
+          <Dialog open={confirmDelete !== null} onClose={() => setConfirmDelete(null)}>
+            <DialogTitle>{t('dashboard.orders.deleteConfirmTitle')}</DialogTitle>
+            <DialogContent>
+              <BodyText>
+                {t('dashboard.orders.deleteConfirmText')}
+                {confirmDelete && (
+                  <Box component="span" sx={{ fontFamily: 'monospace' }}>
+                    {' '}({confirmDelete.orderId.slice(0, 8)})
+                  </Box>
+                )}
+              </BodyText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => setConfirmDelete(null)}
+                sx={{ fontWeight: 600, textTransform: 'none' }}
+              >
+                {t('dashboard.orders.deleteConfirmCancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => void handleDelete()}
+                sx={{ fontWeight: 600, textTransform: 'none' }}
+              >
+                {t('dashboard.orders.deleteConfirmOk')}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       </ContentCard>
     </PageContainer>

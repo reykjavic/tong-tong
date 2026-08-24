@@ -124,7 +124,8 @@ Every Lambda is a **self-contained single `index.mjs`** (zero npm dependencies, 
 | POST   | `/api/orders`                  | public      | orders  | Place an order: items + contact channel (email/WhatsApp) + pay-at-pickup |
 | GET    | `/api/staff/orders`            | staff token | staff   | Open orders for the kitchen (Pending + Notified) |
 | POST   | `/api/staff/orders/:id/notify` | staff token | staff   | Mark notified: send "ready for pickup" via the order's channel (SES or WhatsApp), set `NotifiedAt` + `PickupInMinutes` |
-| PATCH  | `/api/staff/orders/:id/status` | staff token | staff   | Mark an order `Completed` (or other status changes) |
+| PATCH  | `/api/staff/orders/:id/status` | staff token | staff   | Mark an order `Completed` (or other status changes) — *[in progress]* |
+| DELETE | `/api/staff/orders/:id`        | staff token | staff   | Hard-delete an order (GDPR erasure / mockup cleanup) — *[in progress]* |
 
 **Notes**
 - Order intake is **public** — no login; contact info travels with the order.
@@ -228,7 +229,7 @@ Smallest shippable slice: message a number → it auto-replies.
 2. **`orders` Lambda + `POST /api/orders`** (public): gate on `orderingEnabled` (config item, §12) → `403` when off; accept items + `Channel` (email/WhatsApp) + contact value + `pay_at_pickup`; validate (items non-empty, contact well-formed); insert with `Status: Pending`.
 3. **Website order form**: a new route on the existing SPA — product selection, email/WhatsApp field, "pay at pickup" (only option shown in v1), submit → `POST /api/orders`. German-first text via `t()`.
 4. **SES identity**: verify the `tong-tong.eu` domain (or a subdomain) in SES so email can send; set `SES_FROM_EMAIL`.
-5. **`staff` Lambda + kitchen SPA** (`kitchen/`): list open orders (Pending + Notified), each row showing items, total, channel + contact, and **who has/hasn't been notified** (with `NotifiedAt`/`PickupInMinutes`). **Timeframe buttons [15][20][30][45]** → `POST /api/staff/orders/:id/notify` → dispatch via the order's channel (SES or WhatsApp) → set `NotifiedAt`. **Mark completed** → `PATCH /api/staff/orders/:id/status`.
+5. **`staff` Lambda + kitchen SPA** (`kitchen/`): list open orders (Pending + Notified), each row showing items, total, channel + contact, and **who has/hasn't been notified** (with `NotifiedAt`/`PickupInMinutes`). **Timeframe buttons [15][20][30][45]** → `POST /api/staff/orders/:id/notify` → dispatch via the order's channel (SES or WhatsApp) → set `NotifiedAt`. **Mark completed** → `PATCH /api/staff/orders/:id/status`. — *[in progress]: the admin dashboard (`/dashboard`) now lists open orders and offers a status dropdown (Pending/Notified/Completed, with `CompletedAt` written on completion) plus a confirm-guarded delete per row (`PATCH`/`DELETE` staff routes built, same Google-session gate); the notify/WhatsApp flow and the separate `kitchen/` SPA are still pending.*
 6. **Staff access**: shared token in a header (recommended) or Google OAuth — see §12.
 
 **Exit criteria:** a customer orders on the website → the order appears in the kitchen dashboard → staff tap "15" → the customer receives the ready-for-pickup **email or WhatsApp** (the channel they chose) → the row shows as notified (with the time) → staff mark it completed and it leaves the open list.

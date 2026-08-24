@@ -57,6 +57,13 @@ flag. States are simulated via dev-only seams (`setDevAuthState`,
 `playground.html` is not part of the production build — Vite only bundles
 `index.html`, so the playground never reaches `dist/` or the S3 bucket.
 
+The **same DEV button is also mounted on the main app** (`http://localhost:5173/`)
+when running `npm run dev` — `src/components/features/DevToolbar.tsx`, gated by
+`import.meta.env.DEV` and statically eliminated from production builds. From
+there you can switch login states and flip the ordering flag on any page of the
+real app (e.g. simulate an admin session and jump to `/dashboard`), without
+visiting the playground.
+
 ## Project Structure
 
 ```
