@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchPostRaw, fetchPostsList } from './api'
+import { apiUrls, fetchPostRaw, fetchPostsList } from './api'
 
 export interface Post {
   slug: string
@@ -12,21 +12,12 @@ export interface Post {
 
 export type PostsStatus = 'loading' | 'ready' | 'error'
 
-export const GITHUB_OWNER = 'reykjavic'
-export const GITHUB_REPO = 'tong-tong'
-export const GITHUB_BRANCH = 'main'
-export const POSTS_DIR = 'content/posts'
-
-function rawUrl(path: string): string {
-  return `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${path}`
-}
-
 // Decap stores media paths as public_folder values (e.g. /images/foo.jpg).
 // Serve them from GitHub so newly uploaded images appear without a rebuild.
-// (The post-listing + raw-file fetches themselves live in src/hooks/api.ts —
-// this rawUrl only serves media paths.)
+// (The post-listing + raw-file fetches and the URL builders live in
+// src/hooks/api.ts — apiUrls.githubRaw serves media paths too.)
 export function resolveMedia(path: string): string {
-  return path.startsWith('/images/') ? rawUrl(`public${path}`) : path
+  return path.startsWith('/images/') ? apiUrls.githubRaw(`public${path}`) : path
 }
 
 export function formatPostDate(iso: string, language: string): string {

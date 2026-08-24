@@ -11,13 +11,36 @@ import type { HoursPayload, HoursSnapshot } from './hours'
 // slice; see AGENTS.md for the data-layer standard.
 // ---------------------------------------------------------------------------
 
-// ---- URLs (single home for the API base) -----------------------------------
+// ---- URLs (single registry — every URL the app fetches) --------------------
+// The browser only talks to our own API + GitHub. Google's Places API is NOT
+// called from the frontend: the backend/hours Lambda relays it
+// (https://places.googleapis.com/v1/places/{placeId}, see
+// backend/lambdas/hours/index.mjs) so the API key never ships to the client.
 
-export const CONFIG_API_URL = 'https://api.tong-tong.eu/Prod/config'
-export const API_BASE_URL = CONFIG_API_URL.replace(/\/config$/, '')
-export const AUTH_API_URL = API_BASE_URL
-export const HOURS_API_URL = `${API_BASE_URL}/hours`
-export const ORDERS_API_URL = `${API_BASE_URL}/orders`
+export const API_BASE_URL = 'https://api.tong-tong.eu/Prod'
+
+const GITHUB_OWNER = 'reykjavic'
+const GITHUB_REPO = 'tong-tong'
+const GITHUB_BRANCH = 'main'
+const POSTS_DIR = 'content/posts'
+
+// Our API entries are paths relative to API_BASE_URL (apiFetch prepends the
+// base); external services (GitHub) are absolute.
+export const apiUrls = {
+  config: '/config', // GET — feature toggles
+  login: '/auth/login', // GET — Google OAuth entry (+ ?next=)
+  authMe: '/auth/me', // GET — session/profile, Bearer
+  logout: '/auth/logout', // POST — revoke session, Bearer
+  toggle: '/toggle', // POST — admin feature flip, Bearer + ADMIN_EMAIL
+  hours: '/hours', // GET — Google hours relay (cached 24h)
+  ordersCreate: '/orders', // POST — public order intake (ordering-toggle gate)
+  staffOrders: '/staff/orders', // GET — open orders, Bearer + ADMIN_EMAIL
+  staffOrderStatus: (id: string) => `/staff/orders/${id}/status`, // PATCH
+  staffOrder: (id: string) => `/staff/orders/${id}`, // DELETE
+  githubContents: `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${POSTS_DIR}?ref=${GITHUB_BRANCH}`, // GET — Decap post listing
+  githubRaw: (path: string) =>
+    `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${path}`, // GET — raw post/media file
+} as const
 
 // ---- Config: GET /config (public feature toggles) --------------------------
 
@@ -98,7 +121,7 @@ export const queryKeys = {
 
 // GET /config — feature toggles; fail-open to DEFAULT_CONFIG.
 async function fetchConfig(): Promise<SiteConfig> {
-  const res = await fetch(CONFIG_API_URL, { cache: 'no-store' })
+  const res = await fetch(`${API_BASE_URL}${apiUrls.config}`, { cache: 'no-store' })
   if (!res.ok) {
     throw new Error(`config request failed: ${res.status}`)
   }
@@ -114,7 +137,7 @@ async function fetchConfig(): Promise<SiteConfig> {
 // GET /hours — real opening hours from the Google Business Profile (Places
 // API), cached 24h server-side; the SPA computes the table/chip from it.
 async function fetchHours(): Promise<HoursPayload> {
-  const res = await fetch(HOURS_API_URL, { cache: 'no-store' })
+  const res = await fetch(`${API_BASE_URL}${apiUrls.hours}`, { cache: 'no-store' })
   if (!res.ok) {
     throw new Error(`hours request failed: ${res.status}`)
   }
@@ -142,7 +165,7 @@ export interface Order {
 }
 
 async function fetchOrders(): Promise<Order[]> {
-  const res = await apiFetch('/staff/orders')
+  const res = await apiFetch(apiUrls.staffOrders)
   if (!res.ok) {
     throw new Error(`staff orders failed: ${res.status}`)
   }
@@ -153,7 +176,7 @@ async function fetchOrders(): Promise<Order[]> {
 // PATCH /staff/orders/:id/status — move an order through the lifecycle
 // (Pending -> Notified -> Completed); Bearer + ADMIN_EMAIL.
 async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
-  const res = await apiFetch(`/staff/orders/${orderId}/status`, {
+  const res = await apiFetch(apiUrls.staffOrderStatus(orderId), {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ status }),
@@ -166,7 +189,7 @@ async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<
 // DELETE /staff/orders/:id — hard delete (GDPR erasure / mockup cleanup);
 // Bearer + ADMIN_EMAIL. The UI asks for confirmation first.
 async function deleteOrder(orderId: string): Promise<void> {
-  const res = await apiFetch(`/staff/orders/${orderId}`, { method: 'DELETE' })
+  const res = await apiFetch(apiUrls.staffOrder(orderId), { method: 'DELETE' })
   if (!res.ok) {
     throw new Error(`order delete failed: ${res.status}`)
   }
@@ -186,7 +209,7 @@ export async function placeOrder(body: {
   channel: 'email' | 'whatsapp'
   contact: string
 }): Promise<PlacedOrder> {
-  const res = await fetch(ORDERS_API_URL, {
+  const res = await fetch(`${API_BASE_URL}${apiUrls.ordersCreate}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -224,7 +247,7 @@ export async function setToggle(
   feature: 'ordering' | 'reservations',
   enabled: boolean,
 ): Promise<SiteConfig> {
-  const res = await apiFetch('/toggle', {
+  const res = await apiFetch(apiUrls.toggle, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ feature, enabled }),
@@ -244,7 +267,7 @@ export interface AuthMe {
 }
 
 export async function fetchAuthMe(): Promise<AuthMe> {
-  const res = await apiFetch('/auth/me')
+  const res = await apiFetch(apiUrls.authMe)
   if (!res.ok) {
     throw new Error(`auth/me failed: ${res.status}`)
   }
@@ -253,20 +276,12 @@ export async function fetchAuthMe(): Promise<AuthMe> {
 
 // POST /auth/logout — revoke the session server-side (best effort).
 export async function logoutSession(): Promise<void> {
-  await apiFetch('/auth/logout', { method: 'POST' })
+  await apiFetch(apiUrls.logout, { method: 'POST' })
 }
 
 // GitHub (Decap CMS posts) — list the post directory + read one raw file.
-const GITHUB_OWNER = 'reykjavic'
-const GITHUB_REPO = 'tong-tong'
-const GITHUB_BRANCH = 'main'
-const POSTS_DIR = 'content/posts'
-
 async function fetchPostsList(): Promise<string[]> {
-  const res = await fetch(
-    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${POSTS_DIR}?ref=${GITHUB_BRANCH}`,
-    { cache: 'no-store' },
-  )
+  const res = await fetch(apiUrls.githubContents, { cache: 'no-store' })
   if (res.status === 404) return [] // no posts directory on GitHub yet
   if (!res.ok) {
     throw new Error(`GitHub contents request failed: ${res.status}`)
@@ -275,14 +290,10 @@ async function fetchPostsList(): Promise<string[]> {
   return entries.map((entry) => entry.name)
 }
 
-function rawFileUrl(name: string): string {
-  return `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${POSTS_DIR}/${name}`
-}
-
 // 'no-store' guarantees a fresh 200 with a body (avoids 304 responses whose
 // body fetch() can fail to materialize).
 async function fetchPostRaw(name: string): Promise<string> {
-  const res = await fetch(rawFileUrl(name), { cache: 'no-store' })
+  const res = await fetch(apiUrls.githubRaw(`${POSTS_DIR}/${name}`), { cache: 'no-store' })
   if (!res.ok) throw new Error(`post fetch failed: ${res.status}`)
   return res.text()
 }

@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import {
-  AUTH_API_URL,
+  API_BASE_URL,
   TOKEN_KEY,
+  apiUrls,
   clearToken,
   fetchAuthMe,
   getToken,
@@ -16,7 +17,7 @@ import {
 // no CSRF surface). The token is minted server-side for ANY verified Google
 // account and expires in 7 days (DynamoDB TTL); ADMIN_EMAIL only gates the admin
 // endpoints (/toggle, /staff), not login. Login is a full-page redirect to
-// AUTH_API_URL/auth/login; the callback lands back on ?auth_token=…&next=… which
+// (apiUrls.login; the callback lands back on ?auth_token=…&next=… which
 // consumeAuthToken() strips and stores (see src/main.tsx). /auth/me also returns
 // the Google profile (name, picture) and an isAdmin flag so the navbar can show
 // who is signed in and whether the dashboard is available.
@@ -25,7 +26,7 @@ import {
 // (token, apiFetch, /auth/me + /auth/logout endpoints) lives in src/hooks/api.ts.
 
 // Re-exported for existing importers (main.tsx, Navbar).
-export { AUTH_API_URL, TOKEN_KEY, getToken, clearToken } from './api'
+export { TOKEN_KEY, getToken, clearToken } from './api'
 
 export type AuthStatus = 'loading' | 'anonymous' | 'authenticated'
 
@@ -97,7 +98,7 @@ export function refreshAuth(): Promise<void> {
 // SITE_URL/?auth_token=…&next=<encoded> and the reload runs consumeAuthToken().
 export function login(next?: string) {
   const target = next ?? window.location.pathname
-  window.location.assign(`${AUTH_API_URL}/auth/login?next=${encodeURIComponent(target)}`)
+  window.location.assign(`${API_BASE_URL}${apiUrls.login}?next=${encodeURIComponent(target)}`)
 }
 
 export async function logout(): Promise<void> {
