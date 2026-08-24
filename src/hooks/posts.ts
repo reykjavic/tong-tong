@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { fetchPostRaw, fetchPostsList } from './api'
 
 export interface Post {
   slug: string
@@ -22,6 +23,8 @@ function rawUrl(path: string): string {
 
 // Decap stores media paths as public_folder values (e.g. /images/foo.jpg).
 // Serve them from GitHub so newly uploaded images appear without a rebuild.
+// (The post-listing + raw-file fetches themselves live in src/hooks/api.ts —
+// this rawUrl only serves media paths.)
 export function resolveMedia(path: string): string {
   return path.startsWith('/images/') ? rawUrl(`public${path}`) : path
 }
@@ -94,27 +97,17 @@ function stripMarkdown(md: string): string {
 }
 
 async function fetchPosts(): Promise<Post[]> {
-  const listRes = await fetch(
-    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${POSTS_DIR}?ref=${GITHUB_BRANCH}`,
-    { cache: 'no-store' },
-  )
-  if (listRes.status === 404) return [] // no posts directory on GitHub yet
-  if (!listRes.ok) {
-    throw new Error(`GitHub contents request failed: ${listRes.status}`)
-  }
-  const entries = (await listRes.json()) as { name: string }[]
-  const files = entries.filter((entry) => entry.name.endsWith('.md'))
+  // Listing + raw-file fetches live in api.ts; 404 on the directory returns
+  // [] there, so an empty repo yields an empty list here.
+  const files = (await fetchPostsList()).filter((name) => name.endsWith('.md'))
 
   const results = await Promise.all(
-    files.map(async (file): Promise<Post | null> => {
+    files.map(async (name): Promise<Post | null> => {
       try {
-        // 'no-store' guarantees a fresh 200 with a body (avoids 304 responses
-        // whose body fetch() can fail to materialize).
-        const raw = await (await fetch(rawUrl(`${POSTS_DIR}/${file.name}`), { cache: 'no-store' })).text()
-        return parsePost(file.name, raw)
+        return parsePost(name, await fetchPostRaw(name))
       } catch (err) {
         // A single unparseable post shouldn't blank the whole list.
-        console.error(`Failed to load post ${file.name}:`, err)
+        console.error(`Failed to load post ${name}:`, err)
         return null
       }
     }),
@@ -165,27 +158,18 @@ export function usePosts() {
 // parsing every post file we sort the listing and fetch just the newest one.
 // Kept separate from the full-list cache so /posts still fetches everything.
 async function fetchLatestPost(): Promise<Post | null> {
-  const listRes = await fetch(
-    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${POSTS_DIR}?ref=${GITHUB_BRANCH}`,
-    { cache: 'no-store' },
-  )
-  if (listRes.status === 404) return null // no posts directory on GitHub yet
-  if (!listRes.ok) {
-    throw new Error(`GitHub contents request failed: ${listRes.status}`)
-  }
-  const entries = (await listRes.json()) as { name: string }[]
-  const files = entries
-    .filter((entry) => entry.name.endsWith('.md'))
-    .sort((a, b) => (a.name < b.name ? 1 : a.name > b.name ? -1 : 0))
+  // Decap names post files `<date>-<slug>.md`, so filename order equals date
+  // order. Sort the listing and fetch just the newest one, falling back to the
+  // next-newest on a broken file (mirrors fetchPosts' resilience).
+  const files = (await fetchPostsList())
+    .filter((name) => name.endsWith('.md'))
+    .sort((a, b) => (a < b ? 1 : a > b ? -1 : 0))
 
-  for (const file of files) {
+  for (const name of files) {
     try {
-      const raw = await (await fetch(rawUrl(`${POSTS_DIR}/${file.name}`), { cache: 'no-store' })).text()
-      return parsePost(file.name, raw)
+      return parsePost(name, await fetchPostRaw(name))
     } catch (err) {
-      // A single broken post shouldn't blank the homepage — fall back to the
-      // next-newest one, mirroring fetchPosts' resilience.
-      console.error(`Failed to load post ${file.name}:`, err)
+      console.error(`Failed to load post ${name}:`, err)
     }
   }
   return null

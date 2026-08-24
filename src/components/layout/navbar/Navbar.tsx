@@ -5,7 +5,7 @@ import {
 } from '@mui/material'
 import { AccountCircle, Menu as MenuIcon } from '@mui/icons-material'
 import { Link, useLocation } from 'wouter'
-import { useConfig } from '../../../hooks/config'
+import { useConfig } from '../../../hooks/api'
 import { login, logout, useAuth } from '../../../hooks/auth'
 import { useI18n } from '../../../i18n'
 import Brand from './Brand'

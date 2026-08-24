@@ -1,5 +1,5 @@
 import { useI18n } from '../i18n'
-import { useConfig } from '../hooks/config'
+import { useConfig } from '../hooks/api'
 import PageContainer from '../components/layout/PageContainer'
 import { Link } from 'wouter'
 import { Box, Paper, Button, Typography, useTheme, useMediaQuery } from '@mui/material'

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useLocation } from 'wouter'
 import { useI18n } from '../../i18n'
 import { setDevAuthState, useAuth, type AuthState } from '../../hooks/auth'
-import { setDevPinnedConfig, useConfig, type SiteConfig } from '../../hooks/config'
+import { setDevPinnedConfig, useConfig, type SiteConfig } from '../../hooks/api'
 import { Close as CloseIcon } from '@mui/icons-material'
 import { Box, Fab, IconButton, Paper, Stack, ToggleButton, Typography } from '@mui/material'
 

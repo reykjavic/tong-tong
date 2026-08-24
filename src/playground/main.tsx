@@ -6,7 +6,7 @@ import { Route, Router, Switch, useLocation, type BaseLocationHook } from 'woute
 import theme from '../theme'
 import { I18nProvider } from '../i18n'
 import { setDevAuthState } from '../hooks/auth'
-import { setDevPinnedConfig } from '../hooks/config'
+import { setDevPinnedConfig } from '../hooks/api'
 import { queryClient } from '../hooks/queryClient'
 import DevToolbar, { AUTH_STATES, ORDERING_CONFIG } from '../components/features/DevToolbar'
 import Navbar from '../components/layout/navbar'

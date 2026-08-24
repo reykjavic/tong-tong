@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n'
-import { setConfig, useConfig, type SiteConfig } from '../hooks/config'
-import { apiFetch, login, logout, useAuth } from '../hooks/auth'
-import { useDeleteOrder, useOrdersQuery, useSetOrderStatus, type Order, type OrderStatus } from '../hooks/orders'
-import { isEffectivelyOpen, useHours } from '../hooks/hours'
+import {
+  setConfig,
+  setToggle,
+  useConfig,
+  useDeleteOrder,
+  useHours,
+  useOrdersQuery,
+  useSetOrderStatus,
+  type Order,
+  type OrderStatus,
+} from '../hooks/api'
+import { login, logout, useAuth } from '../hooks/auth'
+import { isEffectivelyOpen } from '../hooks/hours'
 import { alpha } from '@mui/material/styles'
 import PageContainer from '../components/layout/PageContainer'
 import ContentCard from '../components/ui/ContentCard'
@@ -73,7 +82,7 @@ function statusColor(status: OrderStatus | null): string {
 // special/vacation days, the daily lunch/dinner windows). The 15s pattern
 // applies only inside open hours: outside them (lunch/dinner gaps, Mondays,
 // vacation weeks) no requests are made — polling has a pattern and a limit.
-// TanStack Query drives it (src/hooks/orders.ts): refetchInterval 15s while
+// TanStack Query drives it (src/hooks/api.ts): refetchInterval 15s while
 // open, paused in background tabs by default, refetch-on-window-focus on
 // return; the manual refresh button always works. The gate itself is
 // re-evaluated every OPEN_STATUS_CHECK_MS because open/closed flips on a
@@ -218,18 +227,12 @@ export default function Dashboard() {
     setSaving(feature)
     setError(false)
     try {
-      const res = await apiFetch('/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feature, enabled }),
-      })
-      if (!res.ok) throw new Error(`toggle failed: ${res.status}`)
-      const data = (await res.json()) as SiteConfig
+      const data = await setToggle(feature, enabled)
       setValues({
         ordering: data.ordering.enabled,
         reservations: data.reservations.enabled,
       })
-      // Publish the authoritative config to the shared store so already-mounted
+      // Publish the authoritative config into the query cache so already-mounted
       // consumers (Navbar, Menu) reflect the flip on the current route — no reload.
       setConfig(data)
     } catch (err) {

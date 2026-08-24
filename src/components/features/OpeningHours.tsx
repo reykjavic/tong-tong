@@ -2,10 +2,10 @@ import { useI18n } from '../../i18n'
 import { Box, Typography, Chip, useTheme, useMediaQuery, Divider } from '@mui/material'
 import { AccessTime, Star } from '@mui/icons-material'
 import { Fragment, useState, useEffect } from 'react'
+import { useHours } from '../../hooks/api'
 import {
   buildOpeningRows,
   isEffectivelyOpen,
-  useHours,
   weekRowsFromDefaultSchedule,
   weekRowsFromRegularHours,
   type OpeningRow,

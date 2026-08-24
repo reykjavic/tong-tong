@@ -1,6 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
-import { CONFIG_API_URL } from './config'
-
 // Opening-hours module — Google Business Profile is the single source of
 // truth (GET /hours, backend/hours Lambda, ~1 call/day cached 24h):
 //
@@ -14,9 +11,11 @@ import { CONFIG_API_URL } from './config'
 //                                    only runs while the restaurant is open
 //                                    (gaps, Mondays, vacations = no requests)
 //
-// isEffectivelyOpen() is the single check both the chip and the polling gate
-// use. When the payload is missing or the fetch fails everything fails open
-// to the default schedule (same pattern as /config).
+// PURE logic only — the GET /hours fetch and useHours() hook live in
+// src/hooks/api.ts (the single file for every request). This module holds the
+// types, the schedule arithmetic and the table mapping. When the payload is
+// missing or the fetch fails everything fails open to the default schedule
+// (same pattern as /config).
 //
 // Timezone note: Places hours are in the location's timezone, and all
 // comparisons here use the browser's local clock — correct for the staff and
@@ -75,39 +74,6 @@ export interface HoursPayload {
 }
 
 export type HoursSnapshot = { status: 'loading' | 'ready' | 'error'; hours: HoursPayload | null }
-
-// Same URL derivation as AUTH_API_URL in auth.ts: strip the /config suffix.
-export const HOURS_API_URL = CONFIG_API_URL.replace(/\/config$/, '/hours')
-
-// No periodic client refresh: the hours Lambda caches the payload for 24h, so
-// a timer would only re-read the same cached data. Freshness comes from each
-// page load, plus TanStack's refetchOnWindowFocus (a tab left open catches up
-// when the user returns). The open/closed STATUS still flips daily from the
-// cached payload — that re-check is client-side and fetch-free.
-
-const HOURS_QUERY_KEY = ['hours'] as const
-
-async function fetchHours(): Promise<HoursPayload> {
-  const res = await fetch(HOURS_API_URL, { cache: 'no-store' })
-  if (!res.ok) {
-    throw new Error(`hours request failed: ${res.status}`)
-  }
-  return (await res.json()) as HoursPayload
-}
-
-// Server state via TanStack Query; fail-open to `hours: null` on error so
-// consumers fall back to the default schedule.
-export function useHours(): HoursSnapshot {
-  const query = useQuery({
-    queryKey: HOURS_QUERY_KEY,
-    queryFn: fetchHours,
-    staleTime: 5 * 60 * 1000,
-  })
-  return {
-    status: query.isPending ? 'loading' : query.isError ? 'error' : 'ready',
-    hours: query.data ?? null,
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Effective open/closed — the one check the chip and the polling gate use.

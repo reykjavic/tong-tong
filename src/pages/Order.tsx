@@ -5,7 +5,7 @@ import ContentCard from '../components/ui/ContentCard'
 import { Title, BodyText } from '../components/ui/typography'
 import { Link } from 'wouter'
 import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
-import { placeMockOrder } from '../hooks/orders'
+import { placeMockOrder } from '../hooks/api'
 
 // Placeholder for the online-ordering feature (in development on `dev`).
 // Will be replaced by the real cart + checkout flow later. For now the page
