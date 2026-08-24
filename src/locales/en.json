@@ -84,6 +84,8 @@
       "title": "Opening Hours",
       "open": "Open",
       "closed": "Closed",
+      "closedSpecial": "Closed (special hours)",
+      "closedTemporarily": "Temporarily closed",
       "closedLabel": "Closed",
       "monday": "Monday",
       "tuesday": "Tuesday",

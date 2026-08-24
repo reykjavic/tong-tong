@@ -2,7 +2,7 @@ import { useI18n } from '../../i18n'
 import { Box, Typography, Chip, useTheme, useMediaQuery, Divider } from '@mui/material'
 import { AccessTime, Star } from '@mui/icons-material'
 import { Fragment, useState, useEffect } from 'react'
-import { HOURS_SCHEDULE, isRestaurantOpen } from '../../hooks/hours'
+import { HOURS_SCHEDULE, isEffectivelyOpen, useHours } from '../../hooks/hours'
 import ContentCard from '../ui/ContentCard'
 
 // ---- Schedule: display windows for the table rows. The open/closed gate
@@ -28,14 +28,26 @@ export default function OpeningHours() {
   const { t } = useI18n()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
-  const [isOpen, setIsOpen] = useState(false)
+  const { hours } = useHours()
+  // Effective status: real Google Business hours (regular + special/vacation +
+  // business status) when available, otherwise the default schedule.
+  const [status, setStatus] = useState(() => isEffectivelyOpen(new Date(), hours))
 
   useEffect(() => {
-    const checkStatus = () => setIsOpen(isRestaurantOpen())
+    const checkStatus = () => setStatus(isEffectivelyOpen(new Date(), hours))
     checkStatus()
     const interval = setInterval(checkStatus, 60000)
     return () => clearInterval(interval)
-  }, [])
+  }, [hours])
+
+  const chipLabel =
+    status.reason === 'closedSpecial'
+      ? t('home.hours.closedSpecial')
+      : status.reason === 'closedTemporarily'
+        ? t('home.hours.closedTemporarily')
+        : status.isOpen
+          ? t('home.hours.open')
+          : t('home.hours.closed')
 
   const dayShorts = [
     t('home.hours.mondayShort'),
@@ -74,9 +86,9 @@ export default function OpeningHours() {
           </Typography>
         </Box>
         <Chip
-          label={isOpen ? t('home.hours.open') : t('home.hours.closed')}
+          label={chipLabel}
           sx={{
-            bgcolor: isOpen ? '#4CAF50' : '#F44336',
+            bgcolor: status.isOpen ? '#4CAF50' : '#F44336',
             color: 'white',
             fontWeight: 700,
             fontSize: '1rem',

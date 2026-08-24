@@ -68,6 +68,23 @@ Parameters:
     Type: String
     Default: https://d22hrnca27jxah.cloudfront.net
     Description: Origin the OAuth callback redirects back to (the SPA). Single value — staging today, decide at the prod cutover
+  PlacesApiKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: Google Places API (New) key — reads the Business Profile hours (backend/.env.places)
+  PlaceId:
+    Type: String
+    Default: ''
+    Description: Google placeId for the restaurant; empty = resolved once via PlaceQuery and cached
+  PlaceQuery:
+    Type: String
+    Default: ''
+    Description: Text-search query used to resolve the placeId on first run (e.g. "China Restaurant Tong Tong Europaplatz 2 Braunfels")
+  HoursCacheTtlSeconds:
+    Type: String
+    Default: '900'
+    Description: How long GET /hours caches the Places payload before re-fetching (default 15 min)
 
 Resources:
   # Explicit API Gateway REST API (SCOPE.md §12: one API, every function's route
@@ -183,6 +200,44 @@ Resources:
           Type: Api
           Properties:
             Path: /config
+            Method: get
+            RestApiId: !Ref BackendApi
+
+  # Public opening-hours endpoint (GET /hours) — relays the real Business
+  # Profile hours (regular + special/vacation + business status) from the
+  # Places API (New), cached in RestaurantData so Places is only hit on cache
+  # expiry. IAM scoped to GetItem/PutItem on RestaurantData only. Ships inert
+  # (503) until PlacesApiKey is set — the SPA then falls back to the default
+  # schedule, same fail-open pattern as /config.
+  HoursFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/hours/
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Timeout: 10
+      MemorySize: 128
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref RestaurantData
+          PLACES_API_KEY: !Ref PlacesApiKey
+          PLACE_ID: !Ref PlaceId
+          PLACE_QUERY: !Ref PlaceQuery
+          HOURS_CACHE_TTL_SECONDS: !Ref HoursCacheTtlSeconds
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt RestaurantData.Arn
+      Events:
+        HoursGet:
+          Type: Api
+          Properties:
+            Path: /hours
             Method: get
             RestApiId: !Ref BackendApi
 
@@ -367,6 +422,9 @@ Outputs:
   ConfigUrl:
     Description: Feature-toggle config endpoint for the site (GET /config)
     Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/config'
+  HoursUrl:
+    Description: Real opening hours from Google Business (GET /hours)
+    Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hours'
   AuthUrl:
     Description: Google OAuth login entry point (GET /auth/login)
     Value: !Sub 'https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/login'

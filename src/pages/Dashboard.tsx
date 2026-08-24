@@ -3,7 +3,7 @@ import { useI18n } from '../i18n'
 import { setConfig, useConfig, type SiteConfig } from '../hooks/config'
 import { apiFetch, login, logout, useAuth } from '../hooks/auth'
 import { deleteOrder, fetchOrders, updateOrderStatus, type Order, type OrderStatus } from '../hooks/orders'
-import { isRestaurantOpen } from '../hooks/hours'
+import { isEffectivelyOpen, useHours } from '../hooks/hours'
 import { alpha } from '@mui/material/styles'
 import PageContainer from '../components/layout/PageContainer'
 import ContentCard from '../components/ui/ContentCard'
@@ -68,12 +68,14 @@ function statusColor(status: OrderStatus | null): string {
   }
 }
 
-// Orders auto-refresh: poll only while the kitchen is actually operating
-// (same schedule as the OpeningHours chip — closed Mondays, lunch 11:30–14:30,
-// dinner 17:30–22:30). The open/closed gate is a pure client-side check
-// (src/hooks/hours.ts), so no requests are burned on closed hours or on a
-// background tab. 15s ≈ "new order lands, kitchen sees it almost immediately"
-// at a cost that is negligible against the free tier.
+// Orders auto-refresh: poll only while the kitchen is actually operating. The
+// open/closed gate uses the real Google Business hours (src/hooks/hours.ts —
+// regular + special/vacation + business status), falling back to the default
+// schedule (closed Mondays, lunch 11:30–14:30, dinner 17:30–22:30). The check
+// is pure client-side arithmetic, so no requests are burned on closed hours
+// (including vacation days entered on Google) or on a background tab.
+// 15s ≈ "new order lands, kitchen sees it almost immediately" at a cost that
+// is negligible against the free tier.
 const POLL_INTERVAL_MS = 15_000
 const OPEN_STATUS_CHECK_MS = 60_000
 
@@ -103,9 +105,12 @@ export default function Dashboard() {
   const [busyId, setBusyId] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<Order | null>(null)
   const [actionError, setActionError] = useState(false)
-  // Polling gate: whether the kitchen is currently open (client-side check,
-  // re-evaluated every OPEN_STATUS_CHECK_MS). When closed, no auto-refresh.
-  const [isOpenNow, setIsOpenNow] = useState(() => isRestaurantOpen())
+  // Polling gate: whether the kitchen is currently open — real Google Business
+  // hours (regular + special/vacation + business status) via useHours, falling
+  // back to the default schedule. Re-evaluated every OPEN_STATUS_CHECK_MS;
+  // when closed, no auto-refresh.
+  const { hours } = useHours()
+  const [isOpenNow, setIsOpenNow] = useState(() => isEffectivelyOpen(new Date(), hours).isOpen)
   // Order ids that arrived since the last successful fetch — highlighted in
   // the list so a new order is noticed without any sound/notification.
   const [newOrderIds, setNewOrderIds] = useState<Set<string>>(new Set())
@@ -148,11 +153,11 @@ export default function Dashboard() {
   // network. Hooks must stay above the early returns, so all gating lives
   // here on state rather than in the JSX below.
   useEffect(() => {
-    const check = () => setIsOpenNow(isRestaurantOpen())
+    const check = () => setIsOpenNow(isEffectivelyOpen(new Date(), hours).isOpen)
     check()
     const interval = setInterval(check, OPEN_STATUS_CHECK_MS)
     return () => clearInterval(interval)
-  }, [])
+  }, [hours])
 
   // Load orders once the Google session is confirmed, then poll every
   // POLL_INTERVAL_MS while the kitchen is open. Skipped on a hidden tab

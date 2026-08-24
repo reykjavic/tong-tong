@@ -104,6 +104,20 @@ else
   [ -n "$site_url" ]             && OVERRIDES+=("SiteUrl=$site_url")
 fi
 
+# ---- Google Places API key (optional; real opening hours) ------------------
+# Independent of the other files: missing file = GET /hours deploys inert (503),
+# the SPA keeps using its default schedule. Fill backend/.env.places + redeploy
+# to activate (Places API (New) must be enabled in the Google Cloud project).
+PLACES_ENV_FILE="backend/.env.places"
+if [ -f "$PLACES_ENV_FILE" ]; then
+  places_key="$(read_env "$PLACES_ENV_FILE" PLACES_API_KEY)"
+  place_id="$(read_env "$PLACES_ENV_FILE" PLACE_ID)"
+  place_query="$(read_env "$PLACES_ENV_FILE" PLACE_QUERY)"
+  [ -n "$places_key" ]  && OVERRIDES+=("PlacesApiKey=$places_key")
+  [ -n "$place_id" ]    && OVERRIDES+=("PlaceId=$place_id")
+  [ -n "$place_query" ] && OVERRIDES+=("PlaceQuery=$place_query")
+fi
+
 # Artifacts bucket (SAM needs somewhere to upload the packaged function zip).
 if ! aws s3api head-bucket --bucket "$SAM_BUCKET" --region "$REGION" --profile "$PROFILE" 2>/dev/null; then
   echo "==> Creating SAM artifacts bucket $SAM_BUCKET"

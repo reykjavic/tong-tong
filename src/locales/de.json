@@ -84,6 +84,8 @@
       "title": "Öffnungszeiten",
       "open": "Geöffnet",
       "closed": "Geschlossen",
+      "closedSpecial": "Geschlossen (Sonderzeiten)",
+      "closedTemporarily": "Vorübergehend geschlossen",
       "closedLabel": "Ruhetag",
       "monday": "Montag",
       "tuesday": "Dienstag",
