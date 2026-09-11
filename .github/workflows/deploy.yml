@@ -4,7 +4,7 @@ name: Deploy to S3
 #   main ──▶ production (tong-tong-homepage)
 #   dev  ──▶ staging    (tong-tong-staging)
 # Manual runs ("Run workflow") deploy whichever branch is selected.
-# Doc-only and CI changes are skipped (no deploy needed).
+# Doc-only, CI and repo-housekeeping changes are skipped (no deploy needed).
 on:
   push:
     branches: [main, dev]
@@ -12,6 +12,7 @@ on:
       - "*.md"
       - ".github/**"
       - ".claude/**"
+      - ".gitignore"
   workflow_dispatch:
 
 permissions:
