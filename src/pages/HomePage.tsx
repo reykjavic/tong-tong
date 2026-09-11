@@ -10,7 +10,7 @@ import 'swiper/css/effect-fade'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Autoplay, Pagination, Navigation as SwiperNavigation, EffectFade } from 'swiper/modules'
 import { Link } from 'wouter'
-import { hero03, hero04, hero06, hero07, hero08, hero11, hero12, hero14 } from '../assets/images'
+import { hero03, hero04, hero06, hero07, hero08, hero11, hero12, hero14, hero16, hero17 } from '../assets/images'
 
 function HeroSection() {
   const { t } = useI18n()
@@ -18,7 +18,8 @@ function HeroSection() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   const heroImages = [
-    hero03, hero04, hero06, hero07, hero08, hero11, hero12, hero14,
+    hero03, hero04, hero06, hero07, hero08,
+    hero11, hero12, hero14, hero16, hero17,
   ]
 
   return (

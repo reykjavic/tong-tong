@@ -40,6 +40,14 @@ import hero14src from './hero-14.webp'
 import hero14_768 from './hero-14-768.webp'
 import hero14_1280 from './hero-14-1280.webp'
 import hero14_1920 from './hero-14-1920.webp'
+import hero16src from './hero-16.webp'
+import hero16_768 from './hero-16-768.webp'
+import hero16_1280 from './hero-16-1280.webp'
+import hero16_1920 from './hero-16-1920.webp'
+import hero17src from './hero-17.webp'
+import hero17_768 from './hero-17-768.webp'
+import hero17_1280 from './hero-17-1280.webp'
+import hero17_1920 from './hero-17-1920.webp'
 
 export interface HeroImage {
   src: string
@@ -71,3 +79,5 @@ export const hero08 = build(hero08src, hero08_768, hero08_1280, hero08_1920)
 export const hero11 = build(hero11src, hero11_768, hero11_1280, hero11_1920)
 export const hero12 = build(hero12src, hero12_768, hero12_1280, hero12_1920)
 export const hero14 = build(hero14src, hero14_768, hero14_1280, hero14_1920)
+export const hero16 = build(hero16src, hero16_768, hero16_1280, hero16_1920)
+export const hero17 = build(hero17src, hero17_768, hero17_1280, hero17_1920)
